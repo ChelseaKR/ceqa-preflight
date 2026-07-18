@@ -1,49 +1,55 @@
-catalog_version: "1.0.0"
+catalog_version: "1.1.0"
 rules:
   - id: "NOE-001"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Primary Notice of Exemption form"
     check: "noe_primary_form"
+    lifecycle: "experimental"
     filing_types: ["NOE"]
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
   - id: "NOE-002"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Primary Notice of Exemption readability"
     check: "noe_primary_readable"
+    lifecycle: "experimental"
     filing_types: ["NOE"]
     source:
       title: "LCI CEQA Submit common mistakes"
       url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
   - id: "NOE-003"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Primary Notice of Exemption category"
     check: "noe_primary_category"
+    lifecycle: "experimental"
     filing_types: ["NOE"]
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
   - id: "NOE-M001"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Exemption choice and reasoning"
     check: "noe_exemption"
+    lifecycle: "experimental"
     filing_types: ["NOE"]
     source:
       title: "LCI CEQA Submit pre-submission checklist"
       url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"
   - id: "NOE-M002"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Supporting findings"
     check: "noe_supporting_findings"
+    lifecycle: "experimental"
     filing_types: ["NOE"]
     source:
       title: "LCI CEQA Submit pre-submission checklist"
       url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"
   - id: "NOE-M003"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Signature and filing timing"
     check: "noe_signature_timing"
+    lifecycle: "experimental"
     filing_types: ["NOE"]
     source:
       title: "LCI CEQA Submit pre-submission checklist"

@@ -10,3 +10,8 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   project boundaries, and source-cited rule catalog.
 - Added Portfolio Standards conformance, pinned standards submodule, security
   automation, and release-readiness documentation.
+- Added a privacy-preserving, controlled-label evidence kit for the
+  permissioned practitioner pilot.
+- Gated NOD/NOE-specific filing rules as opt-in experimental rules pending the
+  pilot and qualified-practitioner review; documented the current official
+  guidance source review.

@@ -15,9 +15,10 @@ legal sufficiency.
 
 CEQA Preflight is pre-alpha software. The repository includes safe local package loading, bounded PDF
 technical inspection, a source-cited declarative rule engine, and an initial
-common technical rule pack. NOD- and NOE-specific rules will be activated only
-after documented official sources, practitioner review, tests, and a
-permissioned pilot.
+common technical rule pack. NOD- and NOE-specific rules are currently
+**experimental**: they run only with `--include-experimental` while documented
+official-source review, practitioner review, tests, and a permissioned pilot
+are completed.
 
 ## Intended initial scope
 
@@ -34,6 +35,7 @@ permissioned pilot.
     uv run ceqa-preflight --help
     uv run ceqa-preflight init ./my-package --filing-type NOE
     uv run ceqa-preflight check ./my-package --filing-type NOE --format html --output ./reports
+    uv run ceqa-preflight check ./my-package --filing-type NOE --include-experimental
     uv run ceqa-preflight rules list --filing-type NOE
     uv run ceqa-preflight pilot init ./pilot-evidence
     uv run ceqa-preflight pilot summarize --reviews ./pilot-evidence/finding-review.csv --baseline ./pilot-evidence/manual-baseline.csv
@@ -41,8 +43,9 @@ permissioned pilot.
 The `check` command reads a directory or ZIP package locally, never uploads or
 alters its contents, and can emit console, JSON, or self-contained HTML
 advisory reports. Add `--manifest package.yaml` to enable explicit primary
-form and document-category checks. Add `--log-format json` for minimal,
-package-content-free operational events on stderr.
+form and document-category checks when experimental rules are opted into. The
+default run includes active technical checks only. Add `--log-format json` for
+minimal, package-content-free operational events on stderr.
 
 The `pilot` commands support the permissioned evaluation protocol with opaque
 IDs and controlled labels only; they do not read filing packages or accept

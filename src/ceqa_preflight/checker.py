@@ -43,8 +43,13 @@ def check_package(
     filing_type: FilingType,
     *,
     manifest: PackageManifest | None = None,
+    include_experimental: bool = False,
 ) -> tuple[InspectionReport, int]:
-    """Inspect a local directory or ZIP and return a source-cited advisory report."""
+    """Inspect a local package and return a source-cited advisory report.
+
+    Filing-specific rules remain excluded unless the caller explicitly opts into
+    experimental checks while they complete the permissioned practitioner pilot.
+    """
 
     if manifest is not None and manifest.filing_type is not filing_type:
         raise ValueError("manifest filing_type does not match the requested filing type")
@@ -82,7 +87,8 @@ def check_package(
                 "documents": documents,
                 "declared_paths": sorted(declarations) if manifest is not None else None,
             },
-        )
+        ),
+        include_experimental=include_experimental,
     )
     manual_review = [finding for finding in run.findings if finding.status is FindingStatus.MANUAL]
     findings = [finding for finding in run.findings if finding.status is not FindingStatus.MANUAL]
