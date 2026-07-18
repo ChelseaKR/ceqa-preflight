@@ -25,7 +25,12 @@ security:
 	uv run bandit -q -r src
 
 audit:
-	uv run pip-audit
+	@attempt=1; while [ $$attempt -le 3 ]; do \
+		uv run pip-audit && exit 0; \
+		echo "pip-audit attempt $$attempt failed; retrying" >&2; \
+		attempt=$$((attempt + 1)); \
+		sleep 3; \
+	done; exit 1
 
 schemas:
 	uv run python -m ceqa_preflight.schema_export
