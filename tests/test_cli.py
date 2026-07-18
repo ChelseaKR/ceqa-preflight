@@ -113,3 +113,35 @@ def test_init_creates_a_non_overwriting_template(tmp_path: Path) -> None:
     assert "filing_type: NOD" in (directory / "package.yaml").read_text(encoding="utf-8")
     assert existing.exit_code == 2
     assert "refusing to overwrite" in existing.stderr
+
+
+def test_pilot_commands_create_and_summarize_controlled_label_files(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["pilot", "init", str(tmp_path)])
+    reviews = tmp_path / "finding-review.csv"
+    baseline = tmp_path / "manual-baseline.csv"
+    reviews.write_text(
+        "package_id,filing_type,rule_id,finding_status,disposition,severity,elapsed_seconds\n"
+        "PKG_001,NOE,NOE-001,warning,true_positive,medium,60\n",
+        encoding="utf-8",
+    )
+    baseline.write_text(
+        "package_id,filing_type,severity,was_missed\nPKG_001,NOE,high,false\n",
+        encoding="utf-8",
+    )
+    summary = runner.invoke(
+        app,
+        [
+            "pilot",
+            "summarize",
+            "--reviews",
+            str(reviews),
+            "--baseline",
+            str(baseline),
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert summary.exit_code == 0
+    assert '"go_no_go": "go"' in summary.stdout
