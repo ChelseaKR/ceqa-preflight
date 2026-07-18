@@ -13,6 +13,7 @@ from ceqa_preflight.manifest import ManifestError, load_manifest
 from ceqa_preflight.models import FilingType
 from ceqa_preflight.observability import configure_logging, event
 from ceqa_preflight.package_loader import PackageLoadError
+from ceqa_preflight.pilot import PilotDataError, summarize_pilot, write_pilot_templates
 from ceqa_preflight.reporting import render_console, render_html, render_json
 from ceqa_preflight.rule_registry import default_catalog
 from ceqa_preflight.scaffold import write_manifest_template
@@ -26,7 +27,9 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 rules_app = typer.Typer(help="Inspect the built-in, source-cited rule catalog.")
+pilot_app = typer.Typer(help="Create and summarize privacy-preserving pilot evidence files.")
 app.add_typer(rules_app, name="rules")
+app.add_typer(pilot_app, name="pilot")
 
 
 def _show_version(value: bool) -> None:
@@ -162,3 +165,74 @@ def show_rule(
             return
     typer.echo(f"Unknown rule identifier: {rule_id}", err=True)
     raise typer.Exit(code=2)
+
+
+@pilot_app.command("init")
+def init_pilot(
+    directory: Annotated[
+        Path, typer.Argument(help="Directory where controlled-label CSV templates will be created.")
+    ],
+) -> None:
+    """Create non-overwriting, package-content-free pilot evidence templates."""
+
+    try:
+        review_path, baseline_path = write_pilot_templates(directory)
+    except FileExistsError as error:
+        typer.echo(f"Input error: {error}", err=True)
+        raise typer.Exit(code=2) from error
+    typer.echo(f"Created pilot templates: {review_path.name}, {baseline_path.name}")
+
+
+@pilot_app.command("summarize")
+def summarize_pilot_data(
+    reviews: Annotated[
+        Path,
+        typer.Option(
+            "--reviews", exists=True, readable=True, help="Controlled-label finding review CSV."
+        ),
+    ],
+    baseline: Annotated[
+        Path,
+        typer.Option("--baseline", exists=True, readable=True, help="Manual baseline issue CSV."),
+    ],
+    output_format: Annotated[
+        str,
+        typer.Option("--format", help="Summary format: console or json."),
+    ] = "console",
+) -> None:
+    """Summarize pilot metrics without reading filing packages or free-text notes."""
+
+    if output_format not in {"console", "json"}:
+        raise typer.BadParameter("must be console or json", param_hint="--format")
+    try:
+        summary = summarize_pilot(reviews, baseline)
+    except PilotDataError as error:
+        typer.echo(f"Input error: {error}", err=True)
+        raise typer.Exit(code=2) from error
+    event("pilot_summarized", reviewed_findings=summary.reviewed_findings)
+    if output_format == "json":
+        typer.echo(summary.model_dump_json(indent=2))
+        return
+    typer.echo(
+        "\n".join(
+            (
+                "CEQA Preflight pilot summary",
+                f"Decision: {summary.go_no_go}",
+                f"Reviewed findings: {summary.reviewed_findings}",
+                f"Reviewed packages: {summary.reviewed_packages}",
+                f"Actionable precision: {_format_rate(summary.actionable_precision)}",
+                "High-severity false-negative rate: "
+                f"{_format_rate(summary.high_severity_false_negative_rate)}",
+                f"Median report time: {_format_seconds(summary.median_report_seconds)}",
+                *summary.reasons,
+            )
+        )
+    )
+
+
+def _format_rate(value: float | None) -> str:
+    return "not measured" if value is None else f"{value:.1%}"
+
+
+def _format_seconds(value: float | None) -> str:
+    return "not measured" if value is None else f"{value:.1f} seconds"

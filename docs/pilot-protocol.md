@@ -25,10 +25,16 @@ environmental-review records.
 
 ## Measures
 
-For each finding, record rule ID, actionable/not actionable, true positive,
-false positive, indeterminate, reviewer rationale, and time spent. Measure the
-median time to first usable report and the share of participants who would use
-the tool again.
+Keep private qualitative notes in a participant-controlled register. For the
+aggregate evidence file, record only an opaque package ID, filing type, rule
+ID, finding status, controlled disposition, severity, and elapsed time. Do not
+put a rationale, document name, project title, contact detail, or extracted
+text in the evidence file.
+
+Run `ceqa-preflight pilot init ./pilot-evidence` to create the two CSV templates
+and `ceqa-preflight pilot summarize --reviews ... --baseline ...` to calculate
+aggregate precision, high-severity false-negative rate, and median report time.
+The summarizer rejects free text and spreadsheet-formula-like cells.
 
 ## Stop/go decision
 

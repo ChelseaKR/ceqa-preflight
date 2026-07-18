@@ -35,12 +35,18 @@ permissioned pilot.
     uv run ceqa-preflight init ./my-package --filing-type NOE
     uv run ceqa-preflight check ./my-package --filing-type NOE --format html --output ./reports
     uv run ceqa-preflight rules list --filing-type NOE
+    uv run ceqa-preflight pilot init ./pilot-evidence
+    uv run ceqa-preflight pilot summarize --reviews ./pilot-evidence/finding-review.csv --baseline ./pilot-evidence/manual-baseline.csv
 
 The `check` command reads a directory or ZIP package locally, never uploads or
 alters its contents, and can emit console, JSON, or self-contained HTML
 advisory reports. Add `--manifest package.yaml` to enable explicit primary
 form and document-category checks. Add `--log-format json` for minimal,
 package-content-free operational events on stderr.
+
+The `pilot` commands support the permissioned evaluation protocol with opaque
+IDs and controlled labels only; they do not read filing packages or accept
+free-text reviewer notes.
 
 ## Non-affiliation and disclaimer
 
