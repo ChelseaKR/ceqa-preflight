@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CEQA Preflight advisory report</title>
+    <style>
+      body { color: #1b1b1b; font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem auto; max-width: 70rem; padding: 0 1rem; }
+      table { border-collapse: collapse; width: 100%; }
+      caption { font-weight: 700; text-align: left; }
+      th, td { border: 1px solid #555; padding: .65rem; text-align: left; vertical-align: top; }
+      th { background: #f1f1f1; }
+      .status { font-weight: 700; }
+      .failure { color: #9c0006; }
+      .warning, .manual { color: #7a4d00; }
+      .pass { color: #146c2e; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>CEQA Preflight advisory report</h1>
+      <p><strong>Filing type:</strong> {{ report.filing_type }}</p>
+      <p>{{ report.disclaimer }}</p>
+    </header>
+    <main>
+      <h2>Automated findings</h2>
+      {% if report.findings %}
+      <table>
+        <caption>Automated technical checks</caption>
+        <thead><tr><th scope="col">Status</th><th scope="col">Rule</th><th scope="col">Finding</th><th scope="col">Remediation</th></tr></thead>
+        <tbody>
+        {% for finding in report.findings %}
+          <tr>
+            <td class="status {{ finding.status }}">{{ finding.status }}</td>
+            <td>{{ finding.rule_id }}{% if finding.source %}<br><a href="{{ finding.source.url }}">Source</a>{% endif %}</td>
+            <td>{{ finding.message }}{% if finding.document %}<br><small>Document: {{ finding.document }}</small>{% endif %}</td>
+            <td>{{ finding.remediation }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>No automated findings were generated.</p>
+      {% endif %}
+      <h2>Manual review</h2>
+      {% if report.manual_review %}
+      <table>
+        <caption>Items that require human review</caption>
+        <thead><tr><th scope="col">Rule</th><th scope="col">Item</th><th scope="col">Remediation</th></tr></thead>
+        <tbody>
+        {% for finding in report.manual_review %}
+          <tr><td>{{ finding.rule_id }}{% if finding.source %}<br><a href="{{ finding.source.url }}">Source</a>{% endif %}</td><td>{{ finding.message }}</td><td>{{ finding.remediation }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>No manual-review items were generated.</p>
+      {% endif %}
+    </main>
+  </body>
+</html>

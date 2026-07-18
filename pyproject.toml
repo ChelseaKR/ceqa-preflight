@@ -1,0 +1,103 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ceqa-preflight"
+version = "0.1.0"
+description = "Local, source-cited preflight checks for CEQA Submit filing packages."
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+license = { file = "LICENSE" }
+authors = [{ name = "CEQA Preflight contributors" }]
+keywords = ["ceqa", "california", "document-validation", "pdf", "government"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Office/Business",
+]
+dependencies = [
+  "jinja2>=3.1.6,<4",
+  "pdfminer.six>=20250506",
+  "pydantic>=2.10,<3",
+  "pypdf>=5.0,<7",
+  "pyyaml>=6.0.2,<7",
+  "typer>=0.15,<1",
+]
+
+[project.urls]
+Documentation = "https://github.com/ChelseaKR/ceqa-preflight#readme"
+Issues = "https://github.com/ChelseaKR/ceqa-preflight/issues"
+Source = "https://github.com/ChelseaKR/ceqa-preflight"
+
+[project.scripts]
+ceqa-preflight = "ceqa_preflight.cli:app"
+
+[dependency-groups]
+dev = [
+  "bandit[toml]>=1.8.3",
+  "hypothesis>=6.127",
+  "mypy>=1.15",
+  "pip-audit>=2.9",
+  "pre-commit>=4.2",
+  "pytest>=8.3",
+  "pytest-cov>=6.0",
+  "pytest-socket>=0.7",
+  "ruff>=0.15",
+  "types-pyyaml>=6.0.12",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ceqa_preflight"]
+include = [
+  "src/ceqa_preflight/**/*.py",
+  "src/ceqa_preflight/**/*.yaml",
+  "src/ceqa_preflight/**/*.j2",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["STANDARDS", "work"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "S", "UP", "SIM", "C90", "RUF"]
+ignore = ["S101", "S105"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S108"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ceqa_preflight"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+packages = ["ceqa_preflight"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["ceqa_preflight"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+
+[tool.bandit]
+targets = ["src"]
+exclude_dirs = ["tests"]

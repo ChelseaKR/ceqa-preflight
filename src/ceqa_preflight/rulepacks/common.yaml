@@ -1,0 +1,76 @@
+catalog_version: "1.0.0"
+rules:
+  - id: "CORE-001"
+    version: "1.0.0"
+    title: "Package contains a PDF"
+    check: "pdf_present"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit FAQ"
+      url: "https://lci.ca.gov/sch/faq/"
+  - id: "PDF-001"
+    version: "1.0.0"
+    title: "PDF file signature"
+    check: "pdf_signature"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit common mistakes"
+      url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
+  - id: "PDF-002"
+    version: "1.0.0"
+    title: "PDF readability"
+    check: "pdf_readable"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit common mistakes"
+      url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
+  - id: "PDF-003"
+    version: "1.0.0"
+    title: "Sampled searchable-text coverage"
+    check: "text_coverage"
+    filing_types: ["NOD", "NOE"]
+    parameters:
+      minimum_coverage: 0.8
+    source:
+      title: "LCI CEQA Submit common mistakes"
+      url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
+  - id: "PDF-006"
+    version: "1.0.0"
+    title: "Active PDF content"
+    check: "active_content"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "CEQA Preflight security rule"
+      url: "https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload"
+  - id: "FILE-001"
+    version: "1.0.0"
+    title: "Descriptive PDF filenames"
+    check: "descriptive_filenames"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit common mistakes"
+      url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
+  - id: "FILE-002"
+    version: "1.0.0"
+    title: "Duplicate file hashes"
+    check: "duplicate_hashes"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit FAQ"
+      url: "https://lci.ca.gov/sch/faq/"
+  - id: "CAT-001"
+    version: "1.0.0"
+    title: "Declared PDF document categories"
+    check: "document_categories"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit pre-submission checklist"
+      url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"
+  - id: "MAN-001"
+    version: "1.0.0"
+    title: "Manifest document references"
+    check: "manifest_references"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit pre-submission checklist"
+      url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"

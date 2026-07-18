@@ -1,0 +1,193 @@
+{
+  "$defs": {
+    "Contact": {
+      "additionalProperties": false,
+      "description": "A project or agency contact represented in a manifest.",
+      "properties": {
+        "authority": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "role"
+      ],
+      "title": "Contact",
+      "type": "object"
+    },
+    "DocumentEntry": {
+      "additionalProperties": false,
+      "description": "A document expected in the package.",
+      "properties": {
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "primary": {
+          "default": false,
+          "title": "Primary",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "DocumentEntry",
+      "type": "object"
+    },
+    "FilingType": {
+      "description": "Filing types supported by the initial product scope.",
+      "enum": [
+        "NOD",
+        "NOE"
+      ],
+      "title": "FilingType",
+      "type": "string"
+    },
+    "ProjectMetadata": {
+      "additionalProperties": false,
+      "description": "Manifest data intentionally supplied for conservative consistency checks.",
+      "properties": {
+        "city_or_community": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "City Or Community"
+        },
+        "county": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "County"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "lead_agency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lead Agency"
+        },
+        "sch_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sch Number"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "ProjectMetadata",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The user-supplied, versioned description of an intended filing package.",
+  "properties": {
+    "contacts": {
+      "items": {
+        "$ref": "#/$defs/Contact"
+      },
+      "title": "Contacts",
+      "type": "array"
+    },
+    "documents": {
+      "items": {
+        "$ref": "#/$defs/DocumentEntry"
+      },
+      "minItems": 1,
+      "title": "Documents",
+      "type": "array"
+    },
+    "filing_type": {
+      "$ref": "#/$defs/FilingType"
+    },
+    "project": {
+      "$ref": "#/$defs/ProjectMetadata"
+    },
+    "schema_version": {
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "filing_type",
+    "project",
+    "documents"
+  ],
+  "title": "PackageManifest",
+  "type": "object"
+}

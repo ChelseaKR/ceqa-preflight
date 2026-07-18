@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use CEQA Preflight, please cite it as below."
+title: "CEQA Preflight"
+type: software
+authors:
+  - family-names: "Kelly-Reif"
+    given-names: "Chelsea"
+repository-code: "https://github.com/ChelseaKR/ceqa-preflight"
+license: "Apache-2.0"
+version: "0.1.0"
+date-released: "2026-07-18"
+abstract: "A local, source-cited advisory preflight checker for CEQA Submit filing packages."

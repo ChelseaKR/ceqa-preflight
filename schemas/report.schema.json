@@ -1,0 +1,265 @@
+{
+  "$defs": {
+    "Confidence": {
+      "description": "Confidence in extracted or inferred evidence.",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "description": "Structured evidence supporting a finding without embedding source files.",
+      "properties": {
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        }
+      },
+      "title": "Evidence",
+      "type": "object"
+    },
+    "FilingType": {
+      "description": "Filing types supported by the initial product scope.",
+      "enum": [
+        "NOD",
+        "NOE"
+      ],
+      "title": "FilingType",
+      "type": "string"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "description": "A deterministic result from one versioned rule.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence",
+          "default": "high"
+        },
+        "document": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "remediation": {
+          "minLength": 1,
+          "title": "Remediation",
+          "type": "string"
+        },
+        "rule_id": {
+          "minLength": 1,
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "rule_version": {
+          "minLength": 1,
+          "title": "Rule Version",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceCitation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "$ref": "#/$defs/FindingStatus"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id",
+        "rule_version",
+        "status",
+        "title",
+        "message",
+        "remediation"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "FindingStatus": {
+      "description": "User-facing outcome levels for a check.",
+      "enum": [
+        "pass",
+        "warning",
+        "failure",
+        "manual"
+      ],
+      "title": "FindingStatus",
+      "type": "string"
+    },
+    "SourceCitation": {
+      "additionalProperties": false,
+      "description": "A current, traceable source for a rule or report finding.",
+      "properties": {
+        "accessed_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accessed Date"
+        },
+        "effective_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effective Date"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "url"
+      ],
+      "title": "SourceCitation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Versioned, JSON-serializable output for an inspection run.",
+  "properties": {
+    "disclaimer": {
+      "minLength": 1,
+      "title": "Disclaimer",
+      "type": "string"
+    },
+    "filing_type": {
+      "$ref": "#/$defs/FilingType"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "input_fingerprint": {
+      "minLength": 1,
+      "title": "Input Fingerprint",
+      "type": "string"
+    },
+    "manual_review": {
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "title": "Manual Review",
+      "type": "array"
+    },
+    "report_schema_version": {
+      "default": "1.0",
+      "title": "Report Schema Version",
+      "type": "string"
+    },
+    "ruleset_version": {
+      "minLength": 1,
+      "title": "Ruleset Version",
+      "type": "string"
+    },
+    "tool_version": {
+      "minLength": 1,
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "tool_version",
+    "ruleset_version",
+    "generated_at",
+    "input_fingerprint",
+    "filing_type",
+    "disclaimer"
+  ],
+  "title": "InspectionReport",
+  "type": "object"
+}
