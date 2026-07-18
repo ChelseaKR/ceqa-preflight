@@ -65,6 +65,7 @@ Submit, or CEQAnet. See [DISCLAIMER.md](DISCLAIMER.md).
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the
 [architecture decision](docs/decisions/0001-local-first-deterministic-cli.md).
 The project also documents its [pilot protocol](docs/pilot-protocol.md),
+[pilot partner kit](docs/pilot-partner-kit.md),
 [accessibility boundaries](docs/accessibility.md), and
 [threat model](docs/threat-model.md).
 

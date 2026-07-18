@@ -15,3 +15,5 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Gated NOD/NOE-specific filing rules as opt-in experimental rules pending the
   pilot and qualified-practitioner review; documented the current official
   guidance source review.
+- Added a pilot partner kit with a non-legal authorization template, private
+  reviewer rubric, outreach email, coordinator checklist, and stop conditions.
