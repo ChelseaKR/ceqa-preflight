@@ -4,6 +4,11 @@ CEQA Preflight remains pre-alpha until this protocol is completed. The pilot is
 about whether the tool is accurate and useful, not about collecting a corpus of
 environmental-review records.
 
+Prospective participants and coordinators should begin with the
+[pilot partner kit](pilot-partner-kit.md), which includes a non-legal
+authorization template, private reviewer rubric, outreach email, and stop
+conditions.
+
 ## Entry criteria
 
 - At least three participating organizations, including one public agency and
