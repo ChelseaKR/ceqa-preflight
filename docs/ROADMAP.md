@@ -11,8 +11,10 @@
 
 - **Done:** local controlled-label pilot evidence kit (`pilot init` and
   `pilot summarize`); it stores no package content or free-text rationale.
-- **In progress:** validate NOE and NOD rule wording with official sources and
-  qualified users.
+- **Done:** desk review of current official LCI State Clearinghouse guidance;
+  NOD/NOE-specific rules are explicitly gated as experimental. See the
+  [source review](audits/rule-source-review-2026-07-18.md).
+- **In progress:** validate NOE and NOD rule wording with qualified users.
 - **Blocked externally:** recruit participating organizations, obtain written
   package permission, and secure two qualified reviewers per activated rule.
 - Measure false-positive rate and reviewer time on synthetic or permissioned

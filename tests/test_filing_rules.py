@@ -29,7 +29,8 @@ def _run(filing_type: FilingType, documents: object) -> dict[str, Finding]:
     registry = NOD_RULES if filing_type is FilingType.NOD else NOE_RULES
     catalog = load_rule_catalog([root / "src/ceqa_preflight/rulepacks" / pack])
     result = RuleEngine(catalog, registry).run(
-        RuleContext(filing_type=filing_type, facts={"documents": documents})
+        RuleContext(filing_type=filing_type, facts={"documents": documents}),
+        include_experimental=True,
     )
     assert result.exit_code == 0
     return {finding.rule_id: finding for finding in result.findings}

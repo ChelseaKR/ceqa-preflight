@@ -40,7 +40,12 @@ def test_check_package_is_local_and_returns_source_cited_report(tmp_path: Path) 
     package, manifest = _package(tmp_path)
     original_hash = (package / "NOE_example.pdf").read_bytes()
 
-    report, exit_code = check_package(package, FilingType.NOE, manifest=manifest)
+    report, exit_code = check_package(
+        package,
+        FilingType.NOE,
+        manifest=manifest,
+        include_experimental=True,
+    )
 
     assert exit_code == 0
     assert report.filing_type is FilingType.NOE

@@ -1,49 +1,55 @@
-catalog_version: "1.0.0"
+catalog_version: "1.1.0"
 rules:
   - id: "NOD-001"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Primary Notice of Determination form"
     check: "nod_primary_form"
+    lifecycle: "experimental"
     filing_types: ["NOD"]
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
   - id: "NOD-002"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Primary Notice of Determination readability"
     check: "nod_primary_readable"
+    lifecycle: "experimental"
     filing_types: ["NOD"]
     source:
       title: "LCI CEQA Submit common mistakes"
       url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
   - id: "NOD-003"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Primary Notice of Determination category"
     check: "nod_primary_category"
+    lifecycle: "experimental"
     filing_types: ["NOD"]
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
   - id: "NOD-M001"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "CDFW fee handling"
     check: "nod_cdfw_fee"
+    lifecycle: "experimental"
     filing_types: ["NOD"]
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
   - id: "NOD-M002"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Applicable supporting materials"
     check: "nod_supporting_materials"
+    lifecycle: "experimental"
     filing_types: ["NOD"]
     source:
       title: "LCI CEQA Submit pre-submission checklist"
       url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"
   - id: "NOD-M003"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Signature and filing timing"
     check: "nod_signature_timing"
+    lifecycle: "experimental"
     filing_types: ["NOD"]
     source:
       title: "LCI CEQA Submit pre-submission checklist"

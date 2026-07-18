@@ -89,6 +89,13 @@ def check(
         Path | None,
         typer.Option("--output", help="Optional directory for a generated report file."),
     ] = None,
+    include_experimental: Annotated[
+        bool,
+        typer.Option(
+            "--include-experimental",
+            help="Include filing-specific pilot rules; they are advisory and not release-ready.",
+        ),
+    ] = False,
 ) -> None:
     """Inspect a local package without uploading or changing its source files."""
 
@@ -97,7 +104,12 @@ def check(
     try:
         event("check_started", filing_type=filing_type.value, report_format=output_format)
         manifest = load_manifest(manifest_path) if manifest_path is not None else None
-        report, exit_code = check_package(source, filing_type, manifest=manifest)
+        report, exit_code = check_package(
+            source,
+            filing_type,
+            manifest=manifest,
+            include_experimental=include_experimental,
+        )
     except (ManifestError, PackageLoadError, ValueError) as error:
         typer.echo(f"Input error: {error}", err=True)
         raise typer.Exit(code=2) from error

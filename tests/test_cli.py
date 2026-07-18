@@ -102,6 +102,39 @@ def test_rules_list_and_show_are_source_cited() -> None:
     assert "Unknown rule identifier" in missing.stderr
 
 
+def test_check_excludes_filing_pilot_rules_unless_explicitly_requested(tmp_path: Path) -> None:
+    package = tmp_path / "package"
+    package.mkdir()
+    writer = PdfWriter()
+    writer.add_blank_page(width=612, height=792)
+    with (package / "notice.pdf").open("wb") as output:
+        writer.write(output)
+    manifest = tmp_path / "package.yaml"
+    manifest.write_text(
+        "filing_type: NOE\nproject:\n  title: Example Project\ndocuments:\n  - path: notice.pdf\n"
+        "    category: Notice of Exemption\n    primary: true\n",
+        encoding="utf-8",
+    )
+    base_arguments = [
+        "check",
+        str(package),
+        "--filing-type",
+        "NOE",
+        "--manifest",
+        str(manifest),
+        "--format",
+        "json",
+    ]
+
+    default = runner.invoke(app, base_arguments)
+    experimental = runner.invoke(app, [*base_arguments, "--include-experimental"])
+
+    assert default.exit_code == 0
+    assert '"rule_id": "NOE-001"' not in default.stdout
+    assert experimental.exit_code == 0
+    assert '"rule_id": "NOE-001"' in experimental.stdout
+
+
 def test_init_creates_a_non_overwriting_template(tmp_path: Path) -> None:
     directory = tmp_path / "new-package"
 
