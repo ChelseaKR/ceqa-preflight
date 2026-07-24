@@ -85,14 +85,21 @@ control exists; release-only evidence is collected before a tagged release.
 
 | Standard | Status | Evidence / scope |
 | --- | --- | --- |
-| Core delivery, documentation, quality | Applies | `Makefile`, CI, [definition of done](DEFINITION_OF_DONE.md) |
-| Security, supply chain, responsible technology | Applies | [security policy](SECURITY.md), [audits](docs/RESPONSIBLE-TECH-AUDITS.md) |
-| Accessibility | Applies | [accessibility boundaries](docs/accessibility.md); release review pending first tag |
-| Observability | N/A hosted telemetry | Stateless local CLI; opt-in JSON operational events only, no package contents |
-| i18n/l10n | N/A current scope | English-only operator tool; no public-service transaction UI |
-| Performance | N/A service SLO | No hosted service; bounded PDF/ZIP parsing is in the threat model |
-| AI evaluation | N/A runtime | No model, prompt, or AI inference is shipped |
-| Data governance | Applies | [local filing package data card](docs/data/local-filing-packages.md) |
+| Responsible-Tech Framework | Applies | [Dated audits](docs/RESPONSIBLE-TECH-AUDITS.md), [threat model](docs/threat-model.md), and [residual-risk register](docs/audits/residual-risk-register-2026-07-18.md) |
+| AI Development Measurement | Applies | Development-use baseline is recorded in the [audit log](docs/RESPONSIBLE-TECH-AUDITS.md); no AI runtime claim is inferred from tool use |
+| Code Quality | Applies; floor uplifts pending | Strict typing, coverage, complexity, and lint gates live in `pyproject.toml` and `Makefile`; analyzer and complexity-floor uplifts are tracked in PRs [#14](https://github.com/ChelseaKR/ceqa-preflight/pull/14) and [#15](https://github.com/ChelseaKR/ceqa-preflight/pull/15) |
+| Security & Supply-Chain | Applies | [Security policy](SECURITY.md), least-privilege SHA-pinned workflows, SAST, dependency audit, secret scan, SBOM, and provenance gates |
+| CI/CD | Applies | `.github/workflows/`, `Makefile`, `CODEOWNERS`, and protected pull-request verification |
+| Release & Versioning | Applies; pre-release gap | [Changelog](CHANGELOG.md), pre-release contract, and trusted-main release uplift tracked in PR [#12](https://github.com/ChelseaKR/ceqa-preflight/pull/12); no release has been published |
+| Accessibility | Applies | [Accessibility boundary and test evidence](docs/accessibility.md); human release review remains open before the first tag |
+| Observability | Applies at local-CLI tier | Opt-in structured JSON operational events contain no package content; no hosted service or telemetry backend exists |
+| Performance | Applies at local-CLI tier | ZIP, file, PDF-page, extraction-time, and worker-time bounds are enforced by `PackageLimits` and documented in the [threat model](docs/threat-model.md) |
+| Internationalization | Applies; pre-release gap | Human-readable civic reports are currently English-only; scope correction and the EN/ES release gate are tracked in PR [#16](https://github.com/ChelseaKR/ceqa-preflight/pull/16) |
+| AI Evaluation | N/A — no AI runtime | The application ships no model, prompt, retrieval, generated answer, or AI inference path |
+| Documentation | Applies | [Roadmap](docs/ROADMAP.md), [definition of done](DEFINITION_OF_DONE.md), ADRs, rule-authoring guidance, source reviews, and changelog |
+| Quality & Metrics | Applies | `make verify`, 90% branch-coverage floor, controlled-label pilot precision/false-negative/timing measures, and release gates |
+| Incident Response | Applies | [Security reporting and response policy](SECURITY.md) plus release-time residual-risk review; no hosted on-call surface exists |
+| Data Governance | Applies | [Local filing-package data card](docs/data/local-filing-packages.md), no-retention architecture, permissioned-pilot protocol, and package-content-free logs |
 
 The central standards register is maintained separately and must be updated
 when this repository is published.

@@ -6,6 +6,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Replace the grouped standards summary with an explicit, evidence-linked
+  conformance register covering every portfolio standard and naming open
+  pre-release gaps instead of silently omitting them.
 - Established the local-first CLI foundation, quality gates, governance,
   project boundaries, and source-cited rule catalog.
 - Added Portfolio Standards conformance, pinned standards submodule, security
