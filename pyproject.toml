@@ -71,7 +71,7 @@ select = ["E", "F", "I", "B", "S", "UP", "SIM", "C90", "RUF"]
 ignore = ["S101", "S105"]
 
 [tool.ruff.lint.mccabe]
-max-complexity = 15
+max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S108"]

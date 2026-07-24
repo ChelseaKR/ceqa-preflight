@@ -83,6 +83,21 @@ def _validate_zip_info(
     archive_path = _safe_archive_path(info.filename)
     normalized_name = archive_path.as_posix()
     casefolded_name = normalized_name.casefold()
+    _validate_archive_collision(info, casefolded_name, seen_paths, file_paths)
+    _validate_archive_entry_type(info)
+    if info.is_dir():
+        return file_count, total_size
+
+    file_paths.add(casefolded_name)
+    return _validate_archive_entry_size(info, file_count, total_size, limits)
+
+
+def _validate_archive_collision(
+    info: zipfile.ZipInfo,
+    casefolded_name: str,
+    seen_paths: set[str],
+    file_paths: set[str],
+) -> None:
     if casefolded_name in seen_paths:
         raise PackageLoadError(f"archive contains duplicate paths: {info.filename!r}")
     if any(casefolded_name.startswith(f"{file_path}/") for file_path in file_paths):
@@ -93,6 +108,8 @@ def _validate_zip_info(
         raise PackageLoadError(f"archive contains a file-path collision: {info.filename!r}")
     seen_paths.add(casefolded_name)
 
+
+def _validate_archive_entry_type(info: zipfile.ZipInfo) -> None:
     unix_mode = info.external_attr >> 16
     file_type = stat.S_IFMT(unix_mode)
     if file_type == stat.S_IFLNK:
@@ -102,11 +119,13 @@ def _validate_zip_info(
     if info.flag_bits & 0x1:
         raise PackageLoadError(f"encrypted archive entries are not supported: {info.filename!r}")
 
-    if info.is_dir():
-        return file_count, total_size
 
-    file_paths.add(casefolded_name)
-
+def _validate_archive_entry_size(
+    info: zipfile.ZipInfo,
+    file_count: int,
+    total_size: int,
+    limits: PackageLimits,
+) -> tuple[int, int]:
     file_count += 1
     total_size += info.file_size
     if file_count > limits.max_files:
