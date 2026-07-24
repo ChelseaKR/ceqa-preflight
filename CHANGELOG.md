@@ -6,6 +6,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Correct the internationalization scope from N/A to Applies and document the
+  gettext migration boundary, EN/ES review requirements, and public-release
+  gate without overstating current conformance.
 - Established the local-first CLI foundation, quality gates, governance,
   project boundaries, and source-cited rule catalog.
 - Added Portfolio Standards conformance, pinned standards submodule, security

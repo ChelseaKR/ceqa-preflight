@@ -29,6 +29,9 @@
 
 - Complete an accessibility review of console and HTML outputs with recorded
   assistive-technology evidence.
+- Implement the [internationalization release gate](I18N.md): gettext entry
+  point, reviewed English and Spanish catalogs, catalog parity checks, and
+  deterministic CLI locale selection.
 - Publish a residual-risk review, SBOM, provenance, and release notes.
 - Exit criteria: all CI/security checks green, release checklist signed,
   no open critical vulnerability, and the release remains advisory-only.
