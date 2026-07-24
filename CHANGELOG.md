@@ -6,6 +6,8 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Raise the minimum supported mypy version to 1.18 so strict type checks use
+  the portfolio baseline instead of silently accepting older analyzer behavior.
 - Established the local-first CLI foundation, quality gates, governance,
   project boundaries, and source-cited rule catalog.
 - Added Portfolio Standards conformance, pinned standards submodule, security
