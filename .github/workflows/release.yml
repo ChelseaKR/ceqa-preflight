@@ -23,7 +23,7 @@ jobs:
       - run: make verify
       - run: uv build
       - run: uv run --with cyclonedx-bom cyclonedx-py environment --output-file dist/sbom.cdx.json
-      - uses: actions/attest-build-provenance@bd77c077858b8d561b7a36cbe48ef4cc642ca39d # v2.2.2
+      - uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: dist/*
       - name: Create GitHub release
