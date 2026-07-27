@@ -270,6 +270,11 @@ def test_check_rule_selection_flags(tmp_path: Path) -> None:
     assert "unknown rule identifier" in unknown.stderr
     assert empty.exit_code == 2
 
+    experimental_only = runner.invoke(app, [*base, "--rules", "NOE-001"])
+
+    assert experimental_only.exit_code == 2
+    assert "--include-experimental" in experimental_only.stderr
+
 
 def test_check_renders_a_printable_checklist(tmp_path: Path) -> None:
     package = tmp_path / "package"

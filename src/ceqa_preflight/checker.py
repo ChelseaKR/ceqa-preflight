@@ -137,6 +137,11 @@ def check_package(
         ),
         include_experimental=include_experimental,
     )
+    if rule_ids is not None and not run.findings:
+        raise ValueError(
+            "none of the selected rules ran for this filing type; experimental rules "
+            "run only with --include-experimental"
+        )
     manual_review = [finding for finding in run.findings if finding.status is FindingStatus.MANUAL]
     findings = [finding for finding in run.findings if finding.status is not FindingStatus.MANUAL]
     report = InspectionReport(
