@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CEQA Preflight advisory report</title>
+    <style>
+      body { color: #1b1b1b; font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem auto; max-width: 70rem; padding: 0 1rem; }
+      table { border-collapse: collapse; width: 100%; }
+      caption { font-weight: 700; text-align: left; }
+      th, td { border: 1px solid #555; padding: .65rem; text-align: left; vertical-align: top; }
+      th { background: #f1f1f1; }
+      .status { font-weight: 700; }
+      .failure { color: #9c0006; }
+      .warning, .manual { color: #7a4d00; }
+      .pass { color: #146c2e; }
+      .metadata { color: #444; font-size: .9rem; }
+      @media print {
+        body { margin: 0; max-width: none; }
+        a { color: inherit; text-decoration: none; }
+        tr { break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>CEQA Preflight advisory report</h1>
+      <p><strong>Filing type:</strong> NOE</p>
+      <p>CEQA Preflight is an advisory technical checker, not legal advice or a determination of CEQA compliance. Review all manual-review items before submission.</p>
+      <p><strong>Summary:</strong>
+        0 failure(s),
+        2 warning(s),
+        15 passed check(s),
+        3 manual-review item(s).</p>
+      <p class="metadata">
+        Tool version 0.1.0, ruleset 1.2.0,
+        generated 2026-07-27T18:00:50.983120+00:00.<br>
+        Package fingerprint 59654d2c12601ec91a162ecc2522259f8ca436276aa9cfabe913c279e609219b.
+      </p>
+    </header>
+    <main>
+      <h2>Automated findings</h2>
+      
+      <table>
+        <caption>Automated technical checks</caption>
+        <thead><tr><th scope="col">Status</th><th scope="col">Rule</th><th scope="col">Finding</th><th scope="col">Remediation</th></tr></thead>
+        <tbody>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>CORE-001<br><a href="https://lci.ca.gov/sch/faq/">Source</a></td>
+            <td>The package contains 4 PDF document(s).</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>PDF-001<br><a href="https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf">Source</a></td>
+            <td>All inventoried PDF files have a PDF signature.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>PDF-002<br><a href="https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf">Source</a></td>
+            <td>All inspected PDFs are readable and unencrypted.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status warning">warning</td>
+            <td>PDF-003<br><a href="https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf">Source</a></td>
+            <td>No searchable text was found on any sampled page; this PDF may be a scanned image.<br><small>Document: Fictional_Example_Project_scanned_notice.pdf</small></td>
+            <td>Run optical character recognition (OCR) on the document and verify keyword searches succeed before submission.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>PDF-006<br><a href="https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload">Source</a></td>
+            <td>No active PDF actions or embedded files were detected.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status warning">warning</td>
+            <td>PDF-007<br><a href="https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf">Source</a></td>
+            <td>This PDF contains 1 fillable form field(s); submissions are expected to be flattened and static.<br><small>Document: Fictional_Example_Project_fillable_form.pdf</small></td>
+            <td>Flatten the document to a static, fully text-searchable PDF before submission.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>PDF-008<br><a href="https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf">Source</a></td>
+            <td>All inspected PDFs contain a structure tree for screen readers.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>FILE-001<br><a href="https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf">Source</a></td>
+            <td>PDF filenames meet the basic descriptive-name convention.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>FILE-002<br><a href="https://lci.ca.gov/sch/faq/">Source</a></td>
+            <td>No duplicate file hashes were detected.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>FILE-003<br><a href="https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf">Source</a></td>
+            <td>No documents in convertible non-PDF formats were detected.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>FILE-004<br><a href="https://github.com/ChelseaKR/ceqa-preflight">Source</a></td>
+            <td>All files are within the advisory size threshold.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>FILE-005<br><a href="https://github.com/ChelseaKR/ceqa-preflight">Source</a></td>
+            <td>All filenames use portable characters and lengths.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>CAT-001<br><a href="https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf">Source</a></td>
+            <td>Every inventoried PDF has a declared document category.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>MAN-001<br><a href="https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf">Source</a></td>
+            <td>Every manifest document reference exists in the package.</td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>NOE-001<br><a href="https://lci.ca.gov/sch/faq/">Source</a></td>
+            <td>Exactly one primary Notice of Exemption form is declared.<br><small>Document: NOE_Fictional_Example_Project_form.pdf</small></td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>NOE-002<br><a href="https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf">Source</a></td>
+            <td>The primary filing form is readable and unencrypted.<br><small>Document: NOE_Fictional_Example_Project_form.pdf</small></td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+          <tr>
+            <td class="status pass">pass</td>
+            <td>NOE-003<br><a href="https://lci.ca.gov/sch/faq/">Source</a></td>
+            <td>The primary form is categorized as Notice of Exemption.<br><small>Document: NOE_Fictional_Example_Project_form.pdf</small></td>
+            <td>No action is needed for this check.</td>
+          </tr>
+        
+        </tbody>
+      </table>
+      
+      <h2>Manual review</h2>
+      
+      <table>
+        <caption>Items that require human review</caption>
+        <thead><tr><th scope="col">Rule</th><th scope="col">Item</th><th scope="col">Remediation</th></tr></thead>
+        <tbody>
+        
+          <tr><td>NOE-M001<br><a href="https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf">Source</a></td><td>Confirm exemption choice, citation, and reasoning manually.</td><td>Review the project record and applicable CEQA authority with a qualified reviewer.</td></tr>
+        
+          <tr><td>NOE-M002<br><a href="https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf">Source</a></td><td>Confirm supporting findings, if applicable, manually.</td><td>Review the project record and include applicable supporting materials.</td></tr>
+        
+          <tr><td>NOE-M003<br><a href="https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf">Source</a></td><td>Confirm signature and filing timing manually.</td><td>Verify authorization, signature, and filing timing against applicable requirements.</td></tr>
+        
+        </tbody>
+      </table>
+      
+    </main>
+  </body>
+</html>
