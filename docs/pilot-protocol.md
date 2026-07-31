@@ -9,6 +9,10 @@ Prospective participants and coordinators should begin with the
 authorization template, private reviewer rubric, outreach email, and stop
 conditions.
 
+Reviewer calibration and dry runs can use plainly fictional synthetic packages
+generated with `ceqa-preflight synth` (see `examples/`); these require no
+authorization because they contain no real filing material.
+
 ## Entry criteria
 
 - At least three participating organizations, including one public agency and

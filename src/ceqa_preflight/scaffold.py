@@ -6,7 +6,7 @@ from pathlib import Path
 
 import yaml
 
-from ceqa_preflight.models import FilingType, PackageManifest
+from ceqa_preflight.models import DocumentEntry, FilingType, PackageManifest
 
 
 def manifest_template(filing_type: FilingType) -> PackageManifest:
@@ -31,7 +31,33 @@ def manifest_template(filing_type: FilingType) -> PackageManifest:
     )
 
 
-def write_manifest_template(directory: Path, filing_type: FilingType) -> Path:
+def manifest_from_package(directory: Path, filing_type: FilingType) -> PackageManifest:
+    """Prepopulate manifest documents from the PDFs actually present in a package.
+
+    Categories and the primary flag stay explicit user declarations; only paths
+    are filled in, so no filing-form classification is ever guessed.
+    """
+
+    pdf_paths = sorted(
+        path.relative_to(directory).as_posix()
+        for path in directory.rglob("*")
+        if path.is_file() and not path.is_symlink() and path.suffix.casefold() == ".pdf"
+    )
+    if not pdf_paths:
+        raise ValueError("no PDF files were found to prepopulate the manifest")
+    template = manifest_template(filing_type)
+    return template.model_copy(
+        update={
+            "documents": [
+                DocumentEntry(path=pdf_path, category=None, primary=False) for pdf_path in pdf_paths
+            ]
+        }
+    )
+
+
+def write_manifest_template(
+    directory: Path, filing_type: FilingType, *, from_package: bool = False
+) -> Path:
     """Write a non-overwriting YAML template to a user-selected local directory."""
 
     if directory.exists() and not directory.is_dir():
@@ -40,8 +66,13 @@ def write_manifest_template(directory: Path, filing_type: FilingType) -> Path:
     destination = directory / "package.yaml"
     if destination.exists():
         raise FileExistsError(f"refusing to overwrite existing manifest: {destination}")
+    manifest = (
+        manifest_from_package(directory, filing_type)
+        if from_package
+        else manifest_template(filing_type)
+    )
     content = yaml.safe_dump(
-        manifest_template(filing_type).model_dump(mode="json"),
+        manifest.model_dump(mode="json"),
         sort_keys=False,
         allow_unicode=True,
     )
