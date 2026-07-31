@@ -13,7 +13,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from pdfminer.high_level import extract_text
+from pdfminer.high_level import extract_pages
+from pdfminer.layout import LTTextContainer
 from pydantic import Field
 from pypdf import PdfReader
 
@@ -180,15 +181,20 @@ def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
 
     sampled_pages = select_sample_pages(page_count)
     extracted_characters: dict[int, int] = {}
-    for page_number in sampled_pages:
-        try:
-            extracted = extract_text(str(path), page_numbers=[page_number - 1])
-        except Exception:
-            parser_warnings.append(
-                _warning_label("Text could not be extracted from one or more sampled pages")
+    try:
+        # One parse pass for all sampled pages; pdfminer yields them in document
+        # order, which matches the ascending sample order.
+        layouts = extract_pages(str(path), page_numbers=[page - 1 for page in sampled_pages])
+        for page_number, layout in zip(sampled_pages, layouts, strict=False):
+            extracted_characters[page_number] = sum(
+                len("".join(element.get_text().split()))
+                for element in layout
+                if isinstance(element, LTTextContainer)
             )
-            continue
-        extracted_characters[page_number] = len("".join(extracted.split()))
+    except Exception:
+        parser_warnings.append(
+            _warning_label("Text could not be extracted from one or more sampled pages")
+        )
 
     searchable_pages = sum(value >= 25 for value in extracted_characters.values())
     text_coverage = searchable_pages / len(sampled_pages) if sampled_pages else None
