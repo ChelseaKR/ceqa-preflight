@@ -13,3 +13,6 @@ build/
 reports/
 pilot-data/
 *.zip
+
+# CodeQL writes its SARIF here (upload: never); scripts read it, git never should.
+sarif-results/
