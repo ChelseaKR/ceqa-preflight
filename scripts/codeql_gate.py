@@ -8,6 +8,13 @@ makes the CodeQL job reflect its own findings — this script reads the SARIF Co
 and fails if any result's rule carries `problem.severity: error` (CodeQL's own severity, surfaced
 per-result in `properties.problem.severity` or via the rule's default `level`).
 
+CodeQL emits its rule metadata under `runs[].tool.extensions[].rules`, NOT under
+`runs[].tool.driver.rules` (which it leaves empty), and it does not put a `level` on individual
+results at all — severity lives on the rule. Resolving rules from the driver alone therefore built
+an empty lookup table and made every result unclassifiable, so the gate could not fail on an
+error-severity finding even in principle. Rules are now read from the driver AND every extension,
+and a rule's `defaultConfiguration.level` counts alongside `properties["problem.severity"]`.
+
 Warning- and note-severity findings are REPORTED but deliberately do NOT affect the exit code.
 They used to be invisible: the only line this script printed counted error-severity results, so
 "CodeQL: 0 error-severity finding(s)" read as "CodeQL found nothing" when it often meant "CodeQL
@@ -41,6 +48,21 @@ def _sarif_files(paths: list[str]) -> list[str]:
     return out
 
 
+def _rules_by_id(run: dict[str, Any]) -> dict[str, Any]:
+    """Every rule the run can cite, keyed by id.
+
+    CodeQL puts query-pack rules in `tool.extensions[].rules` and leaves `tool.driver.rules`
+    empty. Reading only the driver yields an empty table, which silently declassifies every
+    result — the gate then reports "0 error-severity finding(s)" no matter what was found.
+    """
+    tool = run.get("tool", {}) or {}
+    rules: dict[str, Any] = {}
+    for component in [tool.get("driver", {}) or {}, *(tool.get("extensions", []) or [])]:
+        for rule in component.get("rules", []) or []:
+            rules.setdefault(rule.get("id"), rule)
+    return rules
+
+
 def _is_error(result: dict[str, Any], rules_by_id: dict[str, Any]) -> bool:
     level = str(result.get("level") or "").lower()
     if level == "error":
@@ -48,15 +70,20 @@ def _is_error(result: dict[str, Any], rules_by_id: dict[str, Any]) -> bool:
     rule_id = result.get("ruleId")
     rule = rules_by_id.get(rule_id, {})
     sev = (rule.get("properties", {}) or {}).get("problem.severity", "")
-    return str(sev).lower() == "error"
+    if str(sev).lower() == "error":
+        return True
+    # CodeQL omits `level` on results and carries the severity on the rule instead, so the
+    # rule's own default level is the deciding signal for most findings.
+    default_level = (rule.get("defaultConfiguration", {}) or {}).get("level", "")
+    return str(default_level).lower() == "error"
 
 
 def _severity(result: dict[str, Any], rules_by_id: dict[str, Any]) -> str:
     """Bucket a result for reporting.
 
-    `error` is decided by `_is_error` and by nothing else, so the exit code is byte-for-byte the
-    same as before this reporting was added — in particular a result whose own `level` is `note`
-    but whose rule is `problem.severity: error` still counts as an error, not a note.
+    `error` is decided by `_is_error` and by nothing else, so reporting can never disagree with
+    the exit code — in particular a result whose own `level` is `note` but whose rule is
+    `problem.severity: error` still counts as an error, not a note.
     """
     if _is_error(result, rules_by_id):
         return "error"
@@ -114,8 +141,7 @@ def main() -> int:
         with Path(f).open() as fh:
             doc = json.load(fh)
         for run in doc.get("runs", []):
-            driver_rules = run.get("tool", {}).get("driver", {}).get("rules", []) or []
-            rules_by_id = {r.get("id"): r for r in driver_rules}
+            rules_by_id = _rules_by_id(run)
             for result in run.get("results", []):
                 sev = _severity(result, rules_by_id)
                 counts[sev] += 1
