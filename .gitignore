@@ -16,3 +16,4 @@ pilot-data/
 
 # CodeQL writes its SARIF here (upload: never); scripts read it, git never should.
 sarif-results/
+.DS_Store
