@@ -250,7 +250,7 @@ def test_parser_warnings_and_extraction_failures_stay_structured(
 
     monkeypatch.setattr("ceqa_preflight.pdf_inspector.PdfReader", Reader)
     monkeypatch.setattr(
-        "ceqa_preflight.pdf_inspector.extract_text",
+        "ceqa_preflight.pdf_inspector.extract_pages",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("synthetic text failure")),
     )
 

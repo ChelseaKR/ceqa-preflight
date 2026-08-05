@@ -6,6 +6,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Release publication now authorizes an existing SSH-signed stable tag from
+  reviewed `main`, verifies and builds the exact selected commit without a
+  shared cache, and hands artifacts to a checkout-free publisher that rechecks
+  the immutable tag object.
 - Pin the contributor, CI, and release interpreter to Python 3.12 through
   `.python-version`, matching `requires-python` and eliminating ambient runtime
   drift in local setup tools.
@@ -20,3 +24,19 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   guidance source review.
 - Added a pilot partner kit with a non-legal authorization template, private
   reviewer rubric, outreach email, coordinator checklist, and stop conditions.
+- Added a `synth` command that generates plainly fictional synthetic packages
+  with seedable, objective defects for demos, regression tests, and pilot
+  reviewer calibration, plus a committed example package and HTML report.
+- Added common rules for flattened form fields (PDF-007), screen-reader
+  structure tags (PDF-008), convertible non-PDF documents (FILE-003), advisory
+  file size (FILE-004), and portable filenames (FILE-005); narrowed PDF-006 to
+  security-relevant active content and taught PDF-003 to recommend OCR for
+  scanned documents (rule catalog 1.2.0).
+- Sped up inspection: one text-extraction parse per PDF instead of one per
+  sampled page, and bounded concurrent per-PDF worker processes with
+  content-free progress events.
+- Extended the CLI: batch `check` over multiple packages with a roll-up
+  summary, `--rules`/`--exclude-rules` selection, a printable
+  `--format checklist` sign-off report, `init --from-package` manifest
+  prepopulation, `rules list --format json`, and report summaries with a
+  print-friendly HTML stylesheet.

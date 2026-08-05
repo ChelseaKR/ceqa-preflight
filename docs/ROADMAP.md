@@ -17,6 +17,10 @@
 - **Done:** participant outreach and evaluation materials that preserve the
   local, permissioned pilot boundary. See the
   [pilot partner kit](pilot-partner-kit.md).
+- **Done:** a synthetic-package generator (`ceqa-preflight synth`) with
+  seedable, objective defects, so reviewer calibration, demos, and
+  false-positive measurement can begin before any real package permission is
+  granted. A committed example lives in `examples/`.
 - **In progress:** validate NOE and NOD rule wording with qualified users.
 - **Blocked externally:** recruit participating organizations, obtain written
   package permission, and secure two qualified reviewers per activated rule.

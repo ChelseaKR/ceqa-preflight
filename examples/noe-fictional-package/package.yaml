@@ -1,0 +1,23 @@
+schema_version: '1.0'
+filing_type: NOE
+project:
+  title: Fictional Example Project (synthetic test data)
+  description: null
+  sch_number: null
+  lead_agency: null
+  county: null
+  city_or_community: null
+contacts: []
+documents:
+- path: NOE_Fictional_Example_Project_form.pdf
+  category: Notice of Exemption
+  primary: true
+- path: Fictional_Example_Project_supporting_findings.pdf
+  category: Supporting Findings
+  primary: false
+- path: Fictional_Example_Project_scanned_notice.pdf
+  category: Supporting Findings
+  primary: false
+- path: Fictional_Example_Project_fillable_form.pdf
+  category: Supporting Findings
+  primary: false
