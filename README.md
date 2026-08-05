@@ -14,8 +14,10 @@ legal sufficiency.
 **Status:** In build
 
 CEQA Preflight is pre-alpha software. The repository includes safe local package loading, bounded PDF
-technical inspection, a source-cited declarative rule engine, and an initial
-common technical rule pack. NOD- and NOE-specific rules are currently
+technical inspection, a source-cited declarative rule engine, a common
+technical rule pack (readability, searchable text, flattened forms, structure
+tags, file hygiene), and a synthetic-package generator for demos and pilot
+calibration. NOD- and NOE-specific rules are currently
 **experimental**: they run only with `--include-experimental` while documented
 official-source review, practitioner review, tests, and a permissioned pilot
 are completed.
@@ -34,22 +36,49 @@ are completed.
     uv run ceqa-preflight --version
     uv run ceqa-preflight --help
     uv run ceqa-preflight init ./my-package --filing-type NOE
+    uv run ceqa-preflight init ./my-package --filing-type NOE --from-package
     uv run ceqa-preflight check ./my-package --filing-type NOE --format html --output ./reports
     uv run ceqa-preflight check ./my-package --filing-type NOE --include-experimental
+    uv run ceqa-preflight check ./pkg-a ./pkg-b --filing-type NOE --format json --output ./reports
+    uv run ceqa-preflight check ./my-package --filing-type NOE --format checklist
+    uv run ceqa-preflight synth ./demo-package --filing-type NOE --defect scanned
     uv run ceqa-preflight rules list --filing-type NOE
+    uv run ceqa-preflight rules list --format json
     uv run ceqa-preflight pilot init ./pilot-evidence
     uv run ceqa-preflight pilot summarize --reviews ./pilot-evidence/finding-review.csv --baseline ./pilot-evidence/manual-baseline.csv
 
-The `check` command reads a directory or ZIP package locally, never uploads or
-alters its contents, and can emit console, JSON, or self-contained HTML
-advisory reports. Add `--manifest package.yaml` to enable explicit primary
-form and document-category checks when experimental rules are opted into. The
-default run includes active technical checks only. Add `--log-format json` for
-minimal, package-content-free operational events on stderr.
+Without a local checkout, run the CLI directly from a clone with
+[uv](https://docs.astral.sh/uv/): `uvx --from /path/to/ceqa-preflight
+ceqa-preflight --help`, or install it with `pipx install
+/path/to/ceqa-preflight`. No package registry release exists yet.
+
+The `check` command reads one or more directories or ZIP packages locally,
+never uploads or alters their contents, and can emit console, JSON,
+self-contained HTML, or printable sign-off checklist advisory reports.
+Checking several packages at once prints a per-package roll-up summary. Add
+`--manifest package.yaml` to enable explicit primary form and
+document-category checks when experimental rules are opted into (single
+package only), and `--rules` / `--exclude-rules` to select specific rule
+identifiers. The default run includes active technical checks only. Add
+`--log-format json` for minimal, package-content-free operational events on
+stderr, including inspection progress counts for large packages.
+
+The `synth` command generates plainly fictional synthetic packages, optionally
+seeded with objective defects (scanned pages, fillable forms, encrypted or
+truncated PDFs, duplicates, and more) for demos, regression tests, and pilot
+reviewer calibration. See [examples/](examples/README.md) for a generated
+package and its HTML report.
 
 The `pilot` commands support the permissioned evaluation protocol with opaque
 IDs and controlled labels only; they do not read filing packages or accept
 free-text reviewer notes.
+
+### Exit codes
+
+`check` exits `0` when no automated failure was found (warnings and
+manual-review items may still exist), `1` when at least one failure finding
+was produced, and `2` on input or internal rule errors. With multiple
+packages, the worst exit code wins.
 
 ## Non-affiliation and disclaimer
 
