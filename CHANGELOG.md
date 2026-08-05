@@ -6,6 +6,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Release publication now authorizes an existing SSH-signed stable tag from
+  reviewed `main`, verifies and builds the exact selected commit without a
+  shared cache, and hands artifacts to a checkout-free publisher that rechecks
+  the immutable tag object.
 - Tighten the cyclomatic-complexity budget from 15 to 10 and split archive,
   PDF, and pilot analysis into focused, independently testable helpers.
 - Established the local-first CLI foundation, quality gates, governance,
