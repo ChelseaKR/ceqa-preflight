@@ -111,6 +111,55 @@ def _warning_label(prefix: str) -> str:
     return f"{prefix}; manual review recommended"
 
 
+def _active_content_signals(reader: PdfReader, root: Mapping[str, Any]) -> tuple[bool, bool]:
+    names = _mapping(root.get("/Names"))
+    javascript_present = names.get("/JavaScript") is not None or _contains_action(
+        root.get("/OpenAction"), "/JavaScript"
+    )
+    launch_action_present = _contains_action(root.get("/OpenAction"), "/Launch")
+    for page in reader.pages:
+        page_mapping = _mapping(page)
+        javascript_present = javascript_present or _contains_action(
+            page_mapping.get("/AA"), "/JavaScript"
+        )
+        launch_action_present = launch_action_present or _contains_action(
+            page_mapping.get("/AA"), "/Launch"
+        )
+    return javascript_present, launch_action_present
+
+
+def _field_names(reader: PdfReader, parser_warnings: list[str]) -> list[str]:
+    try:
+        fields = reader.get_fields() or {}
+        return sorted(str(name) for name in fields)
+    except Exception:
+        parser_warnings.append(_warning_label("PDF form fields could not be read"))
+        return []
+
+
+def _extract_sample_characters(
+    path: Path,
+    sampled_pages: list[int],
+    parser_warnings: list[str],
+) -> dict[int, int]:
+    extracted_characters: dict[int, int] = {}
+    try:
+        # One parse pass for all sampled pages; pdfminer yields them in document
+        # order, which matches the ascending sample order.
+        layouts = extract_pages(str(path), page_numbers=[page - 1 for page in sampled_pages])
+        for page_number, layout in zip(sampled_pages, layouts, strict=False):
+            extracted_characters[page_number] = sum(
+                len("".join(element.get_text().split()))
+                for element in layout
+                if isinstance(element, LTTextContainer)
+            )
+    except Exception:
+        parser_warnings.append(
+            _warning_label("Text could not be extracted from one or more sampled pages")
+        )
+    return extracted_characters
+
+
 def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
     """Inspect one resolved PDF.  This is invoked in an isolated worker process."""
 
@@ -157,44 +206,10 @@ def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
 
     root = _mapping(reader.trailer.get("/Root"))
     names = _mapping(root.get("/Names"))
-    javascript_tree = names.get("/JavaScript")
-    embedded_tree = names.get("/EmbeddedFiles")
-    javascript_present = javascript_tree is not None or _contains_action(
-        root.get("/OpenAction"), "/JavaScript"
-    )
-    launch_action_present = _contains_action(root.get("/OpenAction"), "/Launch")
-    for page in reader.pages:
-        page_mapping = _mapping(page)
-        javascript_present = javascript_present or _contains_action(
-            page_mapping.get("/AA"), "/JavaScript"
-        )
-        launch_action_present = launch_action_present or _contains_action(
-            page_mapping.get("/AA"), "/Launch"
-        )
-
-    try:
-        fields = reader.get_fields() or {}
-        field_names = sorted(str(name) for name in fields)
-    except Exception:
-        field_names = []
-        parser_warnings.append(_warning_label("PDF form fields could not be read"))
-
+    javascript_present, launch_action_present = _active_content_signals(reader, root)
+    field_names = _field_names(reader, parser_warnings)
     sampled_pages = select_sample_pages(page_count)
-    extracted_characters: dict[int, int] = {}
-    try:
-        # One parse pass for all sampled pages; pdfminer yields them in document
-        # order, which matches the ascending sample order.
-        layouts = extract_pages(str(path), page_numbers=[page - 1 for page in sampled_pages])
-        for page_number, layout in zip(sampled_pages, layouts, strict=False):
-            extracted_characters[page_number] = sum(
-                len("".join(element.get_text().split()))
-                for element in layout
-                if isinstance(element, LTTextContainer)
-            )
-    except Exception:
-        parser_warnings.append(
-            _warning_label("Text could not be extracted from one or more sampled pages")
-        )
+    extracted_characters = _extract_sample_characters(path, sampled_pages, parser_warnings)
 
     searchable_pages = sum(value >= 25 for value in extracted_characters.values())
     text_coverage = searchable_pages / len(sampled_pages) if sampled_pages else None
@@ -210,7 +225,7 @@ def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
         active_form_field_count=len(field_names),
         active_form_field_names=field_names,
         structure_tree_present="/StructTreeRoot" in root,
-        embedded_file_count=_name_tree_item_count(embedded_tree),
+        embedded_file_count=_name_tree_item_count(names.get("/EmbeddedFiles")),
         javascript_present=javascript_present,
         launch_action_present=launch_action_present,
         parser_warnings=parser_warnings,
