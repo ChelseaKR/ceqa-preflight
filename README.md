@@ -118,7 +118,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Security, supply chain, responsible technology | Applies | [security policy](SECURITY.md), [audits](docs/RESPONSIBLE-TECH-AUDITS.md) |
 | Accessibility | Applies | [accessibility boundaries](docs/accessibility.md); release review pending first tag |
 | Observability | N/A hosted telemetry | Stateless local CLI; opt-in JSON operational events only, no package contents |
-| i18n/l10n | N/A current scope | English-only operator tool; no public-service transaction UI |
+| i18n/l10n | Applies; pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
 | Performance | N/A service SLO | No hosted service; bounded PDF/ZIP parsing is in the threat model |
 | AI evaluation | N/A runtime | No model, prompt, or AI inference is shipped |
 | Data governance | Applies | [local filing package data card](docs/data/local-filing-packages.md) |

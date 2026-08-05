@@ -17,6 +17,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the portfolio baseline instead of silently accepting older analyzer behavior.
 - Tighten the cyclomatic-complexity budget from 15 to 10 and split archive,
   PDF, and pilot analysis into focused, independently testable helpers.
+- Correct the internationalization scope from N/A to Applies and document the
+  gettext migration boundary, EN/ES review requirements, and public-release
+  gate without overstating current conformance.
 - Established the local-first CLI foundation, quality gates, governance,
   project boundaries, and source-cited rule catalog.
 - Added Portfolio Standards conformance, pinned standards submodule, security
