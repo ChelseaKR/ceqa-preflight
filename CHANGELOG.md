@@ -6,6 +6,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Added `make audit-sources` / `scripts/check_rule_sources.py`, a maintainer-run
+  link-rot check that confirms every rule catalog source citation URL still
+  resolves. It is deliberately excluded from `make verify` and CI: the product
+  and its test suite make no real network calls, and this stays a manual,
+  periodic companion to the existing rule-source review audits.
 - Release publication now authorizes an existing SSH-signed stable tag from
   reviewed `main`, verifies and builds the exact selected commit without a
   shared cache, and hands artifacts to a checkout-free publisher that rechecks
