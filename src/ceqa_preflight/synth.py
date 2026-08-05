@@ -105,31 +105,12 @@ def _searchable_pdf(label: str, *, tagged: bool = True, form_field: bool = False
     return _pdf_bytes([text, text], tagged=tagged, form_field=form_field)
 
 
-def write_synthetic_package(
-    directory: Path,
-    filing_type: FilingType,
-    defects: list[SyntheticDefect],
-) -> list[Path]:
-    """Write a fictional package plus manifest and return the created paths."""
+def _defect_documents(
+    requested: set[SyntheticDefect], supporting: bytes
+) -> list[tuple[str, bytes, str | None]]:
+    """Return the extra file entries seeded by the requested objective defects."""
 
-    if directory.exists() and not directory.is_dir():
-        raise ValueError("synthetic package destination must be a directory")
-    if directory.is_dir() and any(directory.iterdir()):
-        raise FileExistsError(f"refusing to write into a non-empty directory: {directory}")
-    directory.mkdir(parents=True, exist_ok=True)
-
-    category = "Notice of Determination" if filing_type is FilingType.NOD else "Notice of Exemption"
-    prefix = filing_type.value
-    supporting = _searchable_pdf("supporting findings")
-    files: list[tuple[str, bytes, str | None]] = [
-        (f"{prefix}_Fictional_Example_Project_form.pdf", _searchable_pdf("filing form"), category),
-        (
-            "Fictional_Example_Project_supporting_findings.pdf",
-            supporting,
-            "Supporting Findings",
-        ),
-    ]
-    requested = set(defects)
+    files: list[tuple[str, bytes, str | None]] = []
     if SyntheticDefect.ENCRYPTED in requested:
         files.append(
             (
@@ -184,15 +165,20 @@ def write_synthetic_package(
         )
     if SyntheticDefect.WEAK_FILENAME in requested:
         files.append(("doc1.pdf", _searchable_pdf("weakly named document"), "Supporting Findings"))
+    return files
 
-    created: list[Path] = []
-    for name, content, _ in files:
-        destination = directory / name
-        destination.write_bytes(content)
-        created.append(destination)
+
+def _write_manifest(
+    directory: Path,
+    filing_type: FilingType,
+    files: list[tuple[str, bytes, str | None]],
+    primary_category: str,
+    requested: set[SyntheticDefect],
+) -> Path:
+    """Write the package manifest describing the synthetic documents."""
 
     documents = [
-        {"path": name, "category": file_category, "primary": file_category == category}
+        {"path": name, "category": file_category, "primary": file_category == primary_category}
         for name, _, file_category in files
         if file_category is not None
     ]
@@ -218,5 +204,41 @@ def write_synthetic_package(
         yaml.safe_dump(manifest.model_dump(mode="json"), sort_keys=False, allow_unicode=True),
         encoding="utf-8",
     )
-    created.append(manifest_path)
+    return manifest_path
+
+
+def write_synthetic_package(
+    directory: Path,
+    filing_type: FilingType,
+    defects: list[SyntheticDefect],
+) -> list[Path]:
+    """Write a fictional package plus manifest and return the created paths."""
+
+    if directory.exists() and not directory.is_dir():
+        raise ValueError("synthetic package destination must be a directory")
+    if directory.is_dir() and any(directory.iterdir()):
+        raise FileExistsError(f"refusing to write into a non-empty directory: {directory}")
+    directory.mkdir(parents=True, exist_ok=True)
+
+    category = "Notice of Determination" if filing_type is FilingType.NOD else "Notice of Exemption"
+    prefix = filing_type.value
+    supporting = _searchable_pdf("supporting findings")
+    files: list[tuple[str, bytes, str | None]] = [
+        (f"{prefix}_Fictional_Example_Project_form.pdf", _searchable_pdf("filing form"), category),
+        (
+            "Fictional_Example_Project_supporting_findings.pdf",
+            supporting,
+            "Supporting Findings",
+        ),
+    ]
+    requested = set(defects)
+    files.extend(_defect_documents(requested, supporting))
+
+    created: list[Path] = []
+    for name, content, _ in files:
+        destination = directory / name
+        destination.write_bytes(content)
+        created.append(destination)
+
+    created.append(_write_manifest(directory, filing_type, files, category, requested))
     return created

@@ -43,7 +43,7 @@ ceqa-preflight = "ceqa_preflight.cli:app"
 dev = [
   "bandit[toml]>=1.8.3",
   "hypothesis>=6.127",
-  "mypy>=1.15",
+  "mypy>=1.18",
   "pip-audit>=2.9",
   "pre-commit>=4.2",
   "pytest>=8.3",
@@ -71,7 +71,7 @@ select = ["E", "F", "I", "B", "S", "UP", "SIM", "C90", "RUF"]
 ignore = ["S101", "S105"]
 
 [tool.ruff.lint.mccabe]
-max-complexity = 15
+max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S108"]

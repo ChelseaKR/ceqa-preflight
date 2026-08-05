@@ -144,11 +144,9 @@ def _validated_rows[T: StrictModel](
     return items
 
 
-def summarize_pilot(reviews_path: Path, baseline_path: Path) -> PilotSummary:
-    """Validate controlled-label pilot files and return only aggregate measures."""
-
-    reviews = _validated_rows(reviews_path, REVIEW_HEADERS, FindingReview)
-    baselines = _validated_rows(baseline_path, BASELINE_HEADERS, BaselineIssue)
+def _review_metrics(
+    reviews: list[FindingReview],
+) -> tuple[dict[ReviewDisposition, int], float | None, dict[str, float]]:
     review_keys = {(item.package_id, item.rule_id, item.finding_status) for item in reviews}
     if len(review_keys) != len(reviews):
         raise PilotDataError("review file: duplicate package_id, rule_id, and finding_status rows")
@@ -171,10 +169,14 @@ def summarize_pilot(reviews_path: Path, baseline_path: Path) -> PilotSummary:
             raise PilotDataError(
                 "review file: elapsed_seconds must match for every row of a package"
             )
-    high_issues = [issue for issue in baselines if issue.severity is Severity.HIGH]
-    high_missed = sum(issue.was_missed for issue in high_issues)
-    false_negative_rate = high_missed / len(high_issues) if high_issues else None
+    return counts, precision, elapsed_by_package
 
+
+def _pilot_reasons(
+    precision: float | None,
+    false_negative_rate: float | None,
+    median_seconds: float | None,
+) -> list[str]:
     reasons: list[str] = []
     if precision is None:
         reasons.append("No true/false-positive labels are available for precision.")
@@ -186,11 +188,24 @@ def summarize_pilot(reviews_path: Path, baseline_path: Path) -> PilotSummary:
         )
     elif false_negative_rate >= 0.05:
         reasons.append("High-severity false-negative rate is at or above the 5% pilot threshold.")
-    median_seconds = statistics.median(elapsed_by_package.values()) if elapsed_by_package else None
     if median_seconds is None:
         reasons.append("No package report timings are available.")
     elif median_seconds >= 300:
         reasons.append("Median report time is at or above the five-minute pilot threshold.")
+    return reasons
+
+
+def summarize_pilot(reviews_path: Path, baseline_path: Path) -> PilotSummary:
+    """Validate controlled-label pilot files and return only aggregate measures."""
+
+    reviews = _validated_rows(reviews_path, REVIEW_HEADERS, FindingReview)
+    baselines = _validated_rows(baseline_path, BASELINE_HEADERS, BaselineIssue)
+    counts, precision, elapsed_by_package = _review_metrics(reviews)
+    high_issues = [issue for issue in baselines if issue.severity is Severity.HIGH]
+    high_missed = sum(issue.was_missed for issue in high_issues)
+    false_negative_rate = high_missed / len(high_issues) if high_issues else None
+    median_seconds = statistics.median(elapsed_by_package.values()) if elapsed_by_package else None
+    reasons = _pilot_reasons(precision, false_negative_rate, median_seconds)
     go_no_go = "go" if not reasons else "no_go"
     if go_no_go == "go":
         reasons.append(
