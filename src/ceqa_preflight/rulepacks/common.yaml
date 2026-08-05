@@ -1,4 +1,4 @@
-catalog_version: "1.1.0"
+catalog_version: "1.2.0"
 rules:
   - id: "CORE-001"
     version: "1.0.0"
@@ -25,7 +25,7 @@ rules:
       title: "LCI CEQA Submit common mistakes"
       url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
   - id: "PDF-003"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Sampled searchable-text coverage"
     check: "text_coverage"
     filing_types: ["NOD", "NOE"]
@@ -35,13 +35,31 @@ rules:
       title: "LCI CEQA Submit common mistakes"
       url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
   - id: "PDF-006"
-    version: "1.0.0"
+    version: "1.1.0"
     title: "Active PDF content"
     check: "active_content"
     filing_types: ["NOD", "NOE"]
     source:
       title: "CEQA Preflight security rule"
       url: "https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload"
+  - id: "PDF-007"
+    version: "1.0.0"
+    title: "Flattened, non-fillable PDF"
+    check: "flattened_forms"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit pre-submission checklist"
+      url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"
+      section: "3. Text Searchability (accessibility/ADA compliance)"
+  - id: "PDF-008"
+    version: "1.0.0"
+    title: "Screen-reader structure tags"
+    check: "structure_tags"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit pre-submission checklist"
+      url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"
+      section: "3. Text Searchability (accessibility/ADA compliance)"
   - id: "FILE-001"
     version: "1.0.0"
     title: "Descriptive PDF filenames"
@@ -58,6 +76,33 @@ rules:
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
+  - id: "FILE-003"
+    version: "1.0.0"
+    title: "Static PDF document format"
+    check: "non_pdf_documents"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "LCI CEQA Submit common mistakes"
+      url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
+      section: "8. Using Fillable or Editable Forms"
+  - id: "FILE-004"
+    version: "1.0.0"
+    title: "Advisory file size"
+    check: "file_size"
+    filing_types: ["NOD", "NOE"]
+    parameters:
+      maximum_megabytes: 50
+    source:
+      title: "CEQA Preflight advisory technical rule"
+      url: "https://github.com/ChelseaKR/ceqa-preflight"
+  - id: "FILE-005"
+    version: "1.0.0"
+    title: "Portable filename characters"
+    check: "filename_portability"
+    filing_types: ["NOD", "NOE"]
+    source:
+      title: "CEQA Preflight advisory technical rule"
+      url: "https://github.com/ChelseaKR/ceqa-preflight"
   - id: "CAT-001"
     version: "1.0.0"
     title: "Declared PDF document categories"
