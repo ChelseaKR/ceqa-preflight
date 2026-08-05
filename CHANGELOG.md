@@ -10,6 +10,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   reviewed `main`, verifies and builds the exact selected commit without a
   shared cache, and hands artifacts to a checkout-free publisher that rechecks
   the immutable tag object.
+- Pin the contributor, CI, and release interpreter to Python 3.12 through
+  `.python-version`, matching `requires-python` and eliminating ambient runtime
+  drift in local setup tools.
 - Raise the minimum supported mypy version to 1.18 so strict type checks use
   the portfolio baseline instead of silently accepting older analyzer behavior.
 - Established the local-first CLI foundation, quality gates, governance,
