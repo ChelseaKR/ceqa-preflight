@@ -10,6 +10,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   reviewed `main`, verifies and builds the exact selected commit without a
   shared cache, and hands artifacts to a checkout-free publisher that rechecks
   the immutable tag object.
+- Pin the contributor, CI, and release interpreter to Python 3.12 through
+  `.python-version`, matching `requires-python` and eliminating ambient runtime
+  drift in local setup tools.
 - Established the local-first CLI foundation, quality gates, governance,
   project boundaries, and source-cited rule catalog.
 - Added Portfolio Standards conformance, pinned standards submodule, security
