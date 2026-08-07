@@ -6,6 +6,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Named every portfolio standard explicitly in the README conformance table
+  with reasoned N/A rows, added a Quality & Metrics ledger and
+  AI-development-measurement declaration to the roadmap, and disclosed
+  AI-assisted development in the README.
 - Release publication now authorizes an existing SSH-signed stable tag from
   reviewed `main`, verifies and builds the exact selected commit without a
   shared cache, and hands artifacts to a checkout-free publisher that rechecks

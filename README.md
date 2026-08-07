@@ -91,6 +91,11 @@ Submit, or CEQAnet. See [DISCLAIMER.md](DISCLAIMER.md).
 
     make verify
 
+This project is developed with AI-assisted tooling. Every change, whether
+AI-assisted or not, must pass the same review, tests, and `make verify` gate
+before merge; AI-assisted development measurement is tracked in the
+[responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md).
+
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the
 [architecture decision](docs/decisions/0001-local-first-deterministic-cli.md).
 The project also documents its [pilot protocol](docs/pilot-protocol.md),
@@ -114,14 +119,18 @@ control exists; release-only evidence is collected before a tagged release.
 
 | Standard | Status | Evidence / scope |
 | --- | --- | --- |
-| Core delivery, documentation, quality | Applies | `Makefile`, CI, [definition of done](DEFINITION_OF_DONE.md) |
-| Security, supply chain, responsible technology | Applies | [security policy](SECURITY.md), [audits](docs/RESPONSIBLE-TECH-AUDITS.md) |
-| Accessibility | Applies | [accessibility boundaries](docs/accessibility.md); release review pending first tag |
-| Observability | N/A hosted telemetry | Stateless local CLI; opt-in JSON operational events only, no package contents |
-| i18n/l10n | Applies; pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
-| Performance | N/A service SLO | No hosted service; bounded PDF/ZIP parsing is in the threat model |
-| AI evaluation | N/A runtime | No model, prompt, or AI inference is shipped |
-| Data governance | Applies | [local filing package data card](docs/data/local-filing-packages.md) |
+| Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with 90% branch-coverage floor, complexity <= 10), `uv.lock`, `.python-version` |
+| Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), [definition of done](DEFINITION_OF_DONE.md) |
+| Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |
+| CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
+| Security & Supply-Chain | Applies | [Security policy](SECURITY.md); bandit, pip-audit, gitleaks, and CodeQL in CI; SHA-pinned actions and a committed lockfile |
+| Responsible-Tech Framework | Applies | [Responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md), [threat model](docs/threat-model.md), [data card](docs/data/local-filing-packages.md) |
+| Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending first tag |
+| Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, no package contents |
+| Internationalization (i18n/l10n) | Applies; pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
+| Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is in the threat model |
+| AI Evaluation | N/A (no AI runtime) | No model, prompt, or AI inference is shipped |
+| Data governance | Applies | [Local filing package data card](docs/data/local-filing-packages.md) |
 
 The central standards register is maintained separately and must be updated
 when this repository is published.

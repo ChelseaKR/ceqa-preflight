@@ -44,3 +44,29 @@
 
 - Hosted document storage, automatic CEQA submission, legal sufficiency
   determinations, or model-driven legal advice.
+
+## Metrics ledger
+
+Last reviewed: 2026-08-07. Owner: maintainer. This is the enforcement ledger
+required by the portfolio Quality & Metrics standard: each row is an AUTO gate
+(merge-blocking), a REVIEW gate with a durable evidence artifact, or an
+explicit N/A with a reason. Values are project-specific; the rigor is defined
+by the owning standard.
+
+| Metric | Target | Measured by | Gate | Owner |
+| --- | --- | --- | --- | --- |
+| Branch coverage | >= 90% | `make test` (pytest-cov, `fail_under = 90`) in CI | AUTO | Maintainer |
+| Lint / format / types | 0 errors | `make lint` (ruff), `make typecheck` (mypy `--strict`) | AUTO | Maintainer |
+| Cyclomatic complexity | <= 10 per function | ruff C90 in `make lint` | AUTO | Maintainer |
+| Static security findings | 0 unresolved | `make security` (bandit) and CodeQL in CI | AUTO | Maintainer |
+| Known-vulnerable dependencies | 0 in `uv.lock` | `make audit` (pip-audit) in CI | AUTO | Maintainer |
+| Secret leaks | 0 | gitleaks in the security workflow | AUTO | Maintainer |
+| SHA-pinned workflow `uses:` | 100% | portfolio conformance tripwire (weekly) plus PR review | REVIEW | Maintainer |
+| EN/ES catalog parity | 100% keys and placeholders before first public tag | [i18n release gate](I18N.md); not yet implemented (pre-release gap) | REVIEW | Maintainer |
+| Accessibility review of console/HTML output | Recorded assistive-technology evidence per release | Release checklist; no tagged release yet | REVIEW | Maintainer |
+| Pilot false-positive rate | Measured on synthetic or permissioned packages; aggregate results only | `pilot summarize` evidence kit | REVIEW | Maintainer |
+
+`AI-DEV-MEASUREMENT: APPLIES`. Development is AI-assisted; delivery and
+quality-debt metrics are measured by portfolio automation from Git and CI. No
+AI runtime feature ships, so Track B product evaluations are N/A (see the
+[responsible technology audits](RESPONSIBLE-TECH-AUDITS.md)).
