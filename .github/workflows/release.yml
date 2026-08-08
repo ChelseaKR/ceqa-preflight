@@ -74,6 +74,7 @@ jobs:
       - name: Recheck immutable tag object and create the release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           TAG: ${{ needs.authorize.outputs.release-tag }}
           TAG_OBJECT_SHA: ${{ needs.authorize.outputs.tag-object-sha }}
         run: |
@@ -81,4 +82,4 @@ jobs:
           LIVE_TAG_OBJECT="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" --jq .object.sha)"
           test "${LIVE_TAG_OBJECT}" = "${TAG_OBJECT_SHA}"
           gh release create "${TAG}" dist/* \
-            --title "ceqa-preflight ${TAG}" --generate-notes --verify-tag
+            --title "ceqa-preflight ${TAG}" --generate-notes
