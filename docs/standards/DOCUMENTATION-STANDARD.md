@@ -2,7 +2,7 @@
 
 This standard defines the documentation every repo in this portfolio carries, what each document is responsible for, how an autonomous agent (Claude Code) reads and acts on them, and how a repo consumes and declares the cross-cutting `STANDARDS/` set. It exists so that no project re-invents structure and so that "production-ready" means the same thing across the portfolio.
 
-Doc index: 9 of the `STANDARDS/` set. Peers it routes to: `CODE-QUALITY-STANDARD`, `SECURITY-AND-SUPPLY-CHAIN-STANDARD`, `CI-CD-STANDARD`, `RELEASE-AND-VERSIONING-STANDARD`, `OBSERVABILITY-STANDARD`, `ACCESSIBILITY-STANDARD`, `INTERNATIONALIZATION-STANDARD`, `AI-EVALUATION-STANDARD`, `QUALITY-AND-METRICS-STANDARD`, `RESPONSIBLE-TECH-FRAMEWORK`, `INCIDENT-RESPONSE-STANDARD`, `DATA-GOVERNANCE-STANDARD`.
+Doc index: 10 of 15 in the `STANDARDS/` set. Peers it routes to: `CODE-QUALITY-STANDARD`, `SECURITY-AND-SUPPLY-CHAIN-STANDARD`, `CI-CD-STANDARD`, `RELEASE-AND-VERSIONING-STANDARD`, `OBSERVABILITY-STANDARD`, `PERFORMANCE-STANDARD`, `ACCESSIBILITY-STANDARD`, `INTERNATIONALIZATION-STANDARD`, `AI-EVALUATION-STANDARD`, `QUALITY-AND-METRICS-STANDARD`, `AI-DEVELOPMENT-MEASUREMENT-STANDARD`, `RESPONSIBLE-TECH-FRAMEWORK`, `INCIDENT-RESPONSE-STANDARD`, `DATA-GOVERNANCE-STANDARD`.
 
 ---
 
@@ -18,13 +18,15 @@ The portfolio standardizes rigor in one place and references it everywhere. Repo
 | 3 | `CI-CD-STANDARD.md` | Token permissions, OIDC, branch protection, CODEOWNERS, workflow SAST, concurrency | Default-write tokens and unscanned workflows are systemic risks |
 | 4 | `RELEASE-AND-VERSIONING-STANDARD.md` | SemVer + public-API contract, signed tags, CHANGELOG, trusted-main signed-tag release pipeline, Trusted Publishing, yank/deprecation/security-release policy | Every consumed artifact needs an explicit version and release contract |
 | 5 | `OBSERVABILITY-STANDARD.md` | Structured logging, OTel, SLOs, health probes — tiered by deployment shape | Telemetry needs one portable schema and enforcement model |
-| 6 | `ACCESSIBILITY-STANDARD.md` | WCAG 2.2 AA floor, axe/Lighthouse/pa11y gates, SR walkthroughs | Structural and browser-engine checks must both block |
-| 7 | `INTERNATIONALIZATION-STANDARD.md` | Portable catalogs (gettext `.po` / MF2-ICU), key-parity, pseudolocale | Civic multilingual surfaces need portable catalogs and parity gates |
-| 8 | `AI-EVALUATION-STANDARD.md` | RAG faithfulness, red-team, hallucination, judge-calibration, model cards | AI evaluation needs shared thresholds and evidence artifacts |
-| 9 | `DOCUMENTATION-STANDARD.md` (this) | Doc responsibilities, authoring rules, agent consumption, vendoring, declaration | So "production-ready" means one thing everywhere |
-| 10 | `QUALITY-AND-METRICS-STANDARD.md` | DORA tracking, Definition of Done, the merge-gate manifest | The roll-up that the gates in 1–9, 11, and 12 report into |
-| 11 | `INCIDENT-RESPONSE-STANDARD.md` | Severity ladder, `incident`/`sevN` label convention feeding DORA, committed postmortem artifact, secret-leak runbook | Incidents need durable, consistently classified evidence |
-| 12 | `DATA-GOVERNANCE-STANDARD.md` | Data classification, data cards + lineage, retention schedules, backup/DR, license/provenance for ingested civic data | Data rules had four partial owners and no retention/backup floor |
+| 6 | `PERFORMANCE-STANDARD.md` | k6 latency budgets, Lighthouse-CI score and bundle budgets, committed regression baselines | Performance claims need a reproducible budget and an explicit baseline-update ritual |
+| 7 | `ACCESSIBILITY-STANDARD.md` | WCAG 2.2 AA floor, axe/Lighthouse/pa11y gates, SR walkthroughs | Structural and browser-engine checks must both block |
+| 8 | `INTERNATIONALIZATION-STANDARD.md` | Portable catalogs (gettext `.po` / MF2-ICU), key-parity, pseudolocale | Civic multilingual surfaces need portable catalogs and parity gates |
+| 9 | `AI-EVALUATION-STANDARD.md` | RAG faithfulness, red-team, hallucination, judge-calibration, model cards | AI evaluation needs shared thresholds and evidence artifacts |
+| 10 | `DOCUMENTATION-STANDARD.md` (this) | Doc responsibilities, authoring rules, agent consumption, vendoring, declaration | So "production-ready" means one thing everywhere |
+| 11 | `QUALITY-AND-METRICS-STANDARD.md` | DORA tracking, Definition of Done, the merge-gate manifest | The roll-up that the domain standards' gates report into |
+| 12 | `AI-DEVELOPMENT-MEASUREMENT-STANDARD.md` | Outcome-oriented measurement for AI-assisted development, with quality-debt counterweights and prohibited uses | Development telemetry must inform process without becoming an individual-performance gate |
+| 13 | `INCIDENT-RESPONSE-STANDARD.md` | Severity ladder, `incident`/`sevN` label convention feeding DORA, committed postmortem artifact, secret-leak runbook | Incidents need durable, consistently classified evidence |
+| 14 | `DATA-GOVERNANCE-STANDARD.md` | Data classification, data cards + lineage, retention schedules, backup/DR, license/provenance for ingested civic data | Data rules had four partial owners and no retention/backup floor |
 
 **Rejected alternative:** a single monolithic `STANDARDS.md`. Rejected because the doc index is the unit of vendoring and N/A declaration; one file per concern lets a repo mark exactly which concerns are out of scope.
 
@@ -143,11 +145,11 @@ the portfolio makes them mandatory only when release history exists.
 
 ## 5. Every README declares which standards apply
 
-Silent skipping is the defect this section eliminates. Each README carries a **Standards Conformance** table listing all thirteen standards (§1) with one of three states: `Applies` (and conformant), `Applies — gap tracked in #NN` (non-conformant, with an open issue), or `N/A — <one-line reason>`. There is no fourth state and no blank cell.
+Silent skipping is the defect this section eliminates. Each README carries a **Standards Conformance** table listing all 15 standards (§1) with one of three states: `Applies` (and conformant), `Applies — gap tracked in #NN` (non-conformant, with an open issue), or `N/A — <one-line reason>`. There is no fourth state and no blank cell.
 
 | Metric | Target | Measured by | Gate |
 |--------|--------|-------------|------|
-| Conformance table complete [DOC-11] | All thirteen standards present, each with a non-empty state | A `verify-conformance` CI script parses the README table; missing/blank row fails | AUTO-GATE |
+| Conformance table complete [DOC-11] | All 15 standards present, each with a non-empty state | A `verify-conformance` CI script parses the README table; missing/blank row fails | AUTO-GATE |
 | Every `N/A` has a reason [DOC-12] | No bare `N/A` | Same script: `N/A` rows must match `N/A — .+` | AUTO-GATE |
 | Every gap links an issue [DOC-13] | `Applies — gap tracked in #NN` resolves to an open issue | `gh issue view NN` exists and is open | AUTO-GATE |
 | `N/A` reasons are honest [DOC-14] | Human confirms (e.g., i18n N/A genuinely is English-only single-user) | Release checklist line | REVIEW-GATE |
@@ -164,11 +166,13 @@ Example README block for a privacy-first local library:
 | CI/CD | Applies |
 | Release & Versioning | Applies — CalVer opt-out N/A; SemVer tags + CHANGELOG |
 | Observability | Applies — library tier: `--log-format json` opt-in; OTel out-of-scope (no server) |
+| Performance | N/A — headless library with no latency-sensitive service or frontend bundle |
 | Accessibility | N/A — headless library, no HTML/UI surface |
 | Internationalization | Applies — EN/ES key-parity gate; migrating dicts → gettext `.po` (#138) |
 | AI Evaluation | N/A — no model/prompt/retrieval surface |
 | Documentation | Applies |
 | Quality & Metrics | Applies |
+| AI Development Measurement | Applies — local aggregate delivery and quality-debt metrics; never used as gates |
 | Incident Response | Applies — `incident`/`sevN` labels wired, no SEV1/2 to date |
 | Data Governance | Applies — local-only data store, L3 tier, no-outing guarantee is the retention floor |
 ```
@@ -176,7 +180,7 @@ Example README block for a privacy-first local library:
 Common, **pre-approved** `N/A` patterns (still must be written out):
 - Accessibility / i18n **N/A** for a headless library or CLI with no user-facing HTML and English-only operator output — but i18n N/A repos must still record the one-line entry point: "wrap user strings in `_()` to add a catalog."
 - AI-Evaluation **N/A** for any repo with no prompt/retrieval/model-version surface.
-- Observability OTel marked out-of-scope for the library/CLI tier (per standard 4's tiering) — this is a tier selection, not a skip.
+- Observability OTel marked out-of-scope for the library/CLI tier (per `OBSERVABILITY-STANDARD.md` tiering) — this is a tier selection, not a skip.
 
 ---
 
@@ -209,7 +213,7 @@ Common, **pre-approved** `N/A` patterns (still must be written out):
 A system is production-ready when, and only when:
 
 1. All acceptance criteria in `ROADMAP.md` pass.
-2. Every applicable AUTO-GATE across `STANDARDS/` is green on `main` (code quality, supply-chain, CI/CD, release, observability tier, accessibility, i18n where applicable, AI-eval where applicable, incident-response label/postmortem hygiene, data governance where the repo holds data), and every REVIEW-GATE has its committed artifact.
+2. Every applicable AUTO-GATE across `STANDARDS/` is green on `main` (code quality, supply-chain, CI/CD, release, observability tier, performance where applicable, accessibility, i18n where applicable, AI-eval where applicable, incident-response label/postmortem hygiene, data governance where the repo holds data), and every REVIEW-GATE, including applicable AI-development measurement evidence, has its committed artifact.
 3. Every merge-blocking gate in `QUALITY-AND-METRICS-STANDARD.md` is green on `main`.
 4. Every applicable audit in `RESPONSIBLE-TECH-AUDITS.md` has a committed, passing, release-regenerated report.
 5. The README Standards Conformance table (§5) has zero open-gap rows; every row is `Applies` or `N/A — reason`.

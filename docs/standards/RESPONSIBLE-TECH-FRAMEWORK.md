@@ -1,6 +1,6 @@
 # Responsible-Tech Framework
 
-**Doc index: 0 of 11** in the `STANDARDS/` set (see `DOCUMENTATION-STANDARD.md` §1).
+**Doc index: 0 of 15** in the `STANDARDS/` set (see `DOCUMENTATION-STANDARD.md` §1).
 
 This is the *methodology* behind every repo's `docs/RESPONSIBLE-TECH-AUDITS.md`. It is deliberately **not** a gate catalog. The mechanically-enforced thresholds live in the sibling standards and are referenced here once, never restated:
 

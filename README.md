@@ -117,20 +117,23 @@ This project follows the vendored [Portfolio Standards](docs/standards/README.md
 “Applies” means an automated or documented
 control exists; release-only evidence is collected before a tagged release.
 
-| Standard | Status | Evidence / scope |
+| Standard | State | Evidence / scope |
 | --- | --- | --- |
-| Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with 90% branch-coverage floor, complexity <= 10), `uv.lock`, `.python-version` |
-| Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), [definition of done](DEFINITION_OF_DONE.md) |
-| Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |
-| CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
+| Responsible-Tech Framework | Applies | [Responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md), [threat model](docs/threat-model.md), and [data card](docs/data/local-filing-packages.md) |
+| Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with a 90% branch-coverage floor, and complexity <= 10), `uv.lock`, and `.python-version` |
 | Security & Supply-Chain | Applies | [Security policy](SECURITY.md); bandit, pip-audit, gitleaks, and CodeQL in CI; SHA-pinned actions and a committed lockfile |
-| Responsible-Tech Framework | Applies | [Responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md), [threat model](docs/threat-model.md), [data card](docs/data/local-filing-packages.md) |
-| Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending first tag |
-| Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, no package contents |
-| Internationalization (i18n/l10n) | Applies; pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
-| Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is in the threat model |
+| CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
+| Release & Versioning | Applies — pre-release gap | The signed-tag release workflow is committed; the first public tag and its release evidence are still pending |
+| Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
+| Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
+| Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
+| Internationalization | Applies — pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
 | AI Evaluation | N/A (no AI runtime) | No model, prompt, or AI inference is shipped |
-| Data governance | Applies | [Local filing package data card](docs/data/local-filing-packages.md) |
+| Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), and the [definition of done](DEFINITION_OF_DONE.md) |
+| Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |
+| AI Development Measurement | Applies | `docs/ROADMAP.md` declares `AI-DEV-MEASUREMENT: APPLIES`; the baseline is recorded in the [responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md) |
+| Incident Response | Applies — local CLI scope | Security, privacy, and data-exposure incidents remain in scope even though there is no hosted service |
+| Data Governance | Applies | The [local filing package data card](docs/data/local-filing-packages.md) defines the processing and retention boundary |
 
 The central standards register is maintained separately and must be updated
 when this repository is published.
