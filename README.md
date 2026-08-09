@@ -113,8 +113,8 @@ Breaking changes may occur before the first tagged release. See
 
 ## Standards conformance
 
-This project follows the pinned [Portfolio Standards](STANDARDS/README.md)
-submodule at release `v1.0.1`. “Applies” means an automated or documented
+This project follows the vendored [Portfolio Standards](docs/standards/README.md).
+“Applies” means an automated or documented
 control exists; release-only evidence is collected before a tagged release.
 
 | Standard | Status | Evidence / scope |
