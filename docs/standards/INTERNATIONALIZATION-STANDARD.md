@@ -32,9 +32,11 @@ AUTO-GATEs apply. See STANDARDS/INTERNATIONALIZATION-STANDARD.md §3.
 Declared: 2026-06-21 · Reviewer: <name>
 ```
 
+**Bilingual without a catalog dir is declared, not inferred (added 2026-08-07).** A repo whose UI strings are fully bilingual through typed string modules (e.g. `afterward`'s typed TS `en`/`es` modules) rather than a `locales/` catalog passes the declaration gate by committing `docs/I18N.md` with `i18n status: Applies` plus an `implementation:` line naming the mechanism and where the strings live. Catalog dirs, `N/A`, and `Applies — deferred to <target>` declarations remain valid unchanged.
+
 | Control | Gate | Mechanism |
 |---|---|---|
-| In-scope repo has no catalog infra [I18N-01] | AUTO-GATE | CI fails if the repo's `STANDARDS/applicability.yml` entry marks I18N `applies` and the repo ships no `locales/` catalog dir |
+| In-scope repo has no catalog infra [I18N-01] | AUTO-GATE | CI fails if the repo's `STANDARDS/applicability.yml` entry marks I18N `applies` and the repo ships neither a `locales/` catalog dir nor a committed `docs/I18N.md` declaring `i18n status: Applies` with an `implementation:` line naming the string mechanism (typed-string-module form accepted 2026-08-07) |
 | Repo missing from the manifest [I18N-03] | AUTO-GATE | `automation/conformance_check.py` fails the weekly run if any sibling repo is absent from `STANDARDS/applicability.yml` (or a manifest entry has no repo on disk) |
 | N/A repo missing `docs/I18N.md` [I18N-02] | AUTO-GATE | CI greps for `docs/I18N.md` with `i18n status: N/A` and a non-empty Reason; absence fails |
 
