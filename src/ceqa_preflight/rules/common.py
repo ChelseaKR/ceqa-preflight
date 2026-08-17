@@ -37,6 +37,9 @@ def _documents(context: RuleContext) -> tuple[list[DocumentFact], bool]:
         return [], True
 
 
+_NO_ACTION_NEEDED = "No action is needed for this check."
+
+
 def _indeterminate(message: str) -> list[RuleOutcome]:
     return [
         RuleOutcome(
@@ -48,6 +51,61 @@ def _indeterminate(message: str) -> list[RuleOutcome]:
             confidence=Confidence.LOW,
         )
     ]
+
+
+def _examined(document: DocumentFact) -> PdfInspection | None:
+    """The completed inspection a check may draw a conclusion from, or ``None``.
+
+    A PDF that timed out, failed to parse, or is encrypted still yields a ``PdfInspection``,
+    but every absence signal on it (form-field count, embedded-file count, the JavaScript
+    and launch-action flags, the structure-tree flag) sits at its default because nothing
+    was read, not because nothing is there. Treating those defaults as observations turns
+    "not measured" into "measured clean", so such a document is never examined here.
+    """
+
+    inspection = document.inspection
+    if inspection is None or inspection.timed_out or not inspection.readable:
+        return None
+    return inspection
+
+
+def _conclude(
+    findings: list[RuleOutcome],
+    *,
+    examined: int,
+    excluded: int,
+    pass_message: str,
+    nothing_examined_message: str,
+) -> list[RuleOutcome]:
+    """Close a per-document check so a pass can never come from an empty denominator.
+
+    ``findings`` holds the problems the check actually observed. A pass is emitted only
+    when at least one document was examined and nothing was wrong with it, and the pass
+    message states how many documents that was, so an "all clear" can never be read off a
+    denominator of zero. Documents the check could not examine are surfaced for manual
+    review instead of being silently absorbed into the pass.
+    """
+
+    outcomes: list[RuleOutcome] = list(findings)
+    if examined and not findings:
+        outcomes.append(
+            RuleOutcome(
+                status=RuleOutcomeStatus.PASS,
+                message=pass_message,
+                remediation=_NO_ACTION_NEEDED,
+            )
+        )
+    if excluded:
+        outcomes.extend(
+            _indeterminate(
+                f"{excluded} PDF document(s) could not be inspected and were excluded from "
+                "this check, which therefore makes no statement about them."
+            )
+        )
+    elif not examined and not findings:
+        # Nothing was examined and the check has not already said why.
+        outcomes.extend(_indeterminate(nothing_examined_message))
+    return outcomes
 
 
 def check_pdf_present(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -77,12 +135,16 @@ def check_pdf_signature(context: RuleContext, _: RuleDefinition) -> Iterable[Rul
     if incomplete:
         return _indeterminate("PDF signature facts are unavailable.")
     outcomes: list[RuleOutcome] = []
+    examined = 0
+    excluded = 0
     for document in documents:
         if not document.is_pdf:
             continue
         if document.signature_is_pdf is None:
-            outcomes.extend(_indeterminate("A PDF signature could not be determined."))
-        elif not document.signature_is_pdf:
+            excluded += 1
+            continue
+        examined += 1
+        if not document.signature_is_pdf:
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.FAILURE,
@@ -93,13 +155,13 @@ def check_pdf_signature(context: RuleContext, _: RuleDefinition) -> Iterable[Rul
                     ),
                 )
             )
-    return outcomes or [
-        RuleOutcome(
-            status=RuleOutcomeStatus.PASS,
-            message="All inventoried PDF files have a PDF signature.",
-            remediation="No action is needed for this check.",
-        )
-    ]
+    return _conclude(
+        outcomes,
+        examined=examined,
+        excluded=excluded,
+        pass_message=f"All {examined} inventoried PDF file(s) have a PDF signature.",
+        nothing_examined_message="No PDF file was inventoried, so no signature was checked.",
+    )
 
 
 def check_pdf_readable(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -107,6 +169,7 @@ def check_pdf_readable(context: RuleContext, _: RuleDefinition) -> Iterable[Rule
     if incomplete:
         return _indeterminate("PDF inspection facts are unavailable.")
     outcomes: list[RuleOutcome] = []
+    examined = 0
     for document in documents:
         if not document.is_pdf:
             continue
@@ -115,7 +178,11 @@ def check_pdf_readable(context: RuleContext, _: RuleDefinition) -> Iterable[Rule
             outcomes.extend(
                 _indeterminate("A PDF could not be fully inspected within the safe limit.")
             )
-        elif not inspection.readable or inspection.encrypted:
+            continue
+        # An inspection that ran to completion and reported the document unreadable is a
+        # measurement, not a gap, so it stays a failure rather than a manual-review item.
+        examined += 1
+        if not inspection.readable or inspection.encrypted:
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.FAILURE,
@@ -125,13 +192,13 @@ def check_pdf_readable(context: RuleContext, _: RuleDefinition) -> Iterable[Rule
                     confidence=inspection.extraction_confidence,
                 )
             )
-    return outcomes or [
-        RuleOutcome(
-            status=RuleOutcomeStatus.PASS,
-            message="All inspected PDFs are readable and unencrypted.",
-            remediation="No action is needed for this check.",
-        )
-    ]
+    return _conclude(
+        outcomes,
+        examined=examined,
+        excluded=0,  # documents that could not be inspected are already reported above
+        pass_message=f"All {examined} inspected PDF(s) are readable and unencrypted.",
+        nothing_examined_message="No PDF was inspected, so readability was not checked.",
+    )
 
 
 def check_text_coverage(context: RuleContext, rule: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -140,13 +207,17 @@ def check_text_coverage(context: RuleContext, rule: RuleDefinition) -> Iterable[
     if incomplete or not 0 <= threshold <= 1:
         return _indeterminate("Searchable-text coverage facts or threshold are unavailable.")
     outcomes: list[RuleOutcome] = []
+    examined = 0
+    excluded = 0
     for document in documents:
-        inspection = document.inspection
-        if not document.is_pdf or inspection is None or not inspection.readable:
+        if not document.is_pdf:
             continue
-        if inspection.text_coverage is None:
-            outcomes.extend(_indeterminate("Sampled searchable-text coverage is unavailable."))
-        elif inspection.text_coverage < threshold:
+        inspection = _examined(document)
+        if inspection is None or inspection.text_coverage is None:
+            excluded += 1
+            continue
+        examined += 1
+        if inspection.text_coverage < threshold:
             if inspection.text_coverage == 0:
                 message = (
                     "No searchable text was found on any sampled page; this PDF may be a "
@@ -180,13 +251,15 @@ def check_text_coverage(context: RuleContext, rule: RuleDefinition) -> Iterable[
                     confidence=inspection.extraction_confidence,
                 )
             )
-    return outcomes or [
-        RuleOutcome(
-            status=RuleOutcomeStatus.PASS,
-            message="Inspected PDFs meet the sampled searchable-text threshold.",
-            remediation="No action is needed for this check.",
-        )
-    ]
+    return _conclude(
+        outcomes,
+        examined=examined,
+        excluded=excluded,
+        pass_message=(
+            f"All {examined} inspected PDF(s) meet the sampled searchable-text threshold."
+        ),
+        nothing_examined_message="No PDF was inspected, so searchable text was not sampled.",
+    )
 
 
 def check_active_content(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -194,10 +267,16 @@ def check_active_content(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
     if incomplete:
         return _indeterminate("PDF active-content facts are unavailable.")
     outcomes: list[RuleOutcome] = []
+    examined = 0
+    excluded = 0
     for document in documents:
-        inspection = document.inspection
-        if not document.is_pdf or inspection is None:
+        if not document.is_pdf:
             continue
+        inspection = _examined(document)
+        if inspection is None:
+            excluded += 1
+            continue
+        examined += 1
         suspicious = inspection.javascript_present or inspection.launch_action_present
         suspicious = suspicious or inspection.embedded_file_count > 0
         if suspicious:
@@ -219,13 +298,16 @@ def check_active_content(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
                     confidence=inspection.extraction_confidence,
                 )
             )
-    return outcomes or [
-        RuleOutcome(
-            status=RuleOutcomeStatus.PASS,
-            message="No active PDF actions or embedded files were detected.",
-            remediation="No action is needed for this check.",
-        )
-    ]
+    return _conclude(
+        outcomes,
+        examined=examined,
+        excluded=excluded,
+        pass_message=(
+            f"No active PDF actions or embedded files were detected in the {examined} "
+            "inspected PDF(s)."
+        ),
+        nothing_examined_message="No PDF was inspected, so active content was not examined.",
+    )
 
 
 def check_flattened_forms(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -235,10 +317,18 @@ def check_flattened_forms(context: RuleContext, _: RuleDefinition) -> Iterable[R
     if incomplete:
         return _indeterminate("PDF form-field facts are unavailable.")
     outcomes: list[RuleOutcome] = []
+    examined = 0
+    excluded = 0
     for document in documents:
-        inspection = document.inspection
-        if not document.is_pdf or inspection is None:
+        if not document.is_pdf:
             continue
+        inspection = _examined(document)
+        # A form dictionary that could not be parsed reports zero fields; that zero is the
+        # absence of a reading, not the absence of fields.
+        if inspection is None or not inspection.form_fields_readable:
+            excluded += 1
+            continue
+        examined += 1
         if inspection.active_form_field_count:
             outcomes.append(
                 RuleOutcome(
@@ -258,13 +348,13 @@ def check_flattened_forms(context: RuleContext, _: RuleDefinition) -> Iterable[R
                     confidence=inspection.extraction_confidence,
                 )
             )
-    return outcomes or [
-        RuleOutcome(
-            status=RuleOutcomeStatus.PASS,
-            message="No fillable form fields were detected in inspected PDFs.",
-            remediation="No action is needed for this check.",
-        )
-    ]
+    return _conclude(
+        outcomes,
+        examined=examined,
+        excluded=excluded,
+        pass_message=(f"No fillable form fields were detected in the {examined} inspected PDF(s)."),
+        nothing_examined_message="No PDF was inspected, so form fields were not examined.",
+    )
 
 
 def check_structure_tags(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -274,13 +364,17 @@ def check_structure_tags(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
     if incomplete:
         return _indeterminate("PDF structure-tree facts are unavailable.")
     outcomes: list[RuleOutcome] = []
+    examined = 0
+    excluded = 0
     for document in documents:
-        inspection = document.inspection
-        if not document.is_pdf or inspection is None or not inspection.readable:
+        if not document.is_pdf:
             continue
-        if inspection.structure_tree_present is None:
-            outcomes.extend(_indeterminate("A PDF structure tree could not be determined."))
-        elif not inspection.structure_tree_present:
+        inspection = _examined(document)
+        if inspection is None or inspection.structure_tree_present is None:
+            excluded += 1
+            continue
+        examined += 1
+        if not inspection.structure_tree_present:
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.WARNING,
@@ -297,13 +391,15 @@ def check_structure_tags(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
                     confidence=Confidence.MEDIUM,
                 )
             )
-    return outcomes or [
-        RuleOutcome(
-            status=RuleOutcomeStatus.PASS,
-            message="All inspected PDFs contain a structure tree for screen readers.",
-            remediation="No action is needed for this check.",
-        )
-    ]
+    return _conclude(
+        outcomes,
+        examined=examined,
+        excluded=excluded,
+        pass_message=(
+            f"All {examined} inspected PDF(s) contain a structure tree for screen readers."
+        ),
+        nothing_examined_message="No PDF was inspected, so structure tags were not examined.",
+    )
 
 
 def check_file_size(context: RuleContext, rule: RuleDefinition) -> Iterable[RuleOutcome]:

@@ -6,6 +6,26 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Fixed checks that reported a clean result for documents they never read. A PDF
+  that timed out, failed to parse, or is encrypted still produced a
+  `PdfInspection` with every absence signal at its default, so the searchable
+  text, active content, fillable form, and structure tag checks passed on it.
+  A package whose PDFs all timed out therefore produced the same passing lines
+  as a package that was genuinely clean. Those checks now examine only
+  completed inspections, state the number of documents each pass covers, and
+  report anything they could not examine as a manual-review item.
+- `PdfInspection` now carries `form_fields_readable`, so a form dictionary that
+  could not be parsed is distinguishable from a document with no form fields
+  rather than both reporting a field count of zero.
+- CI and the security workflow install with `uv sync --locked` instead of
+  `--frozen`; `--frozen` exits 0 on a lockfile that has drifted from
+  `pyproject.toml`, so lockfile drift previously passed unnoticed.
+- Enabled `pytest-socket` through `--disable-socket`. It was a declared
+  development dependency that was never activated, so nothing enforced the
+  documented "no network requests at runtime" boundary; a test now fails if the
+  guard is ever switched off.
+- Corrected workflow and script comments that described this public repository
+  as private.
 - Named every portfolio standard explicitly in the README conformance table
   with reasoned N/A rows, added a Quality & Metrics ledger and
   AI-development-measurement declaration to the roadmap, and disclosed

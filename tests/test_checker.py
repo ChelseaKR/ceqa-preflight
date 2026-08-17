@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import socket
 from pathlib import Path
 
 import pytest
 from pypdf import PdfWriter
+from pytest_socket import SocketBlockedError
 
 from ceqa_preflight.checker import check_package
 from ceqa_preflight.models import FilingType, PackageManifest
@@ -63,6 +65,20 @@ def test_check_package_is_local_and_returns_source_cited_report(tmp_path: Path) 
     assert '<html lang="en">' in html
     assert "Manual review" in html
     assert "<script" not in html
+
+
+@pytest.mark.filterwarnings("ignore:A test tried to use socket.socket")
+def test_the_suite_actually_blocks_network_access() -> None:
+    """Guard the guard: prove --disable-socket is in effect for this run.
+
+    The README promises the tool makes no network requests at runtime. pytest-socket is
+    what holds that promise to account, but it only does so while `--disable-socket` is in
+    addopts; drop the flag and the whole suite goes on passing while the promise quietly
+    stops being enforced. This test fails in that case.
+    """
+
+    with pytest.raises(SocketBlockedError):
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 def test_manifest_filing_type_must_match_requested_type(tmp_path: Path) -> None:

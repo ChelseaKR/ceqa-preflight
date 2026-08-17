@@ -260,6 +260,10 @@ def test_parser_warnings_and_extraction_failures_stay_structured(
     assert result.extraction_confidence is Confidence.LOW
     assert len(result.parser_warnings) == 3
     assert result.extracted_characters == {}
+    # The field count is 0 because the form dictionary could not be read, so the
+    # inspection must say so rather than let a caller read the 0 as "no form fields".
+    assert result.active_form_field_count == 0
+    assert result.form_fields_readable is False
 
 
 def test_page_count_failure_is_a_structured_result(
@@ -314,6 +318,7 @@ def test_worker_main_sends_success_or_generic_failure(monkeypatch: pytest.Monkey
                 "text_coverage": None,
                 "active_form_field_count": 0,
                 "active_form_field_names": [],
+                "form_fields_readable": True,
                 "structure_tree_present": None,
                 "embedded_file_count": 0,
                 "javascript_present": False,
