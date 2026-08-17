@@ -28,5 +28,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           enable-cache: true
-      - run: uv sync --all-groups --frozen
+      # --locked, not --frozen: --frozen installs the lockfile as-is and exits 0 even when
+      # pyproject.toml has moved on, so a drifted lockfile would pass CI silently. --locked
+      # asserts the lockfile is current and fails when it is not.
+      - run: uv sync --all-groups --locked
       - run: make verify

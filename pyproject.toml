@@ -86,7 +86,11 @@ warn_unreachable = true
 packages = ["ceqa_preflight"]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-markers"
+# --disable-socket enforces the README's "no network requests at runtime" promise. Without
+# it pytest-socket is installed but never activated, so a regression that added a network
+# call would pass the whole suite. Tests that legitimately need a socket opt in per-test
+# with @pytest.mark.enable_socket.
+addopts = "-ra --strict-markers --disable-socket"
 testpaths = ["tests"]
 
 [tool.coverage.run]
