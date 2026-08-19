@@ -1,7 +1,10 @@
 """CLI smoke tests."""
 
+import json
 from pathlib import Path
+from typing import Any
 
+import pytest
 from pypdf import PdfWriter
 from typer.testing import CliRunner
 
@@ -9,6 +12,15 @@ from ceqa_preflight import __version__
 from ceqa_preflight.cli import app
 
 runner = CliRunner()
+
+
+def _reported_rule_ids(stdout: str) -> tuple[set[str], set[str]]:
+    """Return the rule identifiers a JSON report ran, and the ones it says did not run."""
+
+    report: dict[str, Any] = json.loads(stdout)
+    ran = {finding["rule_id"] for finding in report["findings"] + report["manual_review"]}
+    not_run = {skipped["rule_id"] for skipped in report["not_run"]}
+    return ran, not_run
 
 
 def test_version_option() -> None:
@@ -130,9 +142,14 @@ def test_check_excludes_filing_pilot_rules_unless_explicitly_requested(tmp_path:
     experimental = runner.invoke(app, [*base_arguments, "--include-experimental"])
 
     assert default.exit_code == 0
-    assert '"rule_id": "NOE-001"' not in default.stdout
+    default_ran, default_not_run = _reported_rule_ids(default.stdout)
+    assert "NOE-001" not in default_ran
+    # The skipped filing rules are named in the report itself, not left to be inferred.
+    assert {"NOE-001", "NOE-002", "NOE-003"} <= default_not_run
     assert experimental.exit_code == 0
-    assert '"rule_id": "NOE-001"' in experimental.stdout
+    experimental_ran, experimental_not_run = _reported_rule_ids(experimental.stdout)
+    assert "NOE-001" in experimental_ran
+    assert experimental_not_run == set()
 
 
 def test_init_creates_a_non_overwriting_template(tmp_path: Path) -> None:
@@ -262,10 +279,13 @@ def test_check_rule_selection_flags(tmp_path: Path) -> None:
     empty = runner.invoke(app, [*base, "--rules", " , "])
 
     assert only.exit_code == 0
-    assert '"rule_id": "CORE-001"' in only.stdout
-    assert '"rule_id": "PDF-001"' not in only.stdout
+    only_ran, only_not_run = _reported_rule_ids(only.stdout)
+    assert only_ran == {"CORE-001"}
+    assert "PDF-001" in only_not_run
     assert excluded.exit_code == 0
-    assert '"rule_id": "CORE-001"' not in excluded.stdout
+    excluded_ran, excluded_not_run = _reported_rule_ids(excluded.stdout)
+    assert "CORE-001" not in excluded_ran
+    assert "CORE-001" in excluded_not_run
     assert unknown.exit_code == 2
     assert "unknown rule identifier" in unknown.stderr
     assert empty.exit_code == 2
@@ -274,6 +294,71 @@ def test_check_rule_selection_flags(tmp_path: Path) -> None:
 
     assert experimental_only.exit_code == 2
     assert "--include-experimental" in experimental_only.stderr
+
+
+@pytest.mark.parametrize("output_format", ["console", "json", "html", "checklist"])
+def test_no_output_format_reports_a_clean_pass_while_hiding_a_skipped_check(
+    tmp_path: Path, output_format: str
+) -> None:
+    """A clean-looking report in any format must still name the checks that did not run.
+
+    Excluding a rule leaves a report with no failures and exit code 0. Without the
+    disclosure below, that report is indistinguishable from one where every check ran,
+    and the reader's next step is submission.
+    """
+
+    package = tmp_path / "package"
+    package.mkdir()
+    writer = PdfWriter()
+    writer.add_blank_page(width=612, height=792)
+    with (package / "notice_of_exemption.pdf").open("wb") as output:
+        writer.write(output)
+
+    result = runner.invoke(
+        app,
+        [
+            "check",
+            str(package),
+            "--filing-type",
+            "NOE",
+            "--format",
+            output_format,
+            "--exclude-rules",
+            "PDF-003",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "PDF-003" in result.stdout
+    assert "did not run" in result.stdout
+    if output_format == "json":
+        _, not_run = _reported_rule_ids(result.stdout)
+        assert not_run == {"PDF-003", "NOE-001", "NOE-002", "NOE-003"} | {
+            "NOE-M001",
+            "NOE-M002",
+            "NOE-M003",
+        }
+    else:
+        assert "6 check(s) not run" not in result.stdout  # PDF-003 plus the six pilot rules
+        assert "7 check(s) not run" in result.stdout
+
+
+def test_a_report_with_no_skipped_checks_says_so(tmp_path: Path) -> None:
+    package = tmp_path / "package"
+    package.mkdir()
+    writer = PdfWriter()
+    writer.add_blank_page(width=612, height=792)
+    with (package / "notice_of_exemption.pdf").open("wb") as output:
+        writer.write(output)
+
+    result = runner.invoke(
+        app,
+        ["check", str(package), "--filing-type", "NOE", "--include-experimental"],
+    )
+
+    assert result.exit_code == 0
+    assert "0 check(s) not run" in result.stdout
+    assert "Every check that applies to this filing type ran." in result.stdout
 
 
 def test_check_renders_a_printable_checklist(tmp_path: Path) -> None:

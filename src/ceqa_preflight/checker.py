@@ -9,12 +9,19 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from ceqa_preflight import __version__
-from ceqa_preflight.models import FilingType, FindingStatus, InspectionReport, PackageManifest
+from ceqa_preflight.models import (
+    FilingType,
+    FindingStatus,
+    InspectionReport,
+    PackageManifest,
+    SkippedCheck,
+    SkipReason,
+)
 from ceqa_preflight.observability import event
 from ceqa_preflight.package_loader import open_package
 from ceqa_preflight.pdf_inspector import inspect_pdf
-from ceqa_preflight.rule_catalog import RuleCatalog
-from ceqa_preflight.rule_engine import RuleContext, RuleEngine
+from ceqa_preflight.rule_catalog import RuleCatalog, RuleDefinition
+from ceqa_preflight.rule_engine import RuleContext, RuleEngine, skipped_check
 from ceqa_preflight.rule_registry import default_catalog, default_registry
 
 _MAX_INSPECTION_WORKERS = 4
@@ -60,24 +67,41 @@ def _manifest_documents(manifest: PackageManifest | None) -> dict[str, tuple[str
     return {entry.path: (entry.category, entry.primary) for entry in manifest.documents}
 
 
-def _filter_catalog(
-    catalog: RuleCatalog,
+def _selection_skip_reason(
+    rule: RuleDefinition,
     rule_ids: set[str] | None,
     exclude_rule_ids: set[str] | None,
-) -> RuleCatalog:
+) -> SkipReason | None:
+    if exclude_rule_ids is not None and rule.id in exclude_rule_ids:
+        return SkipReason.EXCLUDED_BY_REQUEST
+    if rule_ids is not None and rule.id not in rule_ids:
+        return SkipReason.NOT_SELECTED
+    return None
+
+
+def _filter_catalog(
+    catalog: RuleCatalog,
+    filing_type: FilingType,
+    rule_ids: set[str] | None,
+    exclude_rule_ids: set[str] | None,
+) -> tuple[RuleCatalog, list[SkippedCheck]]:
+    """Apply the caller's rule selection, recording every applicable rule it removed."""
+
     known = {rule.id for rule in catalog.rules}
     unknown = sorted(((rule_ids or set()) | (exclude_rule_ids or set())) - known)
     if unknown:
         raise ValueError(f"unknown rule identifier(s): {', '.join(unknown)}")
-    rules = [
-        rule
-        for rule in catalog.rules
-        if (rule_ids is None or rule.id in rule_ids)
-        and (exclude_rule_ids is None or rule.id not in exclude_rule_ids)
-    ]
+    rules: list[RuleDefinition] = []
+    deselected: list[SkippedCheck] = []
+    for rule in catalog.rules:
+        reason = _selection_skip_reason(rule, rule_ids, exclude_rule_ids)
+        if reason is None:
+            rules.append(rule)
+        elif filing_type in rule.filing_types:
+            deselected.append(skipped_check(rule, reason))
     if not rules:
         raise ValueError("rule selection removed every applicable rule")
-    return RuleCatalog(catalog_version=catalog.catalog_version, rules=rules)
+    return RuleCatalog(catalog_version=catalog.catalog_version, rules=rules), deselected
 
 
 def check_package(
@@ -126,7 +150,8 @@ def check_package(
             fingerprint_lines.append(f"{relative_path}\0{checksum}")
         _inspect_documents(documents, inspection_targets)
 
-    catalog = _filter_catalog(default_catalog(filing_type), rule_ids, exclude_rule_ids)
+    full_catalog = default_catalog(filing_type)
+    catalog, deselected = _filter_catalog(full_catalog, filing_type, rule_ids, exclude_rule_ids)
     run = RuleEngine(catalog, default_registry()).run(
         RuleContext(
             filing_type=filing_type,
@@ -144,6 +169,8 @@ def check_package(
         )
     manual_review = [finding for finding in run.findings if finding.status is FindingStatus.MANUAL]
     findings = [finding for finding in run.findings if finding.status is not FindingStatus.MANUAL]
+    catalog_order = {rule.id: index for index, rule in enumerate(full_catalog.rules)}
+    not_run = sorted(deselected + run.not_run, key=lambda skipped: catalog_order[skipped.rule_id])
     report = InspectionReport(
         tool_version=__version__,
         ruleset_version=catalog.catalog_version,
@@ -152,6 +179,7 @@ def check_package(
         filing_type=filing_type,
         findings=findings,
         manual_review=manual_review,
+        not_run=not_run,
         disclaimer=DISCLAIMER,
     )
     if run.exit_code == 2:

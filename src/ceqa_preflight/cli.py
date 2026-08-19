@@ -187,10 +187,16 @@ def check(
         counts = summarize_counts(report)
         batch_lines.append(
             f"{source}: exit {exit_code}, {counts['failure']} failure(s), "
-            f"{counts['warning']} warning(s), {counts['manual']} manual-review item(s)"
+            f"{counts['warning']} warning(s), {counts['manual']} manual-review item(s), "
+            f"{counts['not_run']} check(s) not run"
         )
         worst_exit_code = max(worst_exit_code, exit_code)
-        event("check_completed", exit_code=exit_code, findings=len(report.findings))
+        event(
+            "check_completed",
+            exit_code=exit_code,
+            findings=len(report.findings),
+            not_run=len(report.not_run),
+        )
     if len(sources) > 1:
         typer.echo("Batch summary")
         for line in batch_lines:

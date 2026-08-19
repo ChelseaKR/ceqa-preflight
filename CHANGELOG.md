@@ -6,6 +6,20 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Every report now names the checks that did not run. A rule that applies to the
+  filing type but was skipped — experimental without `--include-experimental`,
+  removed by `--rules` or `--exclude-rules`, or withdrawn — is listed with its
+  identifier, source citation, and the reason, in the console, JSON, HTML, and
+  checklist formats. Previously a default NOE or NOD run silently omitted the six
+  filing-specific rules (six of the twenty that apply), two of which can produce a
+  failure, and `--exclude-rules` could turn a report with warnings into `0
+  failure(s), 0 warning(s)` with no trace of the removal; the printable sign-off
+  checklist, whose next step is submission, was identical either way. Exit codes
+  are unchanged: a skipped check still exits `0`, which the README now states
+  explicitly.
+- Report schema version `1.1` adds the `not_run` array. The addition is
+  backwards compatible; existing consumers of `findings` and `manual_review` are
+  unaffected.
 - Fixed checks that reported a clean result for documents they never read. A PDF
   that timed out, failed to parse, or is encrypted still produced a
   `PdfInspection` with every absence signal at its default, so the searchable

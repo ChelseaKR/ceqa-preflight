@@ -7,7 +7,7 @@ from collections import Counter
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from ceqa_preflight.models import Finding, FindingStatus, InspectionReport
+from ceqa_preflight.models import Finding, FindingStatus, InspectionReport, SkippedCheck
 
 _TEMPLATES = Environment(
     loader=PackageLoader("ceqa_preflight", "templates"),
@@ -26,8 +26,12 @@ def _render_finding(finding: Finding) -> str:
     return f"[{finding.status.value.upper()}] {finding.rule_id}{location}: {finding.message}"
 
 
+def _render_skipped(skipped: SkippedCheck) -> str:
+    return f"[NOT RUN] {skipped.rule_id} ({skipped.title}): {skipped.detail}"
+
+
 def summarize_counts(report: InspectionReport) -> dict[str, int]:
-    """Return finding counts by status, including manual-review items."""
+    """Return finding counts by status, including manual-review and not-run items."""
 
     counts = Counter(finding.status.value for finding in report.findings)
     return {
@@ -35,25 +39,51 @@ def summarize_counts(report: InspectionReport) -> dict[str, int]:
         "warning": counts.get(FindingStatus.WARNING.value, 0),
         "pass": counts.get(FindingStatus.PASS.value, 0),
         "manual": len(report.manual_review),
+        "not_run": len(report.not_run),
     }
+
+
+ALL_CHECKS_RAN = "Every check that applies to this filing type ran."
+
+
+def _scope_line(report: InspectionReport) -> str:
+    """State the run's coverage so a clean result can never be mistaken for a full one."""
+
+    if not report.not_run:
+        return ALL_CHECKS_RAN
+    return (
+        f"Scope: {len(report.not_run)} applicable check(s) did not run. This report makes no "
+        "statement about what they cover."
+    )
 
 
 def _summary_line(report: InspectionReport) -> str:
     counts = summarize_counts(report)
     return (
         f"Summary: {counts['failure']} failure(s), {counts['warning']} warning(s), "
-        f"{counts['pass']} passed check(s), {counts['manual']} manual-review item(s)."
+        f"{counts['pass']} passed check(s), {counts['manual']} manual-review item(s), "
+        f"{counts['not_run']} check(s) not run."
     )
 
 
 def render_console(report: InspectionReport) -> str:
     """Return plain text that remains useful with a terminal screen reader."""
 
-    lines = ["CEQA Preflight advisory report", report.disclaimer, "", _summary_line(report), ""]
+    lines = [
+        "CEQA Preflight advisory report",
+        report.disclaimer,
+        "",
+        _summary_line(report),
+        _scope_line(report),
+        "",
+    ]
     lines.extend(_render_finding(finding) for finding in report.findings)
     if report.manual_review:
         lines.extend(["", "Manual review"])
         lines.extend(_render_finding(finding) for finding in report.manual_review)
+    if report.not_run:
+        lines.extend(["", "Checks that did not run"])
+        lines.extend(_render_skipped(skipped) for skipped in report.not_run)
     return "\n".join(lines) + "\n"
 
 
@@ -63,6 +93,18 @@ def render_html(report: InspectionReport) -> str:
     return _TEMPLATES.get_template("report.html.j2").render(
         report=report, counts=summarize_counts(report)
     )
+
+
+def _not_run_checklist_lines(report: InspectionReport) -> list[str]:
+    """Make every skipped check something a signer has to acknowledge, not discover."""
+
+    if not report.not_run:
+        return []  # the scope line above already states that every applicable check ran
+    lines = ["", "Checks that did not run — this checklist does not cover them"]
+    for skipped in report.not_run:
+        lines.append(f"[ ] {skipped.rule_id} ({skipped.title}) was not run.")
+        lines.append(f"    {skipped.detail}")
+    return lines
 
 
 def render_checklist(report: InspectionReport) -> str:
@@ -77,6 +119,8 @@ def render_checklist(report: InspectionReport) -> str:
         f"Generated at: {report.generated_at.isoformat()}",
         "",
         _summary_line(report),
+        _scope_line(report),
+        *_not_run_checklist_lines(report),
     ]
     unresolved = [
         finding

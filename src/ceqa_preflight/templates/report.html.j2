@@ -31,7 +31,14 @@
         {{ counts["failure"] }} failure(s),
         {{ counts["warning"] }} warning(s),
         {{ counts["pass"] }} passed check(s),
-        {{ counts["manual"] }} manual-review item(s).</p>
+        {{ counts["manual"] }} manual-review item(s),
+        {{ counts["not_run"] }} check(s) not run.</p>
+      {% if report.not_run %}
+      <p class="scope"><strong>Scope:</strong> {{ report.not_run | length }} applicable check(s)
+        did not run. This report makes no statement about what they cover.</p>
+      {% else %}
+      <p class="scope">Every check that applies to this filing type ran.</p>
+      {% endif %}
       <p class="metadata">
         Tool version {{ report.tool_version }}, ruleset {{ report.ruleset_version }},
         generated {{ report.generated_at.isoformat() }}.<br>
@@ -71,6 +78,20 @@
       </table>
       {% else %}
       <p>No manual-review items were generated.</p>
+      {% endif %}
+      <h2>Checks that did not run</h2>
+      {% if report.not_run %}
+      <table>
+        <caption>Applicable checks this report does not cover</caption>
+        <thead><tr><th scope="col">Rule</th><th scope="col">Check</th><th scope="col">Why it did not run</th></tr></thead>
+        <tbody>
+        {% for skipped in report.not_run %}
+          <tr><td>{{ skipped.rule_id }}{% if skipped.source %}<br><a href="{{ skipped.source.url }}">Source</a>{% endif %}</td><td>{{ skipped.title }}</td><td>{{ skipped.detail }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>Every check that applies to this filing type ran.</p>
       {% endif %}
     </main>
   </body>
