@@ -34,6 +34,15 @@ class FindingStatus(StrEnum):
     MANUAL = "manual"
 
 
+class SkipReason(StrEnum):
+    """Why an applicable rule did not run during a check."""
+
+    EXPERIMENTAL_NOT_INCLUDED = "experimental_not_included"
+    WITHDRAWN = "withdrawn"
+    NOT_SELECTED = "not_selected"
+    EXCLUDED_BY_REQUEST = "excluded_by_request"
+
+
 class Confidence(StrEnum):
     """Confidence in extracted or inferred evidence."""
 
@@ -81,6 +90,22 @@ class Finding(StrictModel):
     remediation: str = Field(min_length=1)
     source: SourceCitation | None = None
     confidence: Confidence = Confidence.HIGH
+
+
+class SkippedCheck(StrictModel):
+    """A rule that applied to this filing type but did not run, and why.
+
+    A report that lists only what ran cannot be read as a statement about the whole
+    package: a reader has no way to tell an all-clear from an all-clear with checks
+    removed. Every skip is recorded here so a clean result always carries its own scope.
+    """
+
+    rule_id: str = Field(min_length=1)
+    rule_version: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    reason: SkipReason
+    detail: str = Field(min_length=1)
+    source: SourceCitation | None = None
 
 
 def _normalize_relative_path(value: str) -> str:
@@ -154,7 +179,7 @@ class PackageManifest(StrictModel):
 class InspectionReport(StrictModel):
     """Versioned, JSON-serializable output for an inspection run."""
 
-    report_schema_version: str = Field(default="1.0")
+    report_schema_version: str = Field(default="1.1")
     tool_version: str = Field(min_length=1)
     ruleset_version: str = Field(min_length=1)
     generated_at: datetime
@@ -162,4 +187,5 @@ class InspectionReport(StrictModel):
     filing_type: FilingType
     findings: list[Finding] = Field(default_factory=list)
     manual_review: list[Finding] = Field(default_factory=list)
+    not_run: list[SkippedCheck] = Field(default_factory=list)
     disclaimer: str = Field(min_length=1)
