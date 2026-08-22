@@ -22,6 +22,9 @@ text they send to a log or a file, and write their output only to a path the
 operator chooses. An operator who cannot accept the provider's terms for a
 package must not run the `ai` commands on it; `check` is unaffected.
 
+Provider data-flow language reviewed and approved by the maintainer on
+2026-08-22 (owner sign-off for the ADR 0002 direction).
+
 ## Restrictions
 
 Do not commit real packages or reports to this repository. Use synthetic,
