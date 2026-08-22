@@ -31,6 +31,11 @@ dependencies = [
   "typer>=0.15,<1",
 ]
 
+[project.optional-dependencies]
+# The opt-in `ai` command group (ADR 0002). The default `check` path never imports it.
+ai = ["anthropic>=0.125,<1"]
+ai-bedrock = ["anthropic[bedrock]>=0.125,<1"]
+
 [project.urls]
 Documentation = "https://github.com/ChelseaKR/ceqa-preflight#readme"
 Issues = "https://github.com/ChelseaKR/ceqa-preflight/issues"
@@ -41,6 +46,7 @@ ceqa-preflight = "ceqa_preflight.cli:app"
 
 [dependency-groups]
 dev = [
+  "anthropic[bedrock]>=0.125,<1",
   "bandit[toml]>=1.8.3",
   "hypothesis>=6.127",
   "mypy>=1.18",
@@ -90,6 +96,11 @@ python_version = "3.12"
 strict = true
 warn_unreachable = true
 packages = ["ceqa_preflight"]
+
+[[tool.mypy.overrides]]
+# Optional extra, imported lazily; the default path must type-check without it installed.
+module = ["anthropic", "anthropic.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 # --disable-socket enforces the README's "no network requests at runtime" promise. Without

@@ -9,6 +9,7 @@ from typing import Annotated
 import typer
 
 from ceqa_preflight import __version__
+from ceqa_preflight.ai.cli import ai_app
 from ceqa_preflight.checker import check_package
 from ceqa_preflight.manifest import ManifestError, load_manifest
 from ceqa_preflight.models import FilingType
@@ -38,6 +39,7 @@ rules_app = typer.Typer(help="Inspect the built-in, source-cited rule catalog.")
 pilot_app = typer.Typer(help="Create and summarize privacy-preserving pilot evidence files.")
 app.add_typer(rules_app, name="rules")
 app.add_typer(pilot_app, name="pilot")
+app.add_typer(ai_app, name="ai")
 
 
 def _show_version(value: bool) -> None:

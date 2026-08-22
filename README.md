@@ -88,6 +88,34 @@ The `pilot` commands support the permissioned evaluation protocol with opaque
 IDs and controlled labels only; they do not read filing packages or accept
 free-text reviewer notes.
 
+### Opt-in AI commands
+
+The `ai` command group ([ADR 0002](docs/adr/0002-ai-at-the-edges.md)) is the
+only part of the tool that talks to a model provider, and nothing else invokes
+it. Install the extra (`pip install 'ceqa-preflight[ai]'`, or `[ai-bedrock]`
+for Amazon Bedrock), put the credential in the environment
+(`ANTHROPIC_API_KEY`, or the AWS credential chain plus `AWS_REGION`), and opt
+in per command. The default model is `claude-sonnet-5`; `--provider`,
+`--model`, `CEQA_PREFLIGHT_AI_PROVIDER`, and `CEQA_PREFLIGHT_AI_MODEL` change
+it. Every `ai` command states the data flow before it runs: the text it sends
+leaves the machine for the duration of the request, and the provider's terms
+apply to it. It never writes that text to a log.
+
+    uv run ceqa-preflight ai extract ./my-package --filing-type NOE --write-manifest ./my-package/package.yaml
+    uv run ceqa-preflight ai extract ./my-package --filing-type NOE --format json --output ./reports/extraction.json
+
+`ai extract` reads each PDF's text layer through the same bounded,
+process-isolated path `check` uses and asks the model to copy out the facts a
+manifest carries: what kind of document it is, the project title, lead agency,
+county, city, SCH number, exemption status and citation, and so on. Every value
+must come with a verbatim quote from the document; the tool verifies the quote
+against the text and withholds any value whose quote does not verify. A field
+the text does not state is `unknown`. A scanned, image-only PDF is reported as
+having no text layer and is not sent anywhere. The result is a **draft**
+manifest for a person to review and correct; only `check --manifest` on the
+reviewed manifest produces findings. The model structures input. It never
+decides anything, and the rule engine never sees its output directly.
+
 ### Exit codes
 
 `check` exits `0` when no automated failure was found (warnings and
