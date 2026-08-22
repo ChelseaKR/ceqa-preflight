@@ -1,0 +1,674 @@
+{
+  "ceqa-preflight-source-review-addendum-2026-07-27": [
+    {
+      "id": "ceqa-preflight-source-review-addendum-2026-07-27#p001",
+      "heading": "Common-rule source review addendum — 2026-07-27",
+      "text": "This addendum extends the [2026-07-18 filing-rule source review](rule-source-review-2026-07-18.md) to cover common technical rules added in rule catalog 1.2.0. The official LCI State Clearinghouse [pre-submission checklist](https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf) and [common mistakes guidance](https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf) were re-read on 2026-07-27 alongside the [FAQ](https://lci.ca.gov/sch/faq/)."
+    },
+    {
+      "id": "ceqa-preflight-source-review-addendum-2026-07-27#p002",
+      "heading": "New and changed rules",
+      "text": "Rule — Source relationship — Lifecycle decision `PDF-007` flattened, non-fillable PDF — Common mistakes #3/#8 and checklist section 3 explicitly require flattened, non-editable documents with no fillable fields. Split out of `PDF-006` so the official guidance is the citation. — Active; objective, correctable signal. `PDF-008` screen-reader structure tags — Checklist section 3 asks for documents \"properly tagged for screen reader compatibility.\" The rule reports only the structure-tree flag and states it is not accessibility certification, consistent with the documented accessibility boundaries. — Active as an advisory warning. `FILE-003` static PDF document format — Common mistakes #8 directs filers to convert documents to static, fully text-searchable PDFs. Flags common convertible formats only, so package manifests are never flagged. — Active as an advisory warning."
+    },
+    {
+      "id": "ceqa-preflight-source-review-addendum-2026-07-27#p003",
+      "heading": "New and changed rules",
+      "text": "`FILE-004` advisory file size — **No official size limit is documented** in any reviewed source. The rule is self-cited as a CEQA Preflight advisory technical rule with a parameterized threshold, and its remediation says to verify current portal guidance. — Active as an advisory warning; wording must not imply an official limit. `FILE-005` portable filename characters — No official character guidance exists beyond descriptive names (already `FILE-001`). Self-cited technical portability rule. — Active as an advisory warning. `PDF-006` active PDF content (narrowed) — Now covers only scripts, launch actions, and embedded files under its existing security citation; form fields moved to `PDF-007`. — Active, unchanged lifecycle. `PDF-003` searchable-text coverage (remediation) — The zero-coverage remediation now recommends OCR, matching the FAQ and common mistakes #3 solution text. — Active, unchanged lifecycle."
+    },
+    {
+      "id": "ceqa-preflight-source-review-addendum-2026-07-27#p004",
+      "heading": "Freshness",
+      "text": "Recheck these sources on the schedule set by the 2026-07-18 review (before 2026-10-18 or a tagged release, whichever is earlier)."
+    }
+  ],
+  "lci-sch-common-mistakes-2025": [
+    {
+      "id": "lci-sch-common-mistakes-2025#p001",
+      "heading": null,
+      "text": "Common mistakes to avoid and tips to ensure a smooth process when submitting to CEQA Submit: Being thorough and ensuring compliance with submission requirements saves time and helps avoid consequences. The errors referenced below not only delay the publication process but also extend the timelines for public and state agency reviews, potentially delaying project approvals. Additionally, recurring mistakes to bypass the SCH publishing requirements will delay publication and cause unnecessary setbacks and hardship on all parties involved."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p002",
+      "heading": "1. Incomplete or Incorrect Project Information",
+      "text": "• Mistake: Failing to provide detailed and accurate project information, or address inconsistencies between the Environmental Document(s), applicable Notice of Completion (NOC), Notice of Determination (NOD), Notice of Exemption (NOE) forms, and CEQA Submit fields. • Solution: Double-check that project titles, descriptions, and other details in CEQA Submit match those on the Environmental Document(s) and applicable NOC, NOD, and NOE forms."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p003",
+      "heading": "2. Missing or Misclassiﬁed Attachments",
+      "text": "• Mistake: Not including required documents or incorrectly categorizing attachments (e.g., not categorizing an NOC, NOD, or NOE as such). • Solution: Include all necessary and applicable files and make sure they are properly labeled and categorized."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p004",
+      "heading": "3. Non-Text Searchable Compliant Documents",
+      "text": "• Mistake: Submitting documents that are not fully accessible, such as containing fillable form fields or files without full text-searchable capabilities. • Solution: Flatten documents, run optical character recognition (OCR) scans and keyword searches, and ensure all uploaded files meet accessibility standards."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p005",
+      "heading": "4. Incorrect Document Type",
+      "text": "• Mistake: Selecting the wrong document type in CEQA Submit (e.g., Notice of Intent instead of Mitigated Negative Declaration). 1 • Solution: Confirm the document type aligns with the submission purpose, and update the \"Document Details\" tab, as needed."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p006",
+      "heading": "5. Incomplete Location and Contact Details",
+      "text": "• Mistake: Leaving out key information such as regions, counties, cities/designated communities, coordinates, or agency contact names reflected on the Environmental Document(s) and NOC, NOD and NOE forms and submittal attachments. • Solution: Enter all location details and make sure contact fields are complete and align with the Environmental Document(s), submittal attachments, and NOC, NOD and NOE forms."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p007",
+      "heading": "6. Inconsistent Tabs",
+      "text": "• Mistake: Mismatched entries within tabs like Local Action Types, Development Types, and Project Issues between the Environmental Document(s), applicable NOC, NOD, NOE forms, and CEQA Submit. • Solution: Verify all tabs in CEQA Submit match project details on the Environmental Document(s) and NOC, NOD, and NOE forms."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p008",
+      "heading": "7. Unclear State Review Period",
+      "text": "• Mistake: Providing insufficient information about whether a State Agency review is required, leading to delays. • Solution: Carefully assess with your agency.If a State Agency review is necessary, confirm your selection in CEQA Submit, and advise the State Clearinghouse via email: State.Clearinghouse@lci.ca.gov."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p009",
+      "heading": "8. Using Fillable or Editable Forms",
+      "text": "• Mistake: Uploading editable forms, which are not fully text searchable. • Solution: Convert forms to static, fully text-searchable PDFs before submission."
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025#p010",
+      "heading": "9. Failing to Reference Guidance Documents",
+      "text": "• Mistake: Overlooking the resources and guidelines provided by SCH. • Solution: Use tools like the CEQA Database User Guide and SCH Submission Instructions to ensure compliance. 2"
+    }
+  ],
+  "lci-sch-document-submission": [
+    {
+      "id": "lci-sch-document-submission#p001",
+      "heading": "Environmental Document Submission",
+      "text": "What kinds of environmental documents to submit to the State Clearinghouse, how to file documents, submission requirements, review process information, and accessibility requirements."
+    },
+    {
+      "id": "lci-sch-document-submission#p002",
+      "heading": "Accessibility",
+      "text": "State and federal agencies must comply with all applicable statutory and regulatory requirements related to the Americans with Disabilities Act for documents posted and made available on internet websites. Local agencies must comply with all applicable statutory and regulatory requirements related to the Americans with Disabilities Act for documents posted and made available on internet websites. The Governor’s Office of Land Use and Climate Innovation (LCI) accepts no responsibility for the content or accessibility of CEQA documents and accompanying attachments; LCI posts documents in the manner it receives them. LCI does not control the content of external, third-party documents submitted to us. For more information, please visit LCI’s Accessibility page."
+    },
+    {
+      "id": "lci-sch-document-submission#p003",
+      "heading": "How to File Environmental Documents and Notices",
+      "text": "In March 2019, the Governor’s Office of Land Use and Climate Innovation (LCI), State Clearinghouse Unit (SCH) launched CEQA Submit and the updated version of CEQAnet. Together, the two online platforms serve as the new way to submit and publish Environmental Documents and Notices. As of November 3, 2020, the SCH stopped accepting emails and hardcopies of environmental Documents and now require that all agencies submit documents via CEQA Submit for publication to CEQAnet. Upon receipt of documents to CEQA Submit, SCH staff reviews and then publishes those documents to CEQAnet. Upon publication, a confirmation is emailed and anyone can then use CEQAnet to access those documents. It only posts electronic copies of original documents received March 2019 and later, but it houses records of all CEQA documents the SCH has ever received."
+    },
+    {
+      "id": "lci-sch-document-submission#p004",
+      "heading": "Register into CEQA Submit:",
+      "text": "Please go to CEQA Submit and choose “Create an Account” to get started. If you are already registered, enter in your work email and you will receive a temporary key to log on."
+    },
+    {
+      "id": "lci-sch-document-submission#p005",
+      "heading": "What to Submit to the State Clearinghouse",
+      "text": "The State Clearinghouse (SCH) must receive all the following types of Environmental Documents (California Code of Regulations, Title 14): All Notices of Preparation (NOPs) of Draft Environmental Impact Reports (EIR) Draft Environmental Impact Reports (EIR), Negative Declarations, and all other Environmental Documents (reference NOC subtypes) prepared by State agencies Draft Environmental Documents prepared by a lead where a State agency is a Responsible Agency, Trustee Agency, or otherwise has jurisdiction by law with respect to the project Draft Environmental Documents on projects identified as being of statewide, regional, or areawide significance (CEQA Guidelines Section 15206) Draft Environmental Impact Statements, Environmental Assessments, and Findings of No Significant Impact (FONSI) prepared pursuant to NEPA (Title 40 CFR, Part 1500, commencing with Section 1500.1). Please refer to PRC Sections 21082.1 and Sections 15205-6 of the most recent CEQA Guidelines for more information on filing requirements."
+    },
+    {
+      "id": "lci-sch-document-submission#p006",
+      "heading": "What to Submit to the State Clearinghouse",
+      "text": "Additionally, the Senate Bill 375 CEQA Provision Flowcharts provide more information on project-specific filing requirements, as does LCI’s technical advisory on submitting documents to the State Clearinghouse. Notices of Determination (NODs) and Notices of Exemption (NOEs): Beginning January 1, 2024, Senate Bill (SB) 69 (Cortese, 2023) will require that local agencies electronically file all NODs with LCI in addition to the county clerk of the county where the project will be located. Additionally, SB 69 requires local agencies filing NOEs with the local county clerk to also file with LCI. (See Public Resources Code section 21152.) When you use the statutory exemptions contained in PRC Sections 22159.22, 21159.23, or 21159.24, you must file an NOE must be filed pursuant to PRC 21152.1. Check the language of the statutory exemption to see if a NOE is required."
+    },
+    {
+      "id": "lci-sch-document-submission#p007",
+      "heading": "What to Submit to the State Clearinghouse",
+      "text": "Note on Cal Cannabis Permits: For permits related to cannabis cultivation, manufacturing, or other commercial activity, CEQA review is typically done at the local level first, as part of a city or county’s local review process for a discretionary permit. Evidence of this local CEQA compliance is then submitted to the relevant State licensing authority as part of the license application. Please see the regulations of the relevant State licensing authority for information about the CEQA review process that authority conducts when considering a license application."
+    },
+    {
+      "id": "lci-sch-document-submission#p008",
+      "heading": "Review Process of Draft Environmental Documents",
+      "text": "For Draft Environmental Impact Reports (EIRs) only: lead agency prepares and submits the Notice of Preparation (NOP) to the State Clearinghouse (SCH). The State Clearinghouse assigns a unique identification number, and the NOP undergoes 30-day minimum review period. Refer to CEQA Guidelines Section 15082 for more information on NOPs Lead agency prepares the Draft Environmental Document Lead agency submits the Draft Document and other required attachments to the SCH via CEQA Submit Upon publication, the SCH assigns a unique SCH identification number (unless document is published under existing SCH#) and the review period begins. Refer to CEQA Guidelines Section 15105 for specific review period lengths If the project already has a SCH identification number from a previous document submittal, the lead agency should submit under the previously assigned SCH State review agencies comment on the Draft Document within the State review period. The SCH makes State agency comments available on CEQAnet. Reviewing agencies are responsible for forwarding comments to the lead and the SCH."
+    },
+    {
+      "id": "lci-sch-document-submission#p009",
+      "heading": "Review Process of Draft Environmental Documents",
+      "text": "The lead agency considers comments and decides on whether to approve a project (CEQA Guidelines Section 15044). If the project is approved, the lead agency files a Notice of Determination (NOD) (CEQA Guidelines Section 15075, 15094 and 15096(i)). Local agencies must file the NOD within five working days after deciding to carry out or approve the project with the County Clerk of the County the project will be in; Beginning January 1, 2024, Senate Bill (SB) 69 (Cortese, 2023) will require that local agencies electronically file all NODs with LCI in addition to the county clerk of the county where the project will be located. State agencies must file NOD within five working days after deciding to carry out or approve the project with the SCH. The lead agency files the approved/certified Final Document. The Final does not go under a review period unless the Lead indicates it wants it to go under review."
+    },
+    {
+      "id": "lci-sch-document-submission#p010",
+      "heading": "Updates to a Published Document",
+      "text": "Once the SCH publishes a document submission, the submitter of that document no longer has access to make changes. To make changes to a published project, individuals must email the requested changes to state.clearinghouse@lci.ca.gov and include the SCH number of the project that needs to be updated. The SCH requests that lead agencies provide a memo on official letterhead confirming/explaining the changes to the submission. For extended review requests, agencies should provide an updated Notice of Intent (NOI) or Notice of Availability (NOA). The SCH cannot remove attachments once they have been published but can post updated or corrected attachments."
+    },
+    {
+      "id": "lci-sch-document-submission#p011",
+      "heading": "Requesting a Shortened Review Period",
+      "text": "Under exceptional circumstances, the SCH may shorten the normal review periods for Draft Negative Declarations and Environmental Impact Reports (EIRs) prior to the start of the State review period. To request a shortened review period, the lead agency must: Email the SCH with a completed Shortened Review Request Form, the Draft Environmental Document, and a completed Notice of Completion (NOC) Form prior to submission of the Draft document The request form must identify which of the five criteria in Appendix K of the CEQA Guidelines are met for this project (CEQA Guidelines Section 15205(d)) and explain why the shortened review is necessary and identify prior approval from Responsible and Trustee state agencies (Public Resources Code Section 21091(e)). File the Draft Environmental Document – accompanied by the completed Shortened Review Request Form and NOC form via CEQA Submit – after the SCH approves the email request"
+    },
+    {
+      "id": "lci-sch-document-submission#p012",
+      "heading": "Draft/Final Environmental Documents",
+      "text": "Includes Environmental Impact Reports (EIRs), Negative Declarations (NDs/MNDs), and all other Notice of Completion (NOC) subtypes. Please include all the following materials in the “Attachments” section in CEQA Submit: Draft/Final Environmental Document Note: if your Final is not going under review, the NOC form and Summary Form are optional uploads to supplement your Final Document. Initial Study (IS) Notice of Availability (NOA) OR Notice of Intent (NOI) LCI does not have a standardized Notice of Intent (NOI) or Availability (NOA) form. Each lead agency may devise its own form, but the lead agency must meet the minimum content requirements pursuant to CEQA Guidelines Section 15072 and 15087.You can refer to this example of a Notice of Intent (NOI) and example of a Notice of Availability (NOA) that the SCH received from lead agencies. Notice of Completion & Environmental Document Transmittal (NOC) form LCI Summary Form See also LCI’s CEQA Technical Advisory on Submitting CEQA Documents to the State Clearinghouse for more information on Draft and Final Environmental Documents."
+    },
+    {
+      "id": "lci-sch-document-submission#p013",
+      "heading": "NOC subtypes",
+      "text": "Noc Subtype Description NOA Notice of Availability NOI Notice of Intent CON Early Consultation Notice NOP Notice of Preparation (of an EIR) EIR Draft Environmental Impact Report SIR Supplemental EIR SBE Subsequent EIR Neg Dec/ND Negative Declaration MND Mitigated Negative Declaration FED Functional Equivalent Document SCEA Sustainable Communities Environmental Assessment RAN Request for Advanced Notification EA Draft Environmental Assessment EIS Draft Environmental Impact Statement FONSI Finding of No Significant Impact MEA Master Environmental Assessment SEA Supplemental Environmental Assessment SIS Revised/Supplemental Impact Statement TRI Tribal Compact Environmental Evaluation BIA-LA Bureau of Indian Affairs Notice of Land Acquisition BIA-ND Bureau of Indian Affairs Notice of Decision NDE Notice of Decision ADM Addendum FIS Final Environmental Statement JD Joint Document FIN Final Document REV Revised FYI Informational RC Response to Comments ROD Record of Decision OTH Other type (none of the above)"
+    },
+    {
+      "id": "lci-sch-document-submission#p014",
+      "heading": "Notices of Preparation (NOPs) of a Draft EIR",
+      "text": "Please include all the following materials in the “Attachments” section in CEQA Submit: Notice of Preparation (NOP) form Notice of Completion (NOC) form Additional references to the NOP Refer to the most recent CEQA Guidelines Section 15082 for more information on NOPs."
+    },
+    {
+      "id": "lci-sch-document-submission#p015",
+      "heading": "Notices of Determination (NODs)",
+      "text": "Beginning January 1, 2024, Senate Bill (SB) 69 (Cortese, 2023) will require that local agencies electronically file all NODs with LCI in addition to the county clerk of the county where the project will be located. Please include all the following materials in the “Attachments” section in CEQA Submit: Notice of Determination (NOD) form Additional references to the NOD Notice of Determination (NOD) Fee and Filing Refer to CEQA Guidelines Sections 15075, 15094 and 15096(i) for more information on NODs."
+    },
+    {
+      "id": "lci-sch-document-submission#p016",
+      "heading": "Certified Regulatory Programs (CRP) – Submission of Notice of Decisions and Payment of California Department of Fish and Wildlife Fees.",
+      "text": "Please refer to the California Department of Fish and Wildlife (CDFW) website for information on paying CRP fees."
+    },
+    {
+      "id": "lci-sch-document-submission#p017",
+      "heading": "Notices of Exemption (NOEs)",
+      "text": "Beginning January 1, 2024, Senate Bill (SB) 69 (Cortese, 2023) requires local agencies filing NOEs with the local county clerk of the county where the project will be located, to also file with LCI. Please include all the following materials in the “Attachments” section in CEQA Submit: Notice of Exemption (NOE) form Additional references to the NOE Refer to CEQA Guidelines Section 15061-2 for more information on NOEs."
+    },
+    {
+      "id": "lci-sch-document-submission#p018",
+      "heading": "National Environmental Policy Act (NEPA) Federal Environmental Documents",
+      "text": "LCI is responsible for implementing Presidential Executive Order (E.O.) 12372. This E.O. requires federal agencies to use State and local processes for intergovernmental coordination. LCI is available to assist federal agencies with review of NEPA documents and associated intergovernmental coordination. CEQA allows for use of NEPA documents in place of CEQA documents. Submission through LCI is required to use those provisions. See CEQA Guidelines Section 15225(2). Please refer to the Submission Requirements for Draft/Final Environmental Documents for NEPA Federal document submission requirements."
+    },
+    {
+      "id": "lci-sch-document-submission#p019",
+      "heading": "State Clearinghouse Forms",
+      "text": "State Clearinghouse Forms for submissions. Notice of Exemption (NOE) CEQA exempts from environmental review certain classes of projects specified in the CEQA Statute or Guidelines. This notice informs LCI and/or the county clerk that the public agency has determined that a project is exempt from CEQA review. CEQA Guidelines, Section 15062 discusses the content requirements. Notice of Determination (NOD) Lead and responsible agencies are required to notify LCI and/or the county clerk when they make a determination to approve a project subject to CEQA. CEQA Guidelines, Sections 15075, 15094, and 15096 outline the content requirements. Notice of Completion & Environmental Document Transmittal (NOC) Lead agencies are required to notify LCI as soon as a Draft EIR is complete. If state review is required, the NOC must accompany the required electronic EIR submission. CEQA Guidelines, Section 15085 discusses the requirement. LCI requires the NOC transmittal form with all environmental document submissions (i.e. Negative Declaration, Mitigated Negative Declaration, etc.)."
+    },
+    {
+      "id": "lci-sch-document-submission#p020",
+      "heading": "State Clearinghouse Forms",
+      "text": "Notice of Preparation (NOP) This notice informs the public of the lead agency’s intent to prepare an EIR. CEQA Guidelines, Section 15082 discusses the required contents. Summary Form Lead agencies should include this document when submitting electronic copies of Environmental Impact Reports, Negative Declarations, Mitigated Negative Declarations, or Notices of Preparation to the State Clearinghouse (SCH). The SCH also accepts other summaries, such as EIR Executive Summaries prepared pursuant to CEQA Guidelines Section 15123. CEQA Appendix G/Initial Study Checklist Updated Appendix G approved by the Office of Administrative Law on December 2018. Shortened Review Request Public Resources Code, Section 21091 allows for shortened review periods under certain circumstances. Additional information on the shortened review process and requirements is provided in the SCH Handbook. The Shortened Review Request is available to ensure that the requesting agency provides all the information necessary for the SCH to make a determination. However, use of this specific form is not a requirement of CEQA."
+    },
+    {
+      "id": "lci-sch-document-submission#p021",
+      "heading": "State Clearinghouse Links",
+      "text": "Helpful resources to understand and navigate State Clearinghouse processes. CEQAnet A database of CEQA documents filed with the SCH since 1980. CEQASubmit The new online platform in which users submit CEQA and other environmental documents and notices to the SCH. Log in or register to submit here. Annual Filings Through the SCH A summary of CEQA and other environmental documents the SCH received between 1999-current year. Submitting CEQA Documents to the SCH Technical advisory that provides more information on submitting draft and final environmental documents to the SCH. Submitting CEQA Documents to the State Clearinghouse Under AB 819 An updated technical advisory that provides guidance on submitting CEQA documents and notices to the SCH under AB 819, enacted January 1, 2022."
+    },
+    {
+      "id": "lci-sch-document-submission#p022",
+      "heading": "CEQA Links",
+      "text": "Helpful resources on complying with and understanding CEQA. California Code of Regulations The California Code of Regulations (CCR) is the official compilation and publication of the regulations adopted, amended, or repealed by state agencies pursuant to the Administrative Procedure Act (APA). CEQA Guidelines are housed under Title 14, Division 6, Chapter 3, Sections 15000– 15387. CEQA Statutes and Guidelines Summaries of relevant legislation and court cases and notations of authority cited within the CEQA Guidelines. Always refer to the most recent CEQA Statutes and Guidelines. California Public Resources Code CEQA Statutes begins at Section 21000. California Legislative Information Code Section Database to access a complete list of California law codes and bill information."
+    },
+    {
+      "id": "lci-sch-document-submission#p023",
+      "heading": "CEQA Links",
+      "text": "Cal Cannabis Information For permits related to cannabis cultivation, manufacturing, or other commercial activity, CEQA review is typically done at the local level first, as part of a city or county’s local review process for a discretionary permit. Evidence of this local CEQA compliance is then submitted to the relevant state licensing authority as part of the license application. Please see the regulations of the relevant state licensing authority for information about the CEQA review process that authority conducts when considering a license application. NEPA.gov Find information on the National Environmental Policy Act (NEPA). Code of Federal Regulations Directory of official publications from all three branches of the federal government. The National Environmental Policy Act (NEPA) is our basic national charter for protection of the environment; Title 40 – Protection of Environment, Chapter V – Council On Environmental Quality Part 1500 – Purpose, Policy, and Mandate Section 1500.1 – Purpose. CEQA Fees IMPORTANT: Checks from State Lead Agencies must be made out to CDFW but should be delivered to the SCH"
+    },
+    {
+      "id": "lci-sch-document-submission#p024",
+      "heading": "For More Information",
+      "text": "For more information, please contact us at state.clearinghouse@lci.ca.gov"
+    }
+  ],
+  "lci-sch-faq": [
+    {
+      "id": "lci-sch-faq#p001",
+      "heading": "How do I file CEQA documents and notices with the SCH?",
+      "text": "The SCH no longer accepts hardcopies or emails of filings of CEQA documents as of November 3, 2020. You must register to file on our new online CEQA Database. The SCH will return emails and hard copies and inform the submitter that they must file online."
+    },
+    {
+      "id": "lci-sch-faq#p002",
+      "heading": "What are the accessibility requirements for CEQA document submissions?",
+      "text": "The SCH requires all documents to have Optical Character Recognition (OCR) for publication. Additionally, State and federal agencies must comply with all applicable statutory and regulatory requirements related to the Americans with Disabilities Act for documents posted and made available on internet websites. Local agencies must comply with all applicable statutory and regulatory requirements related to the Americans with Disabilities Act for documents posted and made available on internet websites. Check with your agency’s legal counsel to see the specific requirements. The Governor’s Office of Land Use and Climate Innovation (LCI) accepts no responsibility for the content or accessibility of documents being uploaded to the CEQA database. For more information, please visit LCI’s Accessibility page."
+    },
+    {
+      "id": "lci-sch-faq#p003",
+      "heading": "What can I file with my Notice of Determination (NOD)?",
+      "text": "The NOD form and Addendum or Final of the certified/approved draft environmental document. State agencies have the option to include a NOD form, but local agencies must include a NOD form at minimum."
+    },
+    {
+      "id": "lci-sch-faq#p004",
+      "heading": "How do I pay California Department of Fish and Wildlife (CDFW) CEQA fees?",
+      "text": "Filing Notices of Determination (NODs) Online and Paying Fees You can file Notices through the State Clearinghouse online portal. The State Clearinghouse will not post Notice of Determination (NODs) until required fees are paid. So that the State Clearinghouse can post your Notice of Determination in a timely manner, please double check that you have signed the Notice of Determination documents and follow the important instructions below about how to pay the required fee, which you must pay by check. Submit a Check within One Week of Filing a Notice of Determination LCI strongly encourages that within one week of filing a Notice of Determination, you deliver a check in person or put one in the mail. If LCI receives the check before you have filed a Notice of Determination online, LCI will hold the check for a maximum of 14 days before returning the check if you have still not filed the Notice of Determination. When a project applicant will be paying California Department of Fish and Wildlife fees, the State lead agency and project applicant must coordinate to ensure they send the Notice of Determination and check within a week of each other. Amount and Payee"
+    },
+    {
+      "id": "lci-sch-faq#p005",
+      "heading": "How do I pay California Department of Fish and Wildlife (CDFW) CEQA fees?",
+      "text": "Refer to the CDFW website for the most up-to-date filing fee requirements and ensure you are paying the correct amount. Make checks payable to the California Department of Fish and Wildlife. Required Information to Include with the Check To avoid misdirection of checks and delays in posting Notices of Determination, clearly identify the purpose of the check on the check itself or on an enclosed transmittal note. If the check and/or enclosed transmittal note does not include the information below, the materials including the check will be returned immediately. The check and/or enclosed transmittal note must include: State Clearinghouse Number (SCH#) Project title Project contact person’s name and number and/or email address How to Submit the Check"
+    },
+    {
+      "id": "lci-sch-faq#p006",
+      "heading": "How do I pay California Department of Fish and Wildlife (CDFW) CEQA fees?",
+      "text": "You can mail the check or make an appointment to deliver it in person to the State Clearinghouse at the address below. The State Clearinghouse accepts in-person drop-offs of California Department of Fish and Wildlife filing fees by appointment only. To make an appointment to deliver the check in person, email state.clearinghouse@lci.ca.gov or call the State Clearinghouse at (916) 445-0613 between the hours of 9 a.m. and 4 p.m. (Monday – Friday, excluding holidays). State Clearinghouse 1400 Tenth Street Sacramento, CA 95814 Note: P.O. Box 3044 is no longer valid."
+    },
+    {
+      "id": "lci-sch-faq#p007",
+      "heading": "I need to file a CEQA document on my cannabis project",
+      "text": "The SCH is not authorized to determine/approve your CEQA document. CEQA review is typically done at the local level first, as part of a city or county’s local review process for a discretionary permit related to cannabis cultivation, manufacturing, or other commercial activity. Evidence of this local CEQA compliance is then submitted to the relevant state licensing authority as part of the license application. For additional information on the regulations of the relevant state licensing authority about the CEQA review process can be found at the Department of Cannabis Control’s website."
+    },
+    {
+      "id": "lci-sch-faq#p008",
+      "heading": "Where can I submit my Annual Progress Report (APR)?",
+      "text": "We are no longer accepting mailed in applications. The General Plan APR submitted to LCI should outline the status of the General Plan and progress in its implementation over the previous year’s 12-month reporting period. It can be submitted to LCI electronically via email to opr.apr@opr.ca.gov. For more information on submitting both annual progress reports, please refer to LCI’s Annual Progress Report Guidance Memo. All jurisdictions are required to provide LCI and the Department of Housing and Community Development (HCD) with separate General Plan and Housing Element Annual Progress Reports (APRs) by April 1 each year, per Government Code Sections 65400 and 65700."
+    },
+    {
+      "id": "lci-sch-faq#p009",
+      "heading": "What are LCI's hours of operation?",
+      "text": "The State Clearinghouse operates Monday through Friday, 9:00 a.m.–4:00 p.m., and closes on all State Holidays. Please check if the document or notice you are considering submitting is already on the State Clearinghouse website and if it is, do not submit it Please provide a draft of the new content including at title. For same-day processing of Draft/Final CEQA documents and other environmental documents, you must submit them by 3:30 p.m. on a business day. Otherwise, the State Clearinghouse team will process the documents on the next business day. For same-day processing of Notices of Exemption (NOE) and Notices of Determination (NOD), you must submit them by 4 p.m. on a business day. Otherwise, the State Clearinghouse team will process your Notice on the next business day."
+    },
+    {
+      "id": "lci-sch-faq#p010",
+      "heading": "How do I register into CEQA Submit?",
+      "text": "If you can log into CEQA Submit successfully with your work email, then you are already registered. If you need to register, go to CEQA Submit and select “Create an account.”"
+    },
+    {
+      "id": "lci-sch-faq#p011",
+      "heading": "What role can I select on CEQA Submit?",
+      "text": "If you are the Lead Agency (government entity), you can choose the Admin OR Submitter role (one or the other). The State Clearinghouse must approve this role for you. If you are the consulting firm, you can only choose the Submitter role (for each Lead Agency). The Lead Agency Admin must approve this role for you. If you are the Responsible Agency (government entity), you can only choose the Submitter role (for each Lead Agency). Either the State Clearinghouse or the Lead Agency Admin can approve this role for you."
+    },
+    {
+      "id": "lci-sch-faq#p012",
+      "heading": "What can Admins and Submitters Do on CEQA Submit?",
+      "text": "Admin Capabilities: Approve a consultant from a consulting firm’s or staff from within the Lead Agency’s “Submitter” role requests to submit CEQA documents on behalf of the Lead Agency. (Note that all consultants and staff members must be registered users.) Submit a CEQA document on behalf of their agency Submitter Capabilities: Submit a CEQA document on behalf of a Lead Agency or as a Responsible Agency"
+    },
+    {
+      "id": "lci-sch-faq#p013",
+      "heading": "Why was my role request rejected on CEQA Submit?",
+      "text": "This usually happens if a Consultant requests the “Admin” role for the lead agency. Only individuals who work directly for the lead agency can request the “Admin” role; consultants may only request the “Submitter” role. Roles are also revoked if an individual requests access to a Lead Agency that they are not representing."
+    },
+    {
+      "id": "lci-sch-faq#p014",
+      "heading": "What does a pending role mean?",
+      "text": "A pending role on CEQA Submit means you have requested a role to submit on behalf of an agency but have not yet been approved. Lead Agency Admins must approve Consultant Submitter requests, and the SCH approves lead and reviewing agency staff members. Users can submit documents with a pending role, but the project will not publish/start review until the role request is approved by either LCI or the lead agency."
+    },
+    {
+      "id": "lci-sch-faq#p015",
+      "heading": "How do I know my role is approved?",
+      "text": "The “Pending” label next to your name will no longer be visible once your role is approved."
+    },
+    {
+      "id": "lci-sch-faq#p016",
+      "heading": "Why did I not receive an emailed User Key from CEQA Submit?",
+      "text": "If you are having issues receiving the login key, check whether the email is going to your spam folder or ask your IT department if it is being blocked by your network’s firewall. If you still cannot receive a key, contact the SCH and we will be able to provide one for you upon request."
+    },
+    {
+      "id": "lci-sch-faq#p017",
+      "heading": "Why did my submission get recalled on CEQA Submit?",
+      "text": "SCH staff must recall document submissions when they do not meet certain document submission requirements. Common issues encountered include: The user submitted their document under a new SCH number when it should have been filed under an existing SCH number The “Document Description” field in “Document Details” tab does not have an informative project description Uploads in the “Attachments” tab do not have Optical Character Recognition (OCR) The user did not attach the minimum document requirements The user created separate submissions for each attachment when all attachments should be in one submission The user did not indicate a review period, or the review period did not meet CEQA standards A local agency did not include an attachment of a NOD or NOE form in their submission The lead or responsible agency is listed incorrectly"
+    },
+    {
+      "id": "lci-sch-faq#p018",
+      "heading": "Will the lead agency receive a notification when a consultant requests access to CEQA Submit?",
+      "text": "The SCH does not yet have the capability notify the lead agency that a consultant has requested to submit on behalf of an agency. The lead agency and consulting firm should be in regular contact to facilitate the approval process. Contact the SCH for assistance."
+    },
+    {
+      "id": "lci-sch-faq#p019",
+      "heading": "Why is my agency not listed in the CEQA Database?",
+      "text": "This means that the agency has not yet submitted a CEQA document to the SCH. To request the agency to be added, please email the SCH with the full name of your agency and its official website. Please make these requests before 1:00 p.m. Note: If the Lead Agency does not have a website, the SCH will accept other forms of verification of the agency (such as meeting minutes and staff contacts)."
+    },
+    {
+      "id": "lci-sch-faq#p020",
+      "heading": "How do I know the status of my project?",
+      "text": "The SCH will email the submitter when a submission needs correction and when a submission is published. Additionally, registered CEQA Submit users can see the status of their document under the “My Documents” tab. An “Unsubmitted” label means the user has not submitted their document to the SCH. The submitter has sole access to view the submission at this stage; LCI cannot see unsubmitted submissions. A “Submitted” label means the user has successfully submitted the document to LCI, but a SCH staff member has not yet opened the submission. Your submission is in Read Only mode and you cannot make any changes. Note: you can make changes by “recalling” your submission, under the “actions” tab. A “Received” label means that a SCH staff member has opened your submission and is reviewing it. If your submission needs corrections, SCH staff will email you with the required corrections and ask you to resubmit when complete. If your submission meets all requirements, SCH staff will choose the appropriate reviewing state agencies and publish your project, sending you a confirmation email upon publication."
+    },
+    {
+      "id": "lci-sch-faq#p021",
+      "heading": "How do I know the status of my project?",
+      "text": "A “Published” label means SCH staff have published your submission to CEQAnet. The “Created”, “Submitted”, and “Published” dates are not posted on CEQAnet; the “Received” date is the date that will appear on CEQAnet."
+    },
+    {
+      "id": "lci-sch-faq#p022",
+      "heading": "How do I approve a consultant on CEQA Submit?",
+      "text": "Note that only lead agencies can approve consultant requests. A representative from the lead agency (Not a consulting firm) must be a registered user (RU) and request an “Admin” role for their agency. Admins are usually approved within an hour of their request. Once the SCH approves your request, you can then approve any submitter on behalf of your agency. Upon approval, you will see the Admin features on the home page of the website. Click on the pending approvals tab. Anyone that is requesting a role for your agency will appear here. You will then click on the names and approve their roles."
+    },
+    {
+      "id": "lci-sch-faq#p023",
+      "heading": "A staff member within my agency who is a Registered User (RU) is no longer with our agency. How do I remove them on CEQA Submit?",
+      "text": "The SCH can de-activate the RU upon request. Email state.clearinghouse@lci.ca.gov or call us at (916) 445-0613."
+    },
+    {
+      "id": "lci-sch-faq#p024",
+      "heading": "How can I share my published document via CEQA Submit?",
+      "text": "Log into CEQA Submit Select “My Documents” Tab Select the “published” document you want to share In the “document root” screen Select “navigation” Select “Published Document” This option will take you to CEQAnet; share that URL with anyone."
+    },
+    {
+      "id": "lci-sch-faq#p025",
+      "heading": "What does the “Navigation” tab do?",
+      "text": "Project Documents List allows for document view to previously published documents submitted under that existing SCH number and project Create a Copy gives you the capability to copy data you would like to apply to your new document submission, from a previously published document. Print option allows you to print the “Document Root” page Note: when a submission is “published” by LCI, you will have the choice to select and view your submission via CEQAnet, when the “Published Document” becomes an option."
+    },
+    {
+      "id": "lci-sch-faq#p026",
+      "heading": "How should I name my attachments on CEQA Submit?",
+      "text": "Users should use descriptive names for the attachments (i.e. “NOC_Town Hall Project;” “Summary Form_Town Hall Project)."
+    },
+    {
+      "id": "lci-sch-faq#p027",
+      "heading": "Why must I copy the same information from my forms into the CEQA Submit fields (redundancy)?",
+      "text": "This information helps the SCH staff review and select the appropriate State reviewing agencies. Additionally, providing as much information on the form and in the fields of the Document Root helps the agencies and the public know more about the project."
+    },
+    {
+      "id": "lci-sch-faq#p028",
+      "heading": "Is there training available on the current and new features of the CEQA Submit database?",
+      "text": "Yes, upon request. The LCI staff is available to book trainings through Teams. If you need alternative applications to conduct a training, please inform a staff member."
+    },
+    {
+      "id": "lci-sch-faq#p029",
+      "heading": "How do I make changes to a published project?",
+      "text": "Once the SCH publishes a project, the submitter can no longer make changes to that project. To make changes to a published project, email the requested changes to state.clearinghouse@lci.ca.gov and include the SCH number of the project in question. Lead agencies should provide a memo on official letterhead explaining the changes to the submission for posting. For extended review requests, lead agencies should provide an updated Notice of Intent (NOI) or Notice of Availability (NOA) for posting. Note that the SCH cannot remove attachments once they have been published."
+    },
+    {
+      "id": "lci-sch-faq#p030",
+      "heading": "How do I find the project I am looking for on CEQAnet?",
+      "text": "The large search bar will filter for keywords through our entire database. The Advanced Search function will allow you to enter in a specific SCH number, or filter by year, lead agency, location, and more. If you are having trouble locating your document, you can call the SCH at (916) 445-0613 or email us at state.clearinghouse@lci.ca.gov."
+    },
+    {
+      "id": "lci-sch-faq#p031",
+      "heading": "Will I receive a closing letter after the posting period of my Notice of Exemption (NOE) or Determination (NOD)?",
+      "text": "No. These notices are posted for a statute of limitation of either 35 (NOE) or 30 (NOD) days. To appeal a notice, you must contact the approving Lead/Public agency."
+    },
+    {
+      "id": "lci-sch-faq#p032",
+      "heading": "Will I receive a closing letter on my project after the review period has closed?",
+      "text": "The SCH no longer provides close of review period acknowledgement on CEQA environmental document. We are working on a detailed notification process where you will receive an email of the status of your project. In the meantime, you can access comments submitted by state agencies at the close of review period (and after) on CEQAnet."
+    },
+    {
+      "id": "lci-sch-faq#p033",
+      "heading": "How do I know my project received comments?",
+      "text": "The SCH posts comments from State agencies on CEQAnet daily. Check your project’s CEQAnet profile frequently to see if it has received new comments."
+    },
+    {
+      "id": "lci-sch-faq#p034",
+      "heading": "How do I submit comments as a State reviewing agency?",
+      "text": "Please email your comment letter to the State Clearinghouse at state.clearinghouse@lci.ca.gov with the SCH number of the project in the email."
+    },
+    {
+      "id": "lci-sch-faq#p035",
+      "heading": "How do I submit comments as a non-agency or non-State agency?",
+      "text": "Defer to the lead agency on their preferred way of receiving comments. The SCH will only make State agency comments available on CEQAnet. However, you are welcome to email a copy of your comments to the SCH. (Reference CEQA Guidelines Section 15207)."
+    },
+    {
+      "id": "lci-sch-faq#p036",
+      "heading": "Can I get my CEQA document date stamped?",
+      "text": "The SCH no longer applies a SCH date stamp to Notices submitted online, as the CEQA Database already tracks received and published dates. To verify the date your document was received and posted, refer to the “Received” date on your project’s CEQAnet page or the Document Root on CEQA Submit. Registered Users may log into CEQA Submit to check the status of their submissions under the “My Documents” tab."
+    },
+    {
+      "id": "lci-sch-faq#p037",
+      "heading": "Can I request a hard copy of a CEQA document?",
+      "text": "If the SCH processed a CEQA document prior to March 2019, the SCH no longer has a hard copy. However, our online CEQA Database will have a summarized version of the document, which was transcribed from the notice filed with our office. Refer to the Lead agency contact of the project for more information on the project. As an alternative, you may contact the State Library at (916) 654-0261."
+    },
+    {
+      "id": "lci-sch-faq#p038",
+      "heading": "Who enforces CEQA?",
+      "text": "CEQA is a self-executing statute. Please refer to the California Natural Resource Agency website for more information."
+    },
+    {
+      "id": "lci-sch-faq#p039",
+      "heading": "Can LCI provide legal advice?",
+      "text": "LCI cannot provide legal advice. If you are in need of legal advice, consider contacting an attorney who specializes in land use and environmental law."
+    },
+    {
+      "id": "lci-sch-faq#p040",
+      "heading": "I need a CEQA interpretation pertaining to a CEQA project",
+      "text": "Please email the SCH at state.clearinghouse@lci.ca.gov or refer to the California Natural Resource Agency website."
+    },
+    {
+      "id": "lci-sch-faq#p041",
+      "heading": "How do I file a complaint on a CEQA document/project?",
+      "text": "The Governor’s Office of Land Use and Climate Innovation (LCI) does not have regulatory authority and does not enforce the California Environmental Quality Act (CEQA). The State Clearinghouse (SCH) collects CEQA documents to provide notice to the public, responsible agencies, and trustee agencies. If you believe there are legal or environmental issues with a project that is subject to CEQA, please contact the Lead agency to express your concerns. If you are in need of legal advice, consider contacting an attorney who specializes in land use and environmental law. LCI cannot provide legal advice."
+    },
+    {
+      "id": "lci-sch-faq#p042",
+      "heading": "How do I provide feedback?",
+      "text": "We value all feedback. Please send your feedback on our processes to better assist you and our office to: state.clearinghouse@lci.ca.gov"
+    },
+    {
+      "id": "lci-sch-faq#p043",
+      "heading": "What is California’s process of the Single Point of Contact (SPOC)/Executive Order (E.O.) 12372?",
+      "text": "It is the policy of LCI to select all federal programs subject to intergovernmental review as subject to review by the state. If you are applying for any federal grant or one that is subject to E.O. 12372, Intergovernmental review of Federal programs, please submit notice of your application for federal assistance as follows: Step 1: Submitting the Federal Standard Form 424 (SF-424)Applicants for federal assistance programs covered under E.O. 12372 must send a copy of the Federal Standard Form 424 (SF-424) to the SCH. The SCH accepts submittals of the SF-424 forms via an online submission tool on the LCI Intergovernmental Review of Federal Programs website. The SF-424 is the cover sheet file of the federal grant application and is titled, “Application for Federal Assistance.” The current version of the SF-424 may be found on grants.gov under “Forms.” Do not transmit the entire application package to the SCH."
+    },
+    {
+      "id": "lci-sch-faq#p044",
+      "heading": "What is California’s process of the Single Point of Contact (SPOC)/Executive Order (E.O.) 12372?",
+      "text": "Step 2: Review Period BeginsThe submittal of the SF-424 form on the LCI Intergovernmental Review of Federal Programs website begins a 30-day review period. If a Notice of Intent to Comment is received from any agency within the first 30 days of the review period, the review period is automatically extended an additional 30 days, allowing a total review period of not more than 60 days. This extension is intended to allow a commenting agency sufficient time to submit comments to the applicant. The SCH does not assign identification numbers to grant applications."
+    },
+    {
+      "id": "lci-sch-faq#p045",
+      "heading": "What is California’s process of the Single Point of Contact (SPOC)/Executive Order (E.O.) 12372?",
+      "text": "The SCH notifies state and local elected officials and agencies and the public of the grant applications through the Submissions page of the LCI Intergovernmental Review of Federal Programs website email and via email notifications to registered users of the website. This notification process allows elected officials and agencies and the public the opportunity to review applications and the option to comment on a particular application. Since the SCH does not receive a complete copy of the federal assistance full proposal or budget, any person wishing to review a proposal further must contact the applicant directly for more information. Step 3: After the Review PeriodAt the end of the 30- or 60-day comment period, the SCH will forward copies of any comment letters it receives to the applicant. The applicant is responsible for submitting these comments to the federal agency. If no comments are received, the SCH will not notify the applicant in writing. This ends SCH involvement in the grant review process. Questions on the online listing of the CFDA catalog can be found at the sam.gov website."
+    },
+    {
+      "id": "lci-sch-faq#p046",
+      "heading": "Will I receive a confirmation after I submit my federal assistance application pursuant to Executive Order 12372?",
+      "text": "Yes, if successfully submitted. We will send confirmation to the email address entered online."
+    },
+    {
+      "id": "lci-sch-faq#p047",
+      "heading": "Did I receive comment(s) on my federal assistance application?",
+      "text": "At the end of the 30- or 60-day comment period, the SCH will forward copies of any comment letters it receives to the applicant. The applicant is responsible for submitting these comments to the federal agency. If no comments are received, the SCH will not notify the applicant in writing."
+    },
+    {
+      "id": "lci-sch-faq#p048",
+      "heading": "Why am I receiving an email notification on federal grants applications?",
+      "text": "You are receiving this email because when you registered at one point, you signed up for notifications. If you would like to stop receiving notifications, you can log into your account at that link and unselect notifications (unselect “Receive Notifications” – at the bottom of page) in the Dashboard Profile tab. If you have any comments on the application, you can submit them to state.clearinghouse@lci.ca.gov as part of the Intergovernmental Review of Federal Programs."
+    },
+    {
+      "id": "lci-sch-faq#p049",
+      "heading": "For More Information",
+      "text": "For more information, please contact us at state.clearinghouse@lci.ca.gov"
+    }
+  ],
+  "lci-sch-presubmission-checklist-2025": [
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p001",
+      "heading": null,
+      "text": "CEQA Submit Pre-Submission Checklist To avoid processing delays, make sure all applicable project information is added to CEQA Submit. Use this checklist to verify that your submission is accurate, comprehensive, and compliant for publication by the State Clearinghouse (SCH)."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p002",
+      "heading": "1. Document Details Tab",
+      "text": "[ ] Project Title: Thorough and detailed, expanded upon for clarity, and aligned with the: Environmental Document(s), Notice of Completion (NOC), Notice of Exemption (NOE) and Notice of Determination (NOD) forms. [ ] Project Description (also referred to as Document Description): Thorough and detailed, expanded upon for clarity, and aligned with the Environmental Document(s), NOD and NOE forms. [ ] Present Land Use (also includes Zoning and General Plan Designation): Thorough and detailed, expanded upon for clarity, and aligned with the Environmental Document(s) and NOC form. [ ] Location Details: Thorough and detailed, expanded upon for clarity, and aligned with the Environmental Document(s), NOE, NOD and NOC forms. [ ] Region(s) entered for the specific project location. [ ] County/counties entered under the “Counties” tab for the specific project location. [ ] City or community designation(s) entered under the “Cities” tab for specific project location. [ ] Latitude/longitude coordinates are entered into the “Coordinates” subfield for specific project location."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p003",
+      "heading": "1. Document Details Tab",
+      "text": "Note: Do your environmental document or notices have an attachment? If the attachment(s) including the “Environmental Documentation” contains project location information, the “Other Location Info” subfield can be used for all information that does not fit in the provided subfields."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p004",
+      "heading": "2. Required Documents",
+      "text": "[ ] All required files based on submission type are included: • Notice of Exemption: NOE Form. - The SCH also encourages including any supporting findings (if applicable). 1 • Negative Declaration (ND)/Mitigated Negative Declaration (MND): Notice of Completion (NOC) Form, Summary Form, Draft ND/MND Document(s), Initial Study, and Notice of Intent/Availability. - The SCH encourages also including all relevant appendices including but not limited to technical studies. • Environmental Impact Report (EIR): NOC Form, Summary Form (if Executive Summary is absent), Draft Environmental Impact Report (EIR), Initial Study, and Notice of Availability. - The SCH also encourages including all relevant appendices including but not limited to technical studies. • Notice of Determination: NOD Form. - State Lead agencies submit California Fish and Wildlife (CDFW) fee to SCH. - Local lead agencies encouraged to include copies of CDFW receipt(s). - Mitigation Monitoring and Reporting Plan (if applicable), and Statement of Overriding Considerations (if applicable). Note: The Final Environmental documents and any addendums are to be filed with the SCH in a separate submittal."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p005",
+      "heading": "2. Required Documents",
+      "text": "[ ] Files are properly categorized in CEQA Submit; for example, Notice of Completion categorized as “Notice of Completion.” • Except for the NOD and NOE forms, which have their own respective categories: o o [ ] Are the documents a final that is certified and approved? If so, they need to be categorized as “Final Environmental Document.” [ ] Are the documents a final or draft that is NOT certified/approved? If so, they need to be categorized as “Draft Environmental Document.” [ ] Descriptive and accurate file names (e.g., “ProjectName_DraftEIR”)."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p006",
+      "heading": "3. Text Searchability (accessibility/ADA compliance)",
+      "text": "[ ] Documents are fully text-searchable (Optical Character Recognition [OCR]-enabled). [ ] Files are flattened (non-editable, static format, fillable forms removed). [ ] No fillable fields in uploaded documents (attachments). [ ] Documents are properly tagged for screen reader compatibility such as headings, images, and tables. 2"
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p007",
+      "heading": "4. Contacts Tab",
+      "text": "[ ] Contacts match those reflected within the Environmental Document(s) and applicable forms, including: • Lead/Public Agency. o Authority = Full name of agency, district or organization. • Consulting firm (if applicable). o Authority = Full name of the consulting firm. • Project Applicant (if applicable). o Authority = Full name of any associated company, firm, organization of the applicant or affiliation with the project if not associated with a company, firm or organization; for example, the property owner. [ ] Contacts match those reflected on the NOE, NOD forms and applicable Environmental Document(s), including: • Lead/Public Agency contact. o Authority = Full name of agency, district or organization. • Party/Parties Undertaking Project (if applicable and different than the lead agency). o Authority = Full name of agency, district, organization or consulting firm. • Responsible Agency (if applicable). o Authority = Full name of agency, district or organization. • Applicant (if applicable and different than the lead agency). o Authority = Full name of any associated company, firm or organization of the"
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p008",
+      "heading": "4. Contacts Tab",
+      "text": "applicant or affiliation with the project if not associated with a company, firm or organization; for example, the property owner. [ ] The “Authority” subfield reflects the official agency, organization, company name or project affiliation (not generic terms like “Environmental Planning” or “City” or “Consulting Firm” or “Applicant”). [ ] The “Contact Types” list should reflect all roles that apply to that contact. For example, if the lead/public agency is also the applicant, both the “Lead/Public Agency” as well as “Project Applicant” contact types should be selected. 3 NOC Types: NOE/NOD Types: *Screenshots of lists for NOC, NOE, and NOD types."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p009",
+      "heading": "5. Consistency Across Tabs",
+      "text": "[ ] Local Action Types, Development Types, and Project Issues tabs in CEQA Submit align with the Environmental Documents including but not limited to the NOC form. • Use the provided Project Issues List to ensure data quality."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p010",
+      "heading": "6. State Review Period",
+      "text": "[ ] Confirm whether State Agency review is required: • Projects involving State Responsible/Trustee agencies. • Projects with statewide, regional, or areawide significance. [ ] Make sure the desired State Review Period start and end dates are inputted into CEQA Submit. • Note: State Review Periods cannot be back dated. [ ] Designate appropriate review period: • Minimum 30 days for ND/MND. • Minimum 45 days for EIR."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p011",
+      "heading": "7. Public Review Period",
+      "text": "[ ] Confirm all desired Public Review Period start and end dates are inputted into CEQA Submit: • Note: The State and Public Review Periods are not required to start on the same dates but must run the same amount of time. [ ] Designate appropriate review period: 4 • Minimum 20 days for ND/MND. • Minimum 30 days for EIR. [ ] Correct option selected for bypassing or including state review, with justification provided to the SCH via email, if bypassed."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p012",
+      "heading": "8. Final Review",
+      "text": "[ ] All fields in CEQA Submit are filled in and verified for accuracy. [ ] Required documents are uploaded, correctly categorized, and fully text searchable. [ ] Details in CEQA Submit reflect those on the Environmental Document(s) and the applicable NOC, NOD, NOE forms."
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025#p013",
+      "heading": "9. Resources for Assistance",
+      "text": "For additional assistance resources you can refer to: a. CEQA Database User Guide b. SCH Submission Instructions c. CEQA Accessibility Standards Contact the SCH at state.clearinghouse@lci.ca.gov for further guidance if needed. 5"
+    }
+  ],
+  "owasp-unrestricted-file-upload": [
+    {
+      "id": "owasp-unrestricted-file-upload#p001",
+      "heading": "Unrestricted File Upload",
+      "text": "Thank you for visiting OWASP.org. We have migrated our community to a new web platform and regretably the content for this page needed to be programmatically ported from its previous wiki page. There’s still some work to be done. This is an example of a Project or Chapter Page."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p002",
+      "heading": "Description",
+      "text": "Uploaded files represent a significant risk to applications. The first step in many attacks is to get some code to the system to be attacked. Then the attack only needs to find a way to get the code executed. Using a file upload helps the attacker accomplish the first step. The consequences of unrestricted file upload can vary, including complete system takeover, an overloaded file system or database, forwarding attacks to back-end systems, client-side attacks, or simple defacement. It depends on what the application does with the uploaded file and especially where it is stored. There are really two classes of problems here. The first is with the file metadata, like the path and file name. These are generally provided by the transport, such as HTTP multi-part encoding. This data may trick the application into overwriting a critical file or storing the file in a bad location. You must validate the metadata extremely carefully before using it."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p003",
+      "heading": "Description",
+      "text": "The other class of problem is with the file size or content. The range of problems here depends entirely on what the file is used for. See the examples below for some ideas about how files might be misused. To protect against this type of attack, you should analyse everything your application does with files and think carefully about what processing and interpreters are involved."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p004",
+      "heading": "Risk Factors",
+      "text": "The impact of this vulnerability is high, supposed code can be executed in the server context or on the client side. The likelihood of detection for the attacker is high. The prevalence is common. As a result the severity of this type of vulnerability is high. It is important to check a file upload module’s access controls to examine the risks properly. Server-side attacks: The web server can be compromised by uploading and executing a web-shell which can run commands, browse system files, browse local resources, attack other servers, or exploit the local vulnerabilities, and so forth. Client-side attacks: Uploading malicious files can make the website vulnerable to client-side attacks such as XSS or Cross-site Content Hijacking. Uploaded files can be abused to exploit other vulnerable sections of an application when a file on the same or a trusted server is needed (can again lead to client-side or server-side attacks) Uploaded files might trigger vulnerabilities in broken libraries/applications on the client side (e.g. iPhone MobileSafari LibTIFF Buffer Overflow)."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p005",
+      "heading": "Risk Factors",
+      "text": "Uploaded files might trigger vulnerabilities in broken libraries/applications on the server side (e.g. ImageMagick flaw that called ImageTragick!). Uploaded files might trigger vulnerabilities in broken real-time monitoring tools (e.g. Symantec antivirus exploit by unpacking a RAR file) A malicious file such as a Unix shell script, a windows virus, an Excel file with a dangerous formula, or a reverse shell can be uploaded on the server in order to execute code by an administrator or webmaster later – on the victim’s machine. An attacker might be able to put a phishing page into the website or deface the website. The file storage server might be abused to host troublesome files including malwares, illegal software, or adult contents. Uploaded files might also contain malwares’ command and control data, violence and harassment messages, or steganographic data that can be used by criminal organisations. Uploaded sensitive files might be accessible by unauthorised people. File uploaders may disclose internal information such as server internal paths in their error messages."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p006",
+      "heading": "Attacks on application platform",
+      "text": "Upload .jsp file into web tree - jsp code executed as the web user Upload .gif file to be resized - image library flaw exploited Upload huge files - file space denial of service Upload file using malicious path or name - overwrite a critical file Upload file containing personal data - other users access it Upload file containing “tags” - tags get executed as part of being “included” in a web page Upload .rar file to be scanned by antivirus - command executed on a server running the vulnerable antivirus software"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p007",
+      "heading": "Attacks on other systems",
+      "text": "Upload .exe file into web tree - victims download trojaned executable Upload virus infected file - victims’ machines infected Upload .html file containing script - victim experiences Cross-site Scripting (XSS) Upload .jpg file containing a Flash object - victim experiences Cross-site Content Hijacking. Upload .rar file to be scanned by antivirus - command executed on a client running the vulnerable antivirus software"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p008",
+      "heading": "Deny Listing File Extensions",
+      "text": "This protection might be bypassed by: Finding missed extensions that can be executed on the server side or can be dangerous on the client side (e.g. “.php5”, “.pht”, “.phtml”, “.shtml”, “.asa”, “.cer”, “.asax”, “.swf”, or “.xap”). Finding flaws in a web server configuration when it parses files with double extensions or it executes them by providing a sensitive extension after a delimiter such as “/” or “;” character (e.g. “/file.jpg/index.php” when the “file.jpg” file contains PHP code and has been uploaded) In Apache, a php file might be executed using the double extension technique such as “file.php.jpg” when “.jpg” is allowed. In IIS6 (or prior versions), a script file can be executed by using one of these two methods: by adding a semi-colon character after the forbidden extension and before the permitted one (e.g. “file.asp;.jpg”)"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p009",
+      "heading": "Deny Listing File Extensions",
+      "text": "by renaming a script file’s extension (e.g. “.asp”) to an allowed extension (e.g. “.txt”) in a folder that its name ends with the script’s extension (e.g. “folder.asp\\file.txt”). In Windows, it is possible to create a directory by using a file uploader and ADS (Alternate Data Stream). In this method, a filename that ends with “::$Index_Allocation” or “:$I30:$Index_Allocation” makes the file uploader to create a directory rather than a file (e.g. “folder.asp::$Index_Allocation” creates “folder.asp” as a directory). Changing a number of letters to their capital forms to bypass case sensitive rules (e.g. “file.aSp” or “file.PHp3”). Using Windows 8.3 feature, it is possible to replace the existing files by using their shortname (e.g. “web.config” can be replaced by “web~1.con” or “.htaccess” can be replaced by “HTACCE~1”)"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p010",
+      "heading": "Deny Listing File Extensions",
+      "text": "Finding characters that are converted to other useful characters during the file upload process. For instance, when running PHP on IIS, the “>”, “<”, and double quote “ characters respectively convert to “?”, “*”, and “.” characters that can be used to replace existing files (e.g. “web<<” can replace the “web.config” file). In order to include the double quote character in the filename in a normal file upload request, the filename in the “Content-Disposition” header should use single quotes (e.g. filename=’web”config’ to replace the “web.config” file). Finding neutral characters after a filename such as trailing spaces and dots in Windows filesystem or dot and slash characters in a Linux filesystem. These characters at the end of a filename will be removed automatically (e.g. “file.asp … … . . .. ..”, “file.asp “, or “file.asp.”). Although slash or backslash characters are also normally problematic characters, they can be ignored in a normal file upload request as anything before these characters may count as the directory name on the server-side; that said, they should be tried for a thorough test (e.g. “test.php/” or “test.php.\\”)."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p011",
+      "heading": "Deny Listing File Extensions",
+      "text": "Finding flaws in extension detection techniques. A web server may use the first extension after the first dot (“.”) in the provided filename or use a flawed algorithm to detect the extension when there is none or multiple dot characters (e.g. “file.txt.jpg.php”). Using control characters such as null character (0x00) after a forbidden extension and before a permitted one may lead to a bypass. In this method, all the strings after the Null character will be discarded when saving the files. Both URL-encoded and decoded version of the null character should be tried in a file upload request for a thorough test. Using NTFS alternate data stream (ADS) in Windows. In this case, a colon character “:” will be inserted after a forbidden extension and before a permitted one. As a result, an empty file with the forbidden extension will be created on the server (e.g. “file.asax:.jpg”). This file might be edited later using other techniques such as using its short filename. The “::$data” pattern can also be used to create non-empty files. Therefore, adding a dot character after this pattern might also be useful to bypass further restrictions (.e.g. “file.asp::$data.”)"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p012",
+      "heading": "Deny Listing File Extensions",
+      "text": "Flaws in the protection mechanism when it replaces dangerous extensions. For instance, “file.p.phphp” might be changed to “file.php” after going through this functionality. Flaws in the uploaded file usage for instance when a PHP application uses the “include” function to show the uploaded images. Combination of the above techniques."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p013",
+      "heading": "Beating getimagesize()",
+      "text": "The getimagesize() function will check if it is an image and will check “mime” to verify image type. Insecure Configuration : <FilesMatch \".+\\.ph(p([3457s]|\\-s)?|t|tml)\"> SetHandler application/x-httpd-php </FileMatch> Secure Configuration : <FilesMatch \".+\\.ph(p([3457s]|\\-s)?|t|tml)$\"> SetHandler application/x-httpd-php </FileMatch> If the service is up an running with the Insecure Configuration, any one can beat the getimagesize function by writing comments in GIF file. For that an end user needs to install an utility in Kali/Ubuntu OS named ‘gifsicle’ ` For Kali Linux : apt-get install gifsicle For Ubuntu : sudo apt-get install gifsicle` Once installed, the below commands will help writing the commands in a gif file. gifsicle < mygif.gif -- comment \" <?php echo 'Current PHP version: ' . phpversion(); ?> \" \\> output.php.gif The above command will create a file with the name “output.php.gif” which simply needs to be uploaded during the check of file upload vulnerability."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p014",
+      "heading": "Allow Listing File Extensions",
+      "text": "Applications that check the file extensions using an allow list method also need to validate the full filename to prevent any bypass. The list of permitted extensions should be reviewed as it can contain malicious extensions as well. For instance, in case of having “.shtml” in the list, the application can be vulnerable to SSI attacks. Some of the bypass techniques for the deny list methods such as using double extensions are also applicable here and should be checked."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p015",
+      "heading": "“Content-Type” Header Validation",
+      "text": "“Content-Type” entity in the header of the request indicates the Internet media type of the message content. Sometimes web applications use this parameter in order to recognise a file as a valid one. For instance, they only accept the files with the “Content-Type” of “text/plain”. It is possible to bypass this protection by changing this parameter in the request header using a web proxy."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p016",
+      "heading": "Using a File Type Detector",
+      "text": "Sometimes web applications intentionally or unintentionally use some functions (or APIs) to check the file types in order to process them further. For instance, when an application resize an image file, it may just show an error message when non-image files are uploaded without saving them on the server. If it reads the few first characters (or headers), it can be bypassed by inserting malicious code after some valid header or within the file’s metadata. Inserting code in the comments section or those section that have no effect on the main file can also lead to a bypass. The inserted data can be obfuscated or encoded if the application detects a malicious code using specific patterns or signatures. Uploaded file can be crafted to create a malicious code in case of being compressed by the application."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p017",
+      "heading": "Other Interesting Test Cases",
+      "text": "Uploading a file when another file with the same name already exists. This may show interesting error messages that can lead to information disclosure. Logical flaws might be found if the application renames the new file to keep it on the server. Uploading a file when another folder with the same name already exists. This may show interesting error messages that can lead to information disclosure. Uploading a file with a long name. This may show interesting error messages that can lead to information disclosure. Uploading a file multiple times at the same time. This may show interesting error messages that can lead to information disclosure. Uploading valid and invalid files in different formats such as compressed or XML files to detect any possible processing on the server side. Uploading a file with “.”, “..”, or “…” as its name. For instance, in Apache in Windows, if the application saves the uploaded files in “/www/uploads/” directory, the “.” filename will create a file called “uploads” in the “/www/” directory."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p018",
+      "heading": "Other Interesting Test Cases",
+      "text": "Uploading files that may not be deleted easily such as “…:.jpg” in NTFS that makes the “…” file (this file can be deleted using command line). This may show interesting error messages that can lead to information disclosure. Uploading a file in Windows with invalid characters such as |<>*?” in its name. This may show interesting error messages that can lead to information disclosure. Uploading a file in Windows using reserved (forbidden) names such as CON, PRN, AUX, NUL, COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9, LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9. This may show interesting error messages that can lead to information disclosure. Uploading a file with a reserved name may lead to denial of service if the application keeps the name and tries to save it with another extension (detecting it wrongly as an existing file). Cross-site content hijacking issues can be exploited by uploading a file with allowed name and extension but with Flash, PDF, or Silverlight contents."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p019",
+      "heading": "Other Interesting Test Cases",
+      "text": "Uploading a “crossdomain.xml” or “clientaccesspolicy.xml” file can make a website vulnerable to cross-site content hijacking. These files should be uploaded to the root of the website to work. However, the “crossdomain.xml” file can be in a subdirectory as long as it is allowed in the root “crossdomain.xml” file."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p020",
+      "heading": "Important Notes in Testing File Uploaders",
+      "text": "Do not try to replace the existing files during testing unless it is safe to proceed. For instance, replacing configuration files such as “web.config” or “.htaccess” file can lead to a denial of service attack for the whole website."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p021",
+      "heading": "Prevention Methods (Solutions to be more secure)",
+      "text": "In order to make a Windows server more secure, it is very important to follow the Microsoft security best practices first. For this purpose, some of the useful links are: IIS 6.0 Security Best Practices[http://technet.microsoft.com/en-us/library/cc782762(WS.10).aspx] Securing Sites with Web Site Permissions[http://technet.microsoft.com/en-us/library/cc756133(WS.10).aspx] IIS 6.0 Operations Guide[http://technet.microsoft.com/en-us/library/cc785089(WS.10).aspx] Improving Web Application Security: Threats and Countermeasures1 Understanding the Built-In User and Group Accounts in IIS 7.02 IIS Security Checklist3 And some special recommendations for the developers and webmasters: The file types allowed to be uploaded should be restricted to only those that are necessary for business functionality. Never accept a filename and its extension directly without having an allow list filter. The application should perform filtering and content checking on any files which are uploaded to the server. Files should be thoroughly scanned and validated before being made available to other users. If in doubt, the file should be discarded."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p022",
+      "heading": "Prevention Methods (Solutions to be more secure)",
+      "text": "It is necessary to have a list of only permitted extensions on the web application. And, file extension can be selected from the list. For instance, it can be a “select case” syntax (in case of having VBScript) to choose the file extension in regards to the real file extension. All the control characters and Unicode ones should be removed from the filenames and their extensions without any exception. Also, the special characters such as “;”, “:”, “>”, “<”, “/” ,”\\”, additional “.”, “*”, “%”, “$”, and so on should be discarded as well. If it is applicable and there is no need to have Unicode characters, it is highly recommended to only accept Alpha-Numeric characters and only 1 dot as an input for the file name and the extension; in which the file name and also the extension should not be empty at all (regular expression: ^\\[a-zA-Z0-9\\]{1,200}\\\\.\\[a-zA-Z0-9\\]{1,10}$). Limit the filename length. For instance, the maximum length of the name of a file plus its extension should be less than 255 characters (without any directory) in an NTFS partition."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p023",
+      "heading": "Prevention Methods (Solutions to be more secure)",
+      "text": "It is recommended to use an algorithm to determine the filenames. For instance, a filename can be a hash of the name of file plus the date of the day. Uploaded directory should not have any “execute” permission and all the script handlers should be removed from these directories. Limit the file size to a maximum value in order to prevent denial of service attacks (on file space or other web application’s functions such as the image resizer). Restrict small size files as they can lead to denial of service attacks. So, the minimum size of files should be considered. Use Cross Site Request Forgery protection methods. Prevent from overwriting a file in case of having the same hash for both. Use a virus scanner on the server (if it is applicable). Or, if the contents of files are not confidential, a free virus scanner website can be used. In this case, file should be stored with a random name and without any extension on the server first, and after the virus checking (uploading to a free virus scanner website and getting back the result), it can be renamed to its specific name and extension. Try to use POST method instead of PUT (or GET!)"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p024",
+      "heading": "Prevention Methods (Solutions to be more secure)",
+      "text": "Log users’ activities. However, the logging mechanism should be secured against log forgery and code injection itself. In case of having compressed file extract functions, contents of the compressed file should be checked one by one as a new file. If it is possible, consider saving the files in a database rather than on the filesystem. If files should be saved in a filesystem, consider using an isolated server with a different domain to serve the uploaded files. File uploaders should be only accessible to authenticated and authorised users if possible. Write permission should be removed from files and folders other than the upload folders. The upload folders should not serve any Ensure that configuration files such as “.htaccess” or “web.config” cannot be replaced using file uploaders. Ensure that appropriate settings are available to ignore the “.htaccess” or “web.config” files if uploaded in the upload directories. Ensure that files with double extensions (e.g. “file.php.txt”) cannot be executed especially in Apache. Ensure that uploaded files cannot be accessed by unauthorised users."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p025",
+      "heading": "Prevention Methods (Solutions to be more secure)",
+      "text": "Adding the “Content-Disposition: Attachment” and “X-Content-Type-Options: nosniff” headers to the response of static files will secure the website against Flash or PDF-based cross-site content-hijacking attacks. It is recommended that this practice be performed for all of the files that users need to download in all the modules that deal with a file download. Although this method does not fully secure the website against attacks using Silverlight or similar objects, it can mitigate the risk of using Adobe Flash and PDF objects, especially when uploading PDF files is permitted. Flash/PDF (crossdomain.xml) or Silverlight (clientaccesspolicy.xml) cross-domain policy files should be removed if they are not in use and there is no business requirement for Flash or Silverlight applications to communicate with the website."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p026",
+      "heading": "Prevention Methods (Solutions to be more secure)",
+      "text": "Browser caching should be disabled for the crossdomain.xml and clientaccesspolicy.xml files. This enables the website to easily update the file or restrict access to the Web services if necessary. Once the client access policy file is checked, it remains in effect for the browser session so the impact of non-caching to the end-user is minimal. This can be raised as a low or informational risk issue based on the content of the target website and security and complexity of the policy file(s). CORS headers should be reviewed to only be enabled for static or publicly accessible data. Otherwise, the “Access-Control-Allow-Origin” header should only contain authorised addresses. Other CORS headers such as “Access-Control-Allow-Credentials” should only be used when they are required. Items within the CORS headers such as “Access-Control-Allow-Methods” or “Access-Control-Allow-Headers” should be reviewed and removed if they are not required."
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p027",
+      "heading": "Related Attacks",
+      "text": "Path Traversal Path Manipulation Relative Path Traversal Windows_::DATA_alternate_data_stream"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p028",
+      "heading": "Related Threat Agent",
+      "text": ":Category:External Threat Agent :Category:Internal Threat Agent :Category:Internet attacker :Category:Intranet attacker"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p029",
+      "heading": "Related Technical Impacts",
+      "text": "System Access Security Bypass Exposure of system information Exposure of sensitive information Client Side Threat"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p030",
+      "heading": "References",
+      "text": "Improve File Uploaders’ Protections – Bypass Methods- Rev. 1.0 8 basic rules to implement secure file uploads - SANS - 4 IIS6/ASP & file upload for fun and profit 5 Secure file upload in PHP web applications 6 Potentially Dangerous File Types 7 Secure File Upload Check List With PHP 10 NTFS in WikiPedia 11 NTFS Streams [http://msdn.microsoft.com/en-us/library/ff469210(v=PROT.10).aspx] NTFS - Glossary 12 IIS 6.0 Security Best Practices [http://technet.microsoft.com/en-us/library/cc782762(WS.10).aspx] Securing Sites with Web Site Permissions [http://technet.microsoft.com/en-us/library/cc756133(WS.10).aspx] IIS 6.0 Operations Guide [http://technet.microsoft.com/en-us/library/cc785089(WS.10).aspx] Improving Web Application Security: Threats and Countermeasures 13 Understanding the Built-In User and Group Accounts in IIS 7.0 14 IIS Security Checklist 15 Microsoft IIS ASP Multiple Extensions Security Bypass 16 CVE-2009-4444 17 CVE-2009-4445 18 CVE-2009-1535 19 MSDN - Naming Files, Paths, and Namespaces [https://msdn.microsoft.com/en-gb/library/windows/desktop/aa365247(v=vs.85).aspx] Even uploading a JPG file can lead to Cross-Site Content Hijacking (client-side attack) 20"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p031",
+      "heading": "References",
+      "text": "Cross-Site Content (Data) Hijacking (XSCH) PoC Project 21 iPhone MobileSafari LibTIFF Buffer Overflow 22 ImageMagick Is On Fire-CVE-2016–3714 23 Symantec Antivirus multiple remote memory corruption unpacking RAR CVE-2016-2207 24 File in the hole - HackPra Nov. 2012 25 Self contained web shells and other attacks via .htaccess files 26 Upload a web.config File for Fun & Profit 27 PHP filesystem attack vectors - Take Two 28 File Upload and PHP on IIS: >=? and <=* and “=. 29"
+    },
+    {
+      "id": "owasp-unrestricted-file-upload#p032",
+      "heading": "Authors",
+      "text": "Soroush Dalili Dirk Wetter Landon Mayo OWASP NOTOC Category:OWASP ASDR Project Category:File System Category:Windows Category:Unix Category:Use of Dangerous API Category:Vulnerability"
+    }
+  ]
+}

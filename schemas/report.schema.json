@@ -230,6 +230,10 @@
           "default": null,
           "title": "Effective Date"
         },
+        "kind": {
+          "$ref": "#/$defs/SourceKind",
+          "default": "official"
+        },
         "section": {
           "anyOf": [
             {
@@ -259,6 +263,16 @@
       ],
       "title": "SourceCitation",
       "type": "object"
+    },
+    "SourceKind": {
+      "description": "What kind of authority a citation carries, so a reader never mistakes one for another.",
+      "enum": [
+        "official",
+        "technical_reference",
+        "project_advisory"
+      ],
+      "title": "SourceKind",
+      "type": "string"
     }
   },
   "additionalProperties": false,

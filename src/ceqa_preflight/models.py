@@ -51,11 +51,20 @@ class Confidence(StrEnum):
     LOW = "low"
 
 
+class SourceKind(StrEnum):
+    """What kind of authority a citation carries, so a reader never mistakes one for another."""
+
+    OFFICIAL = "official"  # State of California guidance the rule is grounded in
+    TECHNICAL_REFERENCE = "technical_reference"  # a non-CEQA technical reference (e.g. OWASP)
+    PROJECT_ADVISORY = "project_advisory"  # this project's own documented reasoning
+
+
 class SourceCitation(StrictModel):
     """A current, traceable source for a rule or report finding."""
 
     title: str = Field(min_length=1)
     url: str = Field(min_length=1)
+    kind: SourceKind = SourceKind.OFFICIAL
     section: str | None = None
     effective_date: str | None = None
     accessed_date: str | None = None

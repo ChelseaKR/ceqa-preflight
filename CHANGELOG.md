@@ -6,6 +6,21 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Added `corpus/`, the committed, hashed, dated plain text of every official
+  source the rule catalog cites (plus the LCI document-submission page and the
+  project's own source-review addendum), split into addressable passages, with
+  `scripts/build_corpus.py` to rebuild it and a loader that refuses text that
+  does not match its manifest. It is the only text the opt-in AI explanation
+  layer (ADR 0002) may quote. The corpus ships inside the wheel.
+- Source citations now carry a `kind` (`official`, `technical_reference`, or
+  `project_advisory`) and the HTML report labels each citation link with it
+  instead of a bare "Source". `FILE-004` and `FILE-005`, which are self-cited
+  because no official guidance states a file-size limit or a filename character
+  set, now link to the 2026-07-27 source-review addendum that explains their
+  thresholds rather than to the repository root, and are labeled "Project
+  advisory rule — not an official source" (closes #38). Report schema `1.1`
+  gains the optional `source.kind` field; existing consumers are unaffected.
+
 - Every report now names the checks that did not run. A rule that applies to the
   filing type but was skipped — experimental without `--include-experimental`,
   removed by `--rules` or `--exclude-rules`, or withdrawn — is listed with its
