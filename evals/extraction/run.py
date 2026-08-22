@@ -76,10 +76,35 @@ def redact(text: str | None) -> str | None:
     return _EMAIL.sub("[email redacted]", _PHONE.sub("[phone redacted]", text))
 
 
+_ABBREVIATIONS = {
+    "dept": "department",
+    "com": "community",
+    "dev": "development",
+    "div": "division",
+    "co": "county",
+    "st": "street",
+    "ave": "avenue",
+    "rd": "road",
+    "blvd": "boulevard",
+    "hwy": "highway",
+    "mt": "mount",
+    "&": "and",
+}
+_STOPWORDS = {"of", "the", "a", "an"}
+_FIELD_STOPWORDS = {"county": {"county"}, "city_or_community": {"city", "community"}}
+
+
 def normalize(value: str) -> str:
     lowered = value.casefold().replace("&", " and ")
     lowered = re.sub(r"[^a-z0-9]+", " ", lowered)
-    return " ".join(lowered.split())
+    return " ".join(_ABBREVIATIONS.get(token, token) for token in lowered.split())
+
+
+def tokens(field: str, value: str) -> frozenset[str]:
+    """Order-insensitive tokens: "Belmont, City of" and "City of Belmont" compare equal."""
+
+    drop = _STOPWORDS | _FIELD_STOPWORDS.get(field, set())
+    return frozenset(token for token in normalize(value).split() if token not in drop)
 
 
 def _date_key(value: str) -> tuple[int, int, int] | None:
@@ -113,7 +138,11 @@ def values_match(field: str, extracted: str, gold: str | list[str]) -> bool:
             keys = (_date_key(extracted), _date_key(candidate))
             if keys[0] is not None and keys[0] == keys[1]:
                 return True
-        if field in {"lead_agency", "project_title"} and (left in right or right in left):
+        if tokens(field, extracted) == tokens(field, candidate):
+            return True
+        if field in {"lead_agency", "project_title", "contact_name"} and (
+            left in right or right in left
+        ):
             return True
     return False
 

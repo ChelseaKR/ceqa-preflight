@@ -22,10 +22,46 @@ exercised by the test suite instead.
 
     uv run python evals/refusal/run.py            # guard layer only; records not_run for the model layer
     uv run python evals/refusal/run.py --live --provider bedrock --model global.anthropic.claude-sonnet-4-6
+    uv run python evals/extraction/run.py --live --provider bedrock --model global.anthropic.claude-sonnet-4-6
+    uv run python evals/grounding/run.py --live --provider bedrock --model global.anthropic.claude-sonnet-4-6
+
+The extraction suite needs the real PDFs, which are not committed:
+`scripts/fetch_ceqanet_sample.py` fetches them into the gitignored
+`evals/extraction/cache/` and the harness re-fetches and hash-checks any that
+are missing. The grounding suite reuses up to three of those cached filings
+as single-document packages, so real forms produce the findings it explains.
 
 Credentials come from the environment only (`ANTHROPIC_API_KEY`, or the AWS
 chain plus `AWS_REGION`). A live run refuses to record a result outside a git
 checkout, because the commit is part of the provenance.
+
+## Reading an extraction result
+
+Per field, against the metadata CEQAnet holds for the same document:
+
+- `match`: a verified value equal to the gold after normalization (county and
+  city may match one of a list; the exemption citation matches on the
+  Guidelines section number; dates match on the date).
+- `mismatch`: a verified value that differs; listed with both values because
+  the form and the metadata legitimately disagree sometimes (the agency name
+  as typed on the form vs. as registered in CEQA Submit).
+- `abstained_gold_present`: the extraction said `unknown` where CEQAnet holds
+  a value. Often legitimate: the SCH number is assigned after filing and is
+  not printed on the form.
+- `withheld`: the model proposed a value whose quote did not verify, so it
+  was never shown. This is the verifier doing its job.
+- `filled_gold_absent`: a verified value where CEQAnet's export holds
+  nothing. Because every shown value is verified against a verbatim quote
+  from the document, this means the form states something the metadata does
+  not (a specific address where the export has no cross streets), not that a
+  value was invented. An invented value cannot reach display; the count of
+  values shown without a verified quote is zero by construction, and the
+  `withheld` count is where the model's attempts to do so land.
+- `both_absent`: nothing on either side.
+
+`contact_name` is scored but its values and quotes are never written to a
+result file, and phone numbers and email addresses are redacted from every
+value and quote before a result is written.
 
 ## Reading a refusal result
 
