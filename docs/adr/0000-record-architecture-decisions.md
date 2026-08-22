@@ -14,7 +14,8 @@ source-grounded rules, and safety boundaries.
 Architecture decisions are stored as immutable numbered Markdown records in
 this directory. Existing decision 0001 is retained at
 `docs/decisions/0001-local-first-deterministic-cli.md` and should be moved or
-cross-referenced when it changes.
+cross-referenced when it changes. [ADR 0002](0002-ai-at-the-edges.md) amends
+it.
 
 ## Consequences
 

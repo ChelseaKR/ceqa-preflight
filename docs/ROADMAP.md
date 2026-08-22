@@ -40,10 +40,24 @@
 - Exit criteria: all CI/security checks green, release checklist signed,
   no open critical vulnerability, and the release remains advisory-only.
 
+## Now — Opt-in AI layer (ADR 0002, in build)
+
+- [ADR 0002](adr/0002-ai-at-the-edges.md): model-backed field extraction to
+  a draft manifest, corpus-grounded explanations and correction drafts, and a
+  refusal guard for legal-sufficiency questions, all behind the opt-in `ai`
+  command group. The deterministic rule engine remains the only source of
+  findings.
+- Committed `corpus/` of the official sources the rules cite, with hashes and
+  retrieval dates, and a verifier that checks every quoted claim against it.
+- Committed `evals/` harness: extraction against CEQAnet's published metadata
+  for real filings, the legal-sufficiency refusal suite, citation grounding,
+  and no-determination-upgrade checks, with provenance-stamped results.
+
 ## Not planned
 
 - Hosted document storage, automatic CEQA submission, legal sufficiency
-  determinations, or model-driven legal advice.
+  determinations, or model-driven legal advice. The AI layer narrates cited
+  sources and structures input; it does not evaluate sufficiency.
 
 ## Metrics ledger
 
@@ -67,6 +81,8 @@ by the owning standard.
 | Pilot false-positive rate | Measured on synthetic or permissioned packages; aggregate results only | `pilot summarize` evidence kit | REVIEW | Maintainer |
 
 `AI-DEV-MEASUREMENT: APPLIES`. Development is AI-assisted; delivery and
-quality-debt metrics are measured by portfolio automation from Git and CI. No
-AI runtime feature ships, so Track B product evaluations are N/A (see the
+quality-debt metrics are measured by portfolio automation from Git and CI.
+With [ADR 0002](adr/0002-ai-at-the-edges.md), Track B product evaluations
+apply to the opt-in `ai` commands; their evidence is the committed `evals/`
+harness and its provenance-stamped results (see the
 [responsible technology audits](RESPONSIBLE-TECH-AUDITS.md)).
