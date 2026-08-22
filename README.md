@@ -4,10 +4,14 @@ CEQA Preflight is an early-stage, local-first command-line tool for checking
 the technical readiness of CEQA Submit filing packages.
 
 It is designed to help planners, clerks, and consultants catch objective,
-correctable package issues before State Clearinghouse review. It will produce
+correctable package issues before State Clearinghouse review. It produces
 source-cited advisory findings and human-review reminders; it will not submit
-documents, modify originals, make network requests at runtime, or determine
-legal sufficiency.
+documents, modify originals, or determine legal sufficiency. The default
+`check` path makes no network requests. A separate, opt-in `ai` command group
+([ADR 0002](docs/adr/0002-ai-at-the-edges.md)) sends document text to a
+configured model provider to draft manifest fields, explain findings, and
+draft corrections; it never produces a finding and is never invoked by
+`check`.
 
 ## Status
 
@@ -29,6 +33,10 @@ are completed.
 - Deterministic PDF and metadata checks.
 - Accessible HTML and JSON reports.
 - No hosted document storage, portal scraping, or AI-driven legal analysis.
+- Opt-in, model-backed drafting and explanation under
+  [ADR 0002](docs/adr/0002-ai-at-the-edges.md): the model structures input
+  and narrates cited sources; only the deterministic rule engine produces a
+  finding, and legal-sufficiency questions are refused.
 
 ## Quick start
 
@@ -108,7 +116,9 @@ before merge; AI-assisted development measurement is tracked in the
 [responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the
-[architecture decision](docs/decisions/0001-local-first-deterministic-cli.md).
+architecture decisions
+([ADR 0001](docs/decisions/0001-local-first-deterministic-cli.md),
+[ADR 0002](docs/adr/0002-ai-at-the-edges.md)).
 The project also documents its [pilot protocol](docs/pilot-protocol.md),
 [pilot partner kit](docs/pilot-partner-kit.md),
 [accessibility boundaries](docs/accessibility.md), and
@@ -139,7 +149,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
 | Internationalization | Applies — pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
-| AI Evaluation | N/A (no AI runtime) | No model, prompt, or AI inference is shipped |
+| AI Evaluation | Applies — in build | [ADR 0002](docs/adr/0002-ai-at-the-edges.md) adds opt-in model-backed commands; the committed `evals/` harness (extraction vs. CEQAnet gold, legal-sufficiency refusal, citation grounding) is the evidence and records `not_run` until a live run is recorded |
 | Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), and the [definition of done](DEFINITION_OF_DONE.md) |
 | Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |
 | AI Development Measurement | Applies | `docs/ROADMAP.md` declares `AI-DEV-MEASUREMENT: APPLIES`; the baseline is recorded in the [responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md) |

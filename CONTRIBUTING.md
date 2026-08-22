@@ -8,7 +8,10 @@ Thanks for improving CEQA Preflight.
 - Do not submit real filing packages, personal information, confidential
   locations, or copyrighted third-party documents without explicit permission.
 - Do not add a CEQA-specific rule without a current official source and tests.
-- Keep runtime processing local; do not add telemetry or network calls.
+- Keep the default `check` path local; do not add telemetry or network calls
+  to it. Model calls live only in the opt-in `ai` command group
+  ([ADR 0002](docs/adr/0002-ai-at-the-edges.md)), import the SDK lazily, and
+  never produce a finding.
 - Read the vendored [Portfolio Standards](docs/standards/README.md); project-specific
   applicability is declared in the README.
 

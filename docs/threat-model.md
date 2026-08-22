@@ -24,7 +24,16 @@
   strict registry name, and rejects executable-looking parameters. Rules may
   not dynamically execute configuration.
 - The tool hashes inputs for a local report fingerprint but does not log page
-  text or transmit data.
+  text or transmit data on the default path.
+- The opt-in `ai` commands ([ADR 0002](adr/0002-ai-at-the-edges.md)) transmit
+  bounded document text or report findings to the configured model provider
+  over HTTPS using a credential read from the environment. They are never
+  invoked by `check`, import the provider SDK lazily, and treat every model
+  response as untrusted: extracted values must quote the document and are
+  verified against it; explanation claims must quote the committed corpus and
+  are verified against it; a deterministic guard refuses legal-sufficiency
+  questions before and after the model call. No model output becomes a
+  finding.
 
 ## Residual risks
 

@@ -6,6 +6,15 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Accepted [ADR 0002](docs/adr/0002-ai-at-the-edges.md), an owner-directed
+  change of direction: an opt-in `ai` command group will draft manifest fields
+  from document text, explain findings against the committed official-source
+  corpus, draft corrections, and refuse legal-sufficiency questions. The
+  default `check` path is unchanged and still makes no network requests. The
+  README, contributing guide, data card, threat model, roadmap, and audit log
+  now scope the "no network at runtime" claim to the default path and describe
+  the new data flow.
+
 - Every report now names the checks that did not run. A rule that applies to the
   filing type but was skipped — experimental without `--include-experimental`,
   removed by `--rules` or `--exclude-rules`, or withdrawn — is listed with its

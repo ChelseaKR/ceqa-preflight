@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted on July 18, 2026.
+Accepted on July 18, 2026. Amended by
+[ADR 0002](../adr/0002-ai-at-the-edges.md) on 2026-08-21: the exclusions
+below still govern the default `check` path; an opt-in `ai` command group
+exists outside it.
 
 ## Context
 
