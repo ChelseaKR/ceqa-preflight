@@ -133,7 +133,9 @@ def score_field(field: str, extraction: DocumentExtraction, gold: Any) -> dict[s
     row: dict[str, Any] = {"field": field, "outcome": outcome, "status": status.value}
     if field not in REDACTED_VALUES:
         row["extracted"] = redact(item.value if item else None)
-        row["gold"] = redact(gold if isinstance(gold, str) else (gold or None))
+        row["gold"] = (
+            [redact(part) for part in gold] if isinstance(gold, list) else redact(gold or None)
+        )
         row["quote"] = redact(item.quote if item else None)
     return row
 
