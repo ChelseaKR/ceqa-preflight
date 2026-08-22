@@ -69,6 +69,26 @@ are not in the corpus; an explanation that needs the form itself cannot
 quote it and will say nothing rather than describe a picture. Repealed
 sections whose pages carry no regulation text are likewise omitted.
 
+**Retrieval compliance, checked 2026-08-21.** `https://govt.westlaw.com`
+serves no `robots.txt` (a request for it 302s to `/SiteList`, the site's
+generic catch-all for any unrecognized path — there is no disallow file to
+honor). The site's only usage terms are inline on the page: "By using this
+website, you agree not to use it in any manner that could disable,
+overburden, damage, or impair the site or interfere with any other party's
+use of the website, or to use any device, software or routine that
+interferes with the proper working of the website." No separate Terms of
+Use page is linked (the footer carries only Privacy, Accessibility, and a
+link to OAL); nothing in that sentence forbids automated retrieval or
+retention, only abuse. `build_corpus.py`'s crawl is one request per second
+for about 260 requests, consistent with not overburdening the site.
+Separately, OAL's own [Conditions of
+Use](https://oal.ca.gov/use/) states that information on its site is "in
+the public domain" and "may be distributed or copied as permitted by law,"
+consistent with California regulation text being a state edict rather than
+copyrighted work. Full findings, including the independent check of OAL's
+"no snapshot exists" claim and the historical-versions page, are in
+[`docs/audits/ccr-guidelines-retrieval-review-2026-08-21.md`](../docs/audits/ccr-guidelines-retrieval-review-2026-08-21.md).
+
 ## Rebuilding
 
 The Guidelines walk is about 260 requests at one per second. To reuse a prior

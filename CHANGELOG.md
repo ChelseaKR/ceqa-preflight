@@ -18,6 +18,19 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   read it. `scripts/build_corpus.py` walks the official table of contents and
   accepts `--ccr-cache` to reuse a prior crawl.
 
+- Recorded the CCR Guidelines retrieval-compliance review in
+  [`docs/audits/ccr-guidelines-retrieval-review-2026-08-21.md`](docs/audits/ccr-guidelines-retrieval-review-2026-08-21.md),
+  linked from `corpus/README.md`: OAL publishes no snapshot in any digital
+  form (confirmed against its own CCR and historical-versions pages), no
+  `robots.txt` disallow or terms language forbidding automated retrieval or
+  retention was found on the official online CCR host, and no unofficial
+  reprint was substituted. Re-ran the citation-grounding eval live on
+  Bedrock `claude-sonnet-4-6` against the Guidelines-wired commit: 20
+  previously-withheld claims across the two Guidelines-citing findings
+  (`NOE-003`, `NOD-003`) now verify against the retained text;
+  `findings_with_nothing_shown` dropped from 7 to 3, and the remaining 3 are
+  unrelated to the Guidelines.
+
 - Added the real-filing extraction eval and the citation-grounding eval under
   `evals/`, with `scripts/fetch_ceqanet_sample.py` to fetch a small, varied
   sample of real CEQAnet filings (15 committed as identifiers, hashes, and the
