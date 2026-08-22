@@ -34,6 +34,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "evals"))
 
+from evalkit import current_commit, write_result  # noqa: E402
+
 from ceqa_preflight import __version__  # noqa: E402
 from ceqa_preflight.ai.client import ModelClient, build_client  # noqa: E402
 from ceqa_preflight.ai.corpus import Corpus  # noqa: E402
@@ -43,7 +45,6 @@ from ceqa_preflight.checker import check_package  # noqa: E402
 from ceqa_preflight.models import FilingType, InspectionReport  # noqa: E402
 from ceqa_preflight.rule_registry import default_catalog  # noqa: E402
 from ceqa_preflight.synth import SyntheticDefect, write_synthetic_package  # noqa: E402
-from evalkit import current_commit, write_result  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"

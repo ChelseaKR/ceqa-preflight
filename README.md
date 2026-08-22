@@ -201,7 +201,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
 | Internationalization | Applies — pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
-| AI Evaluation | Applies — in build | [ADR 0002](docs/adr/0002-ai-at-the-edges.md) adds opt-in model-backed commands; the committed `evals/` harness (extraction vs. CEQAnet gold, legal-sufficiency refusal, citation grounding) is the evidence and records `not_run` until a live run is recorded |
+| AI Evaluation | Applies | [ADR 0002](docs/adr/0002-ai-at-the-edges.md); the committed [`evals/`](evals/README.md) harnesses (legal-sufficiency refusal, real-filing extraction vs. CEQAnet metadata, citation grounding) with provenance-stamped results; a test rejects any result file without provenance |
 | Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), and the [definition of done](DEFINITION_OF_DONE.md) |
 | Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |
 | AI Development Measurement | Applies | `docs/ROADMAP.md` declares `AI-DEV-MEASUREMENT: APPLIES`; the baseline is recorded in the [responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md) |

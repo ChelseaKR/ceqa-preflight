@@ -40,18 +40,22 @@
 - Exit criteria: all CI/security checks green, release checklist signed,
   no open critical vulnerability, and the release remains advisory-only.
 
-## Now — Opt-in AI layer (ADR 0002, in build)
+## Now — Opt-in AI layer (ADR 0002)
 
-- [ADR 0002](adr/0002-ai-at-the-edges.md): model-backed field extraction to
-  a draft manifest, corpus-grounded explanations and correction drafts, and a
-  refusal guard for legal-sufficiency questions, all behind the opt-in `ai`
-  command group. The deterministic rule engine remains the only source of
-  findings.
-- Committed `corpus/` of the official sources the rules cite, with hashes and
-  retrieval dates, and a verifier that checks every quoted claim against it.
-- Committed `evals/` harness: extraction against CEQAnet's published metadata
-  for real filings, the legal-sufficiency refusal suite, citation grounding,
-  and no-determination-upgrade checks, with provenance-stamped results.
+- **Done:** [ADR 0002](adr/0002-ai-at-the-edges.md); `ai extract` (quote-verified
+  draft manifest), `ai explain` and `ai draft-fix` (corpus-grounded, verified
+  claims), and `ai ask` behind the deterministic legal-sufficiency guard. The
+  rule engine remains the only source of findings; `check` is unchanged.
+- **Done:** committed `corpus/` of the official sources the rules cite, with
+  hashes and retrieval dates, and the verifier that checks every quote.
+- **Done:** committed `evals/` harnesses and first live results (see
+  [evals/README.md](../evals/README.md)): refusal suite, real-filing
+  extraction against CEQAnet metadata, and citation grounding.
+- **Open:** the CEQA Guidelines text is not in the corpus (no reviewed official
+  source); the default model `claude-sonnet-5` has not been run live (the
+  recorded runs used Bedrock `claude-sonnet-4-6`); a qualified reviewer has not
+  read the prompts, the refusal cases, or the Spanish phrasings; the `ai`
+  strings await the gettext seam ([#39](https://github.com/ChelseaKR/ceqa-preflight/issues/39)).
 
 ## Not planned
 

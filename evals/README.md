@@ -18,6 +18,25 @@ exercised by the test suite instead.
 | Citation grounding and no-determination | `grounding/` | Of the claims the model produced for explanations and correction drafts, how many carried citations that verified verbatim against the corpus, and how many were withheld for determination language. | The verifier's behavior on scripted claims runs in `tests/test_ai_grounding.py`. |
 | Real-filing extraction | `extraction/` | Per-field exact match of `ai extract` against the structured metadata CEQAnet publishes for the same real filings, plus abstained-when-absent and the defect, filled-when-absent. | The verifier's behavior on scripted proposals runs in `tests/test_ai_extraction.py`. |
 
+## Recorded results
+
+All three suites were run live on 2026-08-22 on Amazon Bedrock with
+`global.anthropic.claude-sonnet-4-6`. The code default, `claude-sonnet-5`, was
+not reachable from the account that ran them (403 on Bedrock; no Anthropic
+API key), so there is no recorded result for the default model yet. The
+result files under `*/results/` carry the commit each ran at.
+
+| Suite | Result |
+| --- | --- |
+| Legal-sufficiency refusal (109 refuse, 30 answer) | Guard alone: 109/109 refused, 0/30 over-refused. Model alone, guard bypassed: 106/109 refused, 3 answered with a claim shown (all three caught by the guard), 1 technical question over-refused, 2 malformed outputs that failed closed. End to end: 109/109 refused, 0 missed, 1 technical question over-refused. |
+| Real-filing extraction (15 CEQAnet filings: 7 NOE, 8 NOD; 2008–2026; 9 counties) | 15/15 had a text layer and were attempted; 0 model errors; document kind correct 14/15 (the miss is an attachment CEQAnet labels "Notice of Exemption" that is actually a State Clearinghouse title-correction memo, which the model called `other_ceqa_material`). Per field: 84 match, 11 mismatch, 14 abstained where CEQAnet holds a value, 6 withheld by the verifier, 16 stated on the form where the export is empty, 34 absent on both sides. Match rate where both sides hold a value: 88.4%. Every shown value carried a verified verbatim quote. |
+| Citation grounding (72 findings over 5 reports: 2 synthetic, 3 real filings; explain and draft-fix) | 313 claims produced; 308 shown (98.4%); 5 withheld because a citation did not verify; 0 uncited; 0 with determination language; 4 malformed outputs that failed closed; 7 findings with nothing shown. |
+
+Before the verifier learned to fold typography (curly quotes, dashes,
+ligatures), the same grounding suite showed 265/330 (80.3%) with 65
+citations withheld; inspection showed the model straightening the corpus's
+curly quotes. That change is in the commit the recorded run names.
+
 ## Running
 
     uv run python evals/refusal/run.py            # guard layer only; records not_run for the model layer

@@ -6,6 +6,20 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Added the real-filing extraction eval and the citation-grounding eval under
+  `evals/`, with `scripts/fetch_ceqanet_sample.py` to fetch a small, varied
+  sample of real CEQAnet filings (15 committed as identifiers, hashes, and the
+  metadata CEQAnet publishes; PDFs stay in a gitignored cache; contact phone,
+  email, and address are never written). Recorded the first live results for
+  all three suites on Bedrock `claude-sonnet-4-6` (the default `claude-sonnet-5`
+  was not reachable): refusal 109/109 end to end with 0 missed; extraction
+  88.4% match where both the form and the metadata hold a value, every shown
+  value quote-verified; grounding 308/313 claims shown with 0 uncited and 0
+  determination-language claims. See `evals/README.md`.
+- The quote verifiers now fold typography (curly quotes, dashes, non-breaking
+  spaces, ligatures) before verbatim comparison; a quote that differs in a word
+  still fails.
+
 - Added `ai explain`, `ai draft-fix`, and `ai ask` (ADR 0002). Explanations and
   correction drafts are grounded in `corpus/`: every claim must cite a passage
   of the official source the rule cites and quote it verbatim, and a verifier
