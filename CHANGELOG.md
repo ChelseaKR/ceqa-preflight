@@ -25,6 +25,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Report schema version `1.1` adds the `not_run` array. The addition is
   backwards compatible; existing consumers of `findings` and `manual_review` are
   unaffected.
+- The release workflow now installs with `uv sync --all-groups --locked`
+  instead of `--frozen`. `ci.yml` and `security.yml` already made this
+  substitution and said why; `release.yml` was the one job left installing a
+  lockfile it never compared against `pyproject.toml`, which is the job where
+  it matters most.
 - Fixed checks that reported a clean result for documents they never read. A PDF
   that timed out, failed to parse, or is encrypted still produced a
   `PdfInspection` with every absence signal at its default, so the searchable

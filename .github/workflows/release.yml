@@ -39,7 +39,11 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: false
-      - run: uv sync --all-groups --frozen
+      # --locked, not --frozen: see the note in ci.yml. --frozen installs a
+      # lockfile that has drifted from pyproject.toml and exits 0, so it cannot
+      # gate drift, and a release must not be built from a resolution nobody
+      # reviewed.
+      - run: uv sync --all-groups --locked
       - name: Require tag, package, and changelog versions to match
         env:
           TAG: ${{ needs.authorize.outputs.release-tag }}
