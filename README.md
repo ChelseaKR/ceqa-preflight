@@ -63,6 +63,13 @@ identifiers. The default run includes active technical checks only. Add
 `--log-format json` for minimal, package-content-free operational events on
 stderr, including inspection progress counts for large packages.
 
+Every report states its own scope. Any rule that applies to the filing type but
+did not run — because it is experimental and `--include-experimental` was not
+given, because `--rules` or `--exclude-rules` removed it, or because it has been
+withdrawn — is listed by identifier, with the reason and the way to run it, in
+all four report formats. A report with no failures therefore always says whether
+it covered every applicable check or only some of them.
+
 The `synth` command generates plainly fictional synthetic packages, optionally
 seeded with objective defects (scanned pages, fillable forms, encrypted or
 truncated PDFs, duplicates, and more) for demos, regression tests, and pilot
@@ -79,6 +86,10 @@ free-text reviewer notes.
 manual-review items may still exist), `1` when at least one failure finding
 was produced, and `2` on input or internal rule errors. With multiple
 packages, the worst exit code wins.
+
+Exit code `0` is not a statement that every applicable check ran: skipped
+checks do not change it. Read the `not_run` list, or the "check(s) not run"
+count in the summary line, before treating a `0` as a complete result.
 
 ## Non-affiliation and disclaimer
 

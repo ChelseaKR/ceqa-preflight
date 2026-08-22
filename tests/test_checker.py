@@ -10,8 +10,13 @@ from pypdf import PdfWriter
 from pytest_socket import SocketBlockedError
 
 from ceqa_preflight.checker import check_package
-from ceqa_preflight.models import FilingType, PackageManifest
-from ceqa_preflight.reporting import render_console, render_html, render_json
+from ceqa_preflight.models import FilingType, FindingStatus, PackageManifest, SkipReason
+from ceqa_preflight.reporting import (
+    render_checklist,
+    render_console,
+    render_html,
+    render_json,
+)
 
 
 def _package(tmp_path: Path) -> tuple[Path, PackageManifest]:
@@ -86,3 +91,58 @@ def test_manifest_filing_type_must_match_requested_type(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="does not match"):
         check_package(package, FilingType.NOD, manifest=manifest)
+
+
+def test_a_default_run_reports_the_filing_checks_it_did_not_run(tmp_path: Path) -> None:
+    """The default run omits every filing-specific rule; the report has to say so.
+
+    Six of the twenty rules that apply to an NOE filing are experimental, and two of them
+    can fail. A default run over a package missing its primary form therefore returns exit
+    code 0, so the report is the only place the omission can be disclosed.
+    """
+
+    package, manifest = _package(tmp_path)
+
+    report, exit_code = check_package(package, FilingType.NOE, manifest=manifest)
+
+    assert exit_code == 0
+    assert not any(finding.status is FindingStatus.FAILURE for finding in report.findings)
+    assert [skipped.rule_id for skipped in report.not_run] == [
+        "NOE-001",
+        "NOE-002",
+        "NOE-003",
+        "NOE-M001",
+        "NOE-M002",
+        "NOE-M003",
+    ]
+    assert {skipped.reason for skipped in report.not_run} == {SkipReason.EXPERIMENTAL_NOT_INCLUDED}
+    assert all("--include-experimental" in skipped.detail for skipped in report.not_run)
+
+
+def test_deselected_rules_are_reported_in_catalog_order(tmp_path: Path) -> None:
+    package, manifest = _package(tmp_path)
+
+    report, exit_code = check_package(
+        package,
+        FilingType.NOE,
+        manifest=manifest,
+        include_experimental=True,
+        exclude_rule_ids={"NOE-001", "CORE-001"},
+    )
+
+    assert exit_code == 0
+    assert [skipped.rule_id for skipped in report.not_run] == ["CORE-001", "NOE-001"]
+    assert {skipped.reason for skipped in report.not_run} == {SkipReason.EXCLUDED_BY_REQUEST}
+    checklist = render_checklist(report)
+    assert "Checks that did not run" in checklist
+    assert "CORE-001" in checklist
+
+
+def test_a_complete_run_states_that_nothing_was_skipped(tmp_path: Path) -> None:
+    package, manifest = _package(tmp_path)
+
+    report, _ = check_package(package, FilingType.NOE, manifest=manifest, include_experimental=True)
+
+    assert report.not_run == []
+    for rendered in (render_console(report), render_checklist(report), render_html(report)):
+        assert "Every check that applies to this filing type ran." in rendered

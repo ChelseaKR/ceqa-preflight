@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from ceqa_preflight.models import FilingType, FindingStatus, SourceCitation
+from ceqa_preflight.models import FilingType, FindingStatus, SkipReason, SourceCitation
 from ceqa_preflight.rule_catalog import RuleCatalog, RuleDefinition, RuleLifecycle
 from ceqa_preflight.rule_engine import (
     RuleContext,
@@ -76,6 +76,14 @@ def test_filters_lifecycle_and_filing_type() -> None:
 
     assert [finding.rule_id for finding in default.findings] == ["CORE-001"]
     assert [finding.rule_id for finding in experimental.findings] == ["CORE-001", "CORE-002"]
+    # A rule that applied but did not run is recorded; NOD-001 does not apply to an NOE
+    # filing at all, so it is not reported as a skipped check.
+    assert [(skipped.rule_id, skipped.reason) for skipped in default.not_run] == [
+        ("CORE-002", SkipReason.EXPERIMENTAL_NOT_INCLUDED),
+        ("CORE-003", SkipReason.WITHDRAWN),
+    ]
+    assert [skipped.rule_id for skipped in experimental.not_run] == ["CORE-003"]
+    assert all(skipped.detail and skipped.source for skipped in default.not_run)
 
 
 def test_unknown_and_failing_checks_are_safe() -> None:

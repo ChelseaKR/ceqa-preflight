@@ -14,6 +14,8 @@ from ceqa_preflight.models import (
     FilingType,
     Finding,
     FindingStatus,
+    SkippedCheck,
+    SkipReason,
     StrictModel,
 )
 from ceqa_preflight.rule_catalog import RuleCatalog, RuleDefinition, RuleLifecycle
@@ -53,6 +55,7 @@ class RuleRun(StrictModel):
     """Results and process status for a complete deterministic rule run."""
 
     findings: list[Finding] = Field(default_factory=list)
+    not_run: list[SkippedCheck] = Field(default_factory=list)
     exit_code: int = Field(ge=0, le=2)
 
 
@@ -73,9 +76,15 @@ class RuleEngine:
         """Run applicable rules in catalog order, isolating individual check failures."""
 
         findings: list[Finding] = []
+        not_run: list[SkippedCheck] = []
         exit_code = 0
         for rule in self._catalog.rules:
-            if not _is_enabled(rule, context.filing_type, include_experimental):
+            if context.filing_type not in rule.filing_types:
+                # Not applicable to this filing type, so it is not a check that was skipped.
+                continue
+            reason = _lifecycle_skip_reason(rule, include_experimental)
+            if reason is not None:
+                not_run.append(skipped_check(rule, reason))
                 continue
             try:
                 outcomes = self._registry[rule.check](context, rule)
@@ -83,15 +92,51 @@ class RuleEngine:
             except Exception:
                 findings.append(_internal_error_finding(rule))
                 exit_code = 2
-        return RuleRun(findings=findings, exit_code=exit_code)
+        return RuleRun(findings=findings, not_run=not_run, exit_code=exit_code)
 
 
-def _is_enabled(rule: RuleDefinition, filing_type: FilingType, include_experimental: bool) -> bool:
-    if filing_type not in rule.filing_types:
-        return False
+def _lifecycle_skip_reason(rule: RuleDefinition, include_experimental: bool) -> SkipReason | None:
+    """Return why a filing-type-applicable rule did not run, or ``None`` when it ran."""
+
     if rule.lifecycle is RuleLifecycle.ACTIVE:
-        return True
-    return rule.lifecycle is RuleLifecycle.EXPERIMENTAL and include_experimental
+        return None
+    if rule.lifecycle is RuleLifecycle.EXPERIMENTAL:
+        return None if include_experimental else SkipReason.EXPERIMENTAL_NOT_INCLUDED
+    return SkipReason.WITHDRAWN
+
+
+_SKIP_DETAILS = {
+    SkipReason.EXPERIMENTAL_NOT_INCLUDED: (
+        "This check is experimental and runs only with --include-experimental. It did not "
+        "run, so this report makes no statement about what it covers."
+    ),
+    SkipReason.WITHDRAWN: (
+        "This check has been withdrawn from the active rule set and did not run, so this "
+        "report makes no statement about what it covers."
+    ),
+    SkipReason.NOT_SELECTED: (
+        "This check did not run because --rules limited the run to other rule identifiers, "
+        "so this report makes no statement about what it covers. Re-run without --rules to "
+        "include it."
+    ),
+    SkipReason.EXCLUDED_BY_REQUEST: (
+        "This check did not run because --exclude-rules named it, so this report makes no "
+        "statement about what it covers. Re-run without that exclusion to include it."
+    ),
+}
+
+
+def skipped_check(rule: RuleDefinition, reason: SkipReason) -> SkippedCheck:
+    """Record one applicable rule that did not run, with its source and the way to run it."""
+
+    return SkippedCheck(
+        rule_id=rule.id,
+        rule_version=rule.version,
+        title=rule.title,
+        reason=reason,
+        detail=_SKIP_DETAILS[reason],
+        source=rule.source,
+    )
 
 
 def _finding_from_outcome(rule: RuleDefinition, outcome: RuleOutcome) -> Finding:
