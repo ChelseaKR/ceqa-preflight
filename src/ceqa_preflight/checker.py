@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from ceqa_preflight import __version__
+from ceqa_preflight.i18n import _
 from ceqa_preflight.models import (
     FilingType,
     FindingStatus,
@@ -26,10 +27,19 @@ from ceqa_preflight.rule_registry import default_catalog, default_registry
 
 _MAX_INSPECTION_WORKERS = 4
 
-DISCLAIMER = (
-    "CEQA Preflight is an advisory technical checker, not legal advice or a determination "
-    "of CEQA compliance. Review all manual-review items before submission."
-)
+
+def DISCLAIMER() -> str:
+    """The report's disclaimer, translated under the locale active when the report is built.
+
+    A function, not a constant: gettext's static extractor only finds ``_("literal")`` calls
+    whose argument is a string literal at the call site, and it must be translated when a
+    report is built (under whatever locale is active then), not once at import time.
+    """
+
+    return _(
+        "CEQA Preflight is an advisory technical checker, not legal advice or a determination "
+        "of CEQA compliance. Review all manual-review items before submission."
+    )
 
 
 def _sha256(path: Path) -> str:
@@ -180,7 +190,7 @@ def check_package(
         findings=findings,
         manual_review=manual_review,
         not_run=not_run,
-        disclaimer=DISCLAIMER,
+        disclaimer=DISCLAIMER(),
     )
     if run.exit_code == 2:
         return report, 2

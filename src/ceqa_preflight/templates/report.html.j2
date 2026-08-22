@@ -5,11 +5,11 @@
 {%- endif -%}
 {%- endmacro -%}
 <!doctype html>
-<html lang="en">
+<html lang="{{ locale }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CEQA Preflight advisory report</title>
+    <title>{% trans %}CEQA Preflight advisory report{% endtrans %}</title>
     <style>
       body { color: #1b1b1b; font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem auto; max-width: 70rem; padding: 0 1rem; }
       table { border-collapse: collapse; width: 100%; }
@@ -31,52 +31,67 @@
   </head>
   <body>
     <header>
-      <h1>CEQA Preflight advisory report</h1>
-      <p><strong>Filing type:</strong> {{ report.filing_type }}</p>
+      <h1>{% trans %}CEQA Preflight advisory report{% endtrans %}</h1>
+      <p><strong>{% trans %}Filing type:{% endtrans %}</strong> {{ report.filing_type }}</p>
       <p>{{ report.disclaimer }}</p>
-      <p><strong>Summary:</strong>
-        {{ counts["failure"] }} failure(s),
-        {{ counts["warning"] }} warning(s),
-        {{ counts["pass"] }} passed check(s),
-        {{ counts["manual"] }} manual-review item(s),
-        {{ counts["not_run"] }} check(s) not run.</p>
+      <p><strong>{% trans %}Summary:{% endtrans %}</strong>
+        {% trans failure=counts["failure"], warning=counts["warning"], passed=counts["pass"], manual=counts["manual"], not_run=counts["not_run"] -%}
+        {{ failure }} failure(s), {{ warning }} warning(s), {{ passed }} passed check(s),
+        {{ manual }} manual-review item(s), {{ not_run }} check(s) not run.
+        {%- endtrans %}</p>
       {% if report.not_run %}
-      <p class="scope"><strong>Scope:</strong> {{ report.not_run | length }} applicable check(s)
-        did not run. This report makes no statement about what they cover.</p>
+      <p class="scope"><strong>{% trans %}Scope:{% endtrans %}</strong>
+        {%- trans count=report.not_run | length %}
+        {{ count }} applicable check(s) did not run. This report makes no statement about
+        what they cover.
+        {%- endtrans %}</p>
       {% else %}
-      <p class="scope">Every check that applies to this filing type ran.</p>
+      <p class="scope">{% trans %}Every check that applies to this filing type ran.{% endtrans %}</p>
       {% endif %}
       <p class="metadata">
-        Tool version {{ report.tool_version }}, ruleset {{ report.ruleset_version }},
-        generated {{ report.generated_at.isoformat() }}.<br>
-        Package fingerprint {{ report.input_fingerprint }}.
+        {%- trans tool_version=report.tool_version, ruleset_version=report.ruleset_version, generated_at=report.generated_at.isoformat() %}
+        Tool version {{ tool_version }}, ruleset {{ ruleset_version }},
+        generated {{ generated_at }}.
+        {%- endtrans %}<br>
+        {%- trans fingerprint=report.input_fingerprint %}
+        Package fingerprint {{ fingerprint }}.
+        {%- endtrans %}
       </p>
     </header>
     <main>
-      <h2>Automated findings</h2>
+      <h2>{% trans %}Automated findings{% endtrans %}</h2>
       {% if report.findings %}
       <table>
-        <caption>Automated technical checks</caption>
-        <thead><tr><th scope="col">Status</th><th scope="col">Rule</th><th scope="col">Finding</th><th scope="col">Remediation</th></tr></thead>
+        <caption>{% trans %}Automated technical checks{% endtrans %}</caption>
+        <thead><tr>
+          <th scope="col">{% trans %}Status{% endtrans %}</th>
+          <th scope="col">{% trans %}Rule{% endtrans %}</th>
+          <th scope="col">{% trans %}Finding{% endtrans %}</th>
+          <th scope="col">{% trans %}Remediation{% endtrans %}</th>
+        </tr></thead>
         <tbody>
         {% for finding in report.findings %}
           <tr>
             <td class="status {{ finding.status }}">{{ finding.status }}</td>
             <td>{{ finding.rule_id }}{{ cite(finding.source) }}</td>
-            <td>{{ finding.message }}{% if finding.document %}<br><small>Document: {{ finding.document }}</small>{% endif %}</td>
+            <td>{{ finding.message }}{% if finding.document %}<br><small>{% trans document=finding.document %}Document: {{ document }}{% endtrans %}</small>{% endif %}</td>
             <td>{{ finding.remediation }}</td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
       {% else %}
-      <p>No automated findings were generated.</p>
+      <p>{% trans %}No automated findings were generated.{% endtrans %}</p>
       {% endif %}
-      <h2>Manual review</h2>
+      <h2>{% trans %}Manual review{% endtrans %}</h2>
       {% if report.manual_review %}
       <table>
-        <caption>Items that require human review</caption>
-        <thead><tr><th scope="col">Rule</th><th scope="col">Item</th><th scope="col">Remediation</th></tr></thead>
+        <caption>{% trans %}Items that require human review{% endtrans %}</caption>
+        <thead><tr>
+          <th scope="col">{% trans %}Rule{% endtrans %}</th>
+          <th scope="col">{% trans %}Item{% endtrans %}</th>
+          <th scope="col">{% trans %}Remediation{% endtrans %}</th>
+        </tr></thead>
         <tbody>
         {% for finding in report.manual_review %}
           <tr><td>{{ finding.rule_id }}{{ cite(finding.source) }}</td><td>{{ finding.message }}</td><td>{{ finding.remediation }}</td></tr>
@@ -84,13 +99,17 @@
         </tbody>
       </table>
       {% else %}
-      <p>No manual-review items were generated.</p>
+      <p>{% trans %}No manual-review items were generated.{% endtrans %}</p>
       {% endif %}
-      <h2>Checks that did not run</h2>
+      <h2>{% trans %}Checks that did not run{% endtrans %}</h2>
       {% if report.not_run %}
       <table>
-        <caption>Applicable checks this report does not cover</caption>
-        <thead><tr><th scope="col">Rule</th><th scope="col">Check</th><th scope="col">Why it did not run</th></tr></thead>
+        <caption>{% trans %}Applicable checks this report does not cover{% endtrans %}</caption>
+        <thead><tr>
+          <th scope="col">{% trans %}Rule{% endtrans %}</th>
+          <th scope="col">{% trans %}Check{% endtrans %}</th>
+          <th scope="col">{% trans %}Why it did not run{% endtrans %}</th>
+        </tr></thead>
         <tbody>
         {% for skipped in report.not_run %}
           <tr><td>{{ skipped.rule_id }}{{ cite(skipped.source) }}</td><td>{{ skipped.title }}</td><td>{{ skipped.detail }}</td></tr>
@@ -98,7 +117,7 @@
         </tbody>
       </table>
       {% else %}
-      <p>Every check that applies to this filing type ran.</p>
+      <p>{% trans %}Every check that applies to this filing type ran.{% endtrans %}</p>
       {% endif %}
     </main>
   </body>

@@ -411,3 +411,78 @@ def test_rules_list_supports_json_output() -> None:
     assert result.exit_code == 0
     assert '"id": "CORE-001"' in result.stdout
     assert invalid.exit_code == 2
+
+
+def _synthetic_package_and_check(
+    *global_args: str, tmp_path: Path, format_: str = "console"
+) -> str:
+    """--locale is a root option, so it must precede the `check` subcommand, not follow it."""
+
+    directory = tmp_path / "package"
+    created = runner.invoke(app, ["synth", str(directory), "--filing-type", "NOE"])
+    assert created.exit_code == 0
+    result = runner.invoke(
+        app,
+        [*global_args, "check", str(directory), "--filing-type", "NOE", "--format", format_],
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0, result.stderr
+    return result.stdout
+
+
+class TestLocaleSelection:
+    """The --locale option and CEQA_PREFLIGHT_LOCALE env var (docs/I18N.md)."""
+
+    def test_default_is_english(self, tmp_path: Path) -> None:
+        stdout = _synthetic_package_and_check(tmp_path=tmp_path)
+        assert "Summary:" in stdout
+
+    def test_locale_option_selects_spanish(self, tmp_path: Path) -> None:
+        stdout = _synthetic_package_and_check("--locale", "es", tmp_path=tmp_path)
+        assert "Resumen:" in stdout
+
+    def test_env_var_selects_spanish(self, tmp_path: Path) -> None:
+        directory = tmp_path / "package"
+        runner.invoke(app, ["synth", str(directory), "--filing-type", "NOE"])
+        result = runner.invoke(
+            app,
+            ["check", str(directory), "--filing-type", "NOE"],
+            env={"CEQA_PREFLIGHT_LOCALE": "es"},
+        )
+        assert "Resumen:" in result.stdout
+
+    def test_option_takes_precedence_over_env_var(self, tmp_path: Path) -> None:
+        directory = tmp_path / "package"
+        runner.invoke(app, ["synth", str(directory), "--filing-type", "NOE"])
+        result = runner.invoke(
+            app,
+            ["--locale", "en", "check", str(directory), "--filing-type", "NOE"],
+            env={"CEQA_PREFLIGHT_LOCALE": "es"},
+        )
+        assert "Summary:" in result.stdout
+
+    def test_unsupported_but_valid_tag_falls_back_to_english(self, tmp_path: Path) -> None:
+        stdout = _synthetic_package_and_check("--locale", "fr", tmp_path=tmp_path)
+        assert "Summary:" in stdout
+
+    def test_malformed_tag_is_rejected(self) -> None:
+        result = runner.invoke(app, ["--locale", "not a tag", "version"])
+        assert result.exit_code != 0
+        assert "not a valid BCP 47" in result.stderr
+
+    def test_locale_never_changes_json_rule_identifiers(self, tmp_path: Path) -> None:
+        directory = tmp_path / "package"
+        runner.invoke(app, ["synth", str(directory), "--filing-type", "NOE"])
+        check_args = ["check", str(directory), "--filing-type", "NOE", "--format", "json"]
+        english = json.loads(runner.invoke(app, check_args).stdout)
+        spanish = json.loads(runner.invoke(app, ["--locale", "es", *check_args]).stdout)
+
+        assert spanish["filing_type"] == english["filing_type"] == "NOE"
+        rule_ids = lambda report: {  # noqa: E731
+            finding["rule_id"] for finding in report["findings"] + report["manual_review"]
+        }
+        statuses = lambda report: {  # noqa: E731
+            finding["status"] for finding in report["findings"]
+        }
+        assert rule_ids(spanish) == rule_ids(english)
+        assert statuses(spanish) == statuses(english)

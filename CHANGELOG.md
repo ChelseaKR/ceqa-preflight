@@ -6,6 +6,25 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Merged the gettext seam named in [`docs/I18N.md`](docs/I18N.md): a new
+  `ceqa_preflight.i18n` module (locale resolution with deterministic English
+  fallback, never from OS locale/network/document content), a `--locale`
+  CLI option and `CEQA_PREFLIGHT_LOCALE` environment variable, and committed
+  `en`/`es` gettext catalogs covering the console/checklist/HTML report
+  renderers, the report disclaimer, and every `ai` command's console prose
+  (issue [#39](https://github.com/ChelseaKR/ceqa-preflight/issues/39)).
+  `make verify` now runs `make i18n-check`
+  (`scripts/check_i18n.py`), enforcing POT freshness, EN/ES key and
+  placeholder parity, BCP 47 validity, and that every committed `.mo` matches
+  its `.po`. New tests (`tests/test_i18n.py`,
+  `tests/test_reporting_i18n.py`, `tests/test_cli.py::TestLocaleSelection`)
+  prove locale changes human-readable prose but never rule IDs, finding
+  status values, JSON keys, or citations. The `es` catalog is
+  maintainer-drafted and, like the refusal-suite Spanish phrasings, awaits a
+  qualified Spanish-language reviewer; the rule engine's per-finding message
+  and remediation text is not yet wrapped in the seam — see I18N.md's "What
+  is not yet implemented".
+
 - The corpus now holds the CEQA Guidelines: every section and appendix of
   14 CCR Title 14, Division 6, Chapter 3 (§ 15000 et seq.), retrieved section
   by section from the official online California Code of Regulations that the

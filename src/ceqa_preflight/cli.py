@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Annotated
 
@@ -11,6 +12,7 @@ import typer
 from ceqa_preflight import __version__
 from ceqa_preflight.ai.cli import ai_app
 from ceqa_preflight.checker import check_package
+from ceqa_preflight.i18n import InvalidLocaleTagError, _, resolve_locale, set_locale
 from ceqa_preflight.manifest import ManifestError, load_manifest
 from ceqa_preflight.models import FilingType
 from ceqa_preflight.observability import configure_logging, event
@@ -26,6 +28,11 @@ from ceqa_preflight.reporting import (
 from ceqa_preflight.rule_registry import default_catalog
 from ceqa_preflight.scaffold import write_manifest_template
 from ceqa_preflight.synth import SyntheticDefect, write_synthetic_package
+
+# The environment variable named in docs/I18N.md as the locale-selection fallback, below
+# the --locale option and above the deterministic English default. Never OS locale, IP, or
+# document content.
+LOCALE_ENV_VAR = "CEQA_PREFLIGHT_LOCALE"
 
 app = typer.Typer(
     name="ceqa-preflight",
@@ -63,11 +70,28 @@ def main(
         str,
         typer.Option("--log-format", help="Operational logs: text (off) or json (stderr)."),
     ] = "text",
+    locale: Annotated[
+        str | None,
+        typer.Option(
+            "--locale",
+            help=(
+                "Report and console language as a BCP 47 tag (e.g. en, es). Defaults to the "
+                f"{LOCALE_ENV_VAR} environment variable, then English. An unsupported but "
+                "valid tag falls back to English; the tool never infers language from the "
+                "OS locale, network, or document content."
+            ),
+        ),
+    ] = None,
 ) -> None:
     """Run local, advisory checks without uploading filing packages."""
 
+    requested_locale = locale if locale is not None else os.environ.get(LOCALE_ENV_VAR)
+    try:
+        set_locale(resolve_locale(requested_locale))
+    except InvalidLocaleTagError as error:
+        raise typer.BadParameter(str(error), param_hint="--locale") from error
     if log_format not in {"text", "json"}:
-        raise typer.BadParameter("must be text or json", param_hint="--log-format")
+        raise typer.BadParameter(_("must be text or json"), param_hint="--log-format")
     configure_logging(log_format)
 
 
@@ -92,7 +116,7 @@ def _parse_rule_ids(raw: str | None) -> set[str] | None:
         return None
     identifiers = {token.strip().upper() for token in raw.split(",") if token.strip()}
     if not identifiers:
-        raise typer.BadParameter("expected a comma-separated list of rule identifiers")
+        raise typer.BadParameter(_("expected a comma-separated list of rule identifiers"))
     return identifiers
 
 
@@ -151,9 +175,13 @@ def check(
     """Inspect local packages without uploading or changing their source files."""
 
     if output_format not in _RENDERERS:
-        raise typer.BadParameter("must be console, json, html, or checklist", param_hint="--format")
+        raise typer.BadParameter(
+            _("must be console, json, html, or checklist"), param_hint="--format"
+        )
     if manifest_path is not None and len(sources) > 1:
-        raise typer.BadParameter("a manifest applies to a single package", param_hint="--manifest")
+        raise typer.BadParameter(
+            _("a manifest applies to a single package"), param_hint="--manifest"
+        )
     rule_ids = _parse_rule_ids(rules)
     exclude_rule_ids = _parse_rule_ids(exclude_rules)
 
@@ -172,25 +200,33 @@ def check(
                 exclude_rule_ids=exclude_rule_ids,
             )
         except (ManifestError, PackageLoadError, ValueError) as error:
-            typer.echo(f"Input error: {error}", err=True)
+            typer.echo(_("Input error: {error}").format(error=error), err=True)
             raise typer.Exit(code=2) from error
 
         rendered = _RENDERERS[output_format](report)
         if output is None:
             if len(sources) > 1:
-                typer.echo(f"== Package: {source}")
+                typer.echo(_("== Package: {source}").format(source=source))
             typer.echo(rendered, nl=False)
         else:
             output.mkdir(parents=True, exist_ok=True)
             stem = _report_stem(source, index, len(sources))
             destination = output / f"{stem}.{_REPORT_SUFFIXES[output_format]}"
             destination.write_text(rendered, encoding="utf-8")
-            typer.echo(f"Wrote advisory report to {destination}")
+            typer.echo(_("Wrote advisory report to {destination}").format(destination=destination))
         counts = summarize_counts(report)
         batch_lines.append(
-            f"{source}: exit {exit_code}, {counts['failure']} failure(s), "
-            f"{counts['warning']} warning(s), {counts['manual']} manual-review item(s), "
-            f"{counts['not_run']} check(s) not run"
+            _(
+                "{source}: exit {exit_code}, {failure} failure(s), {warning} warning(s), "
+                "{manual} manual-review item(s), {not_run} check(s) not run"
+            ).format(
+                source=source,
+                exit_code=exit_code,
+                failure=counts["failure"],
+                warning=counts["warning"],
+                manual=counts["manual"],
+                not_run=counts["not_run"],
+            )
         )
         worst_exit_code = max(worst_exit_code, exit_code)
         event(
@@ -200,7 +236,7 @@ def check(
             not_run=len(report.not_run),
         )
     if len(sources) > 1:
-        typer.echo("Batch summary")
+        typer.echo(_("Batch summary"))
         for line in batch_lines:
             typer.echo(f"  {line}")
     raise typer.Exit(code=worst_exit_code)
@@ -228,9 +264,9 @@ def init(
     try:
         destination = write_manifest_template(directory, filing_type, from_package=from_package)
     except (FileExistsError, ValueError) as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
-    typer.echo(f"Created manifest template at {destination}")
+    typer.echo(_("Created manifest template at {destination}").format(destination=destination))
 
 
 @app.command()
@@ -252,9 +288,13 @@ def synth(
     try:
         created = write_synthetic_package(directory, filing_type, list(defect or []))
     except (FileExistsError, ValueError) as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
-    typer.echo(f"Created a synthetic {filing_type.value} package with {len(created)} file(s):")
+    typer.echo(
+        _("Created a synthetic {filing_type} package with {count} file(s):").format(
+            filing_type=filing_type.value, count=len(created)
+        )
+    )
     for path in created:
         typer.echo(f"  {path}")
 
@@ -273,7 +313,7 @@ def list_rules(
     """List rule identifiers, lifecycle, and source titles."""
 
     if output_format not in {"console", "json"}:
-        raise typer.BadParameter("must be console or json", param_hint="--format")
+        raise typer.BadParameter(_("must be console or json"), param_hint="--format")
     catalog = default_catalog(filing_type)
     if output_format == "json":
         typer.echo(
@@ -299,7 +339,7 @@ def show_rule(
         if rule.id == normalized_id:
             typer.echo(rule.model_dump_json(indent=2))
             return
-    typer.echo(f"Unknown rule identifier: {rule_id}", err=True)
+    typer.echo(_("Unknown rule identifier: {rule_id}").format(rule_id=rule_id), err=True)
     raise typer.Exit(code=2)
 
 
@@ -314,9 +354,13 @@ def init_pilot(
     try:
         review_path, baseline_path = write_pilot_templates(directory)
     except FileExistsError as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
-    typer.echo(f"Created pilot templates: {review_path.name}, {baseline_path.name}")
+    typer.echo(
+        _("Created pilot templates: {review}, {baseline}").format(
+            review=review_path.name, baseline=baseline_path.name
+        )
+    )
 
 
 @pilot_app.command("summarize")
@@ -339,11 +383,11 @@ def summarize_pilot_data(
     """Summarize pilot metrics without reading filing packages or free-text notes."""
 
     if output_format not in {"console", "json"}:
-        raise typer.BadParameter("must be console or json", param_hint="--format")
+        raise typer.BadParameter(_("must be console or json"), param_hint="--format")
     try:
         summary = summarize_pilot(reviews, baseline)
     except PilotDataError as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
     event("pilot_summarized", reviewed_findings=summary.reviewed_findings)
     if output_format == "json":
@@ -352,14 +396,19 @@ def summarize_pilot_data(
     typer.echo(
         "\n".join(
             (
-                "CEQA Preflight pilot summary",
-                f"Decision: {summary.go_no_go}",
-                f"Reviewed findings: {summary.reviewed_findings}",
-                f"Reviewed packages: {summary.reviewed_packages}",
-                f"Actionable precision: {_format_rate(summary.actionable_precision)}",
-                "High-severity false-negative rate: "
-                f"{_format_rate(summary.high_severity_false_negative_rate)}",
-                f"Median report time: {_format_seconds(summary.median_report_seconds)}",
+                _("CEQA Preflight pilot summary"),
+                _("Decision: {decision}").format(decision=summary.go_no_go),
+                _("Reviewed findings: {count}").format(count=summary.reviewed_findings),
+                _("Reviewed packages: {count}").format(count=summary.reviewed_packages),
+                _("Actionable precision: {rate}").format(
+                    rate=_format_rate(summary.actionable_precision)
+                ),
+                _("High-severity false-negative rate: {rate}").format(
+                    rate=_format_rate(summary.high_severity_false_negative_rate)
+                ),
+                _("Median report time: {seconds}").format(
+                    seconds=_format_seconds(summary.median_report_seconds)
+                ),
                 *summary.reasons,
             )
         )
@@ -367,8 +416,8 @@ def summarize_pilot_data(
 
 
 def _format_rate(value: float | None) -> str:
-    return "not measured" if value is None else f"{value:.1%}"
+    return _("not measured") if value is None else f"{value:.1%}"
 
 
 def _format_seconds(value: float | None) -> str:
-    return "not measured" if value is None else f"{value:.1f} seconds"
+    return _("not measured") if value is None else _("{seconds:.1f} seconds").format(seconds=value)

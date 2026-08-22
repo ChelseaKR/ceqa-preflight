@@ -31,6 +31,7 @@ from ceqa_preflight.ai.extraction import (
 from ceqa_preflight.ai.grounding import Claim, SourceSummary
 from ceqa_preflight.ai.guard import classify_question
 from ceqa_preflight.ai.text import DocumentText, extract_document_text
+from ceqa_preflight.i18n import _
 from ceqa_preflight.models import FilingType, InspectionReport, PackageManifest
 from ceqa_preflight.observability import event
 from ceqa_preflight.package_loader import PackageLoadError, open_package
@@ -59,14 +60,12 @@ def _client(provider: str | None, model: str | None) -> ModelClient:
     try:
         return build_client(provider, model)
     except ModelError as error:
-        typer.echo(f"AI provider error: {error}", err=True)
+        typer.echo(_("AI provider error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
 
 
 def _announce(client: ModelClient) -> None:
-    typer.echo(
-        messages.DATA_FLOW_NOTICE.format(provider=client.provider, model=client.model), err=True
-    )
+    typer.echo(messages.DATA_FLOW_NOTICE(provider=client.provider, model=client.model), err=True)
 
 
 def _package_texts(source: Path) -> list[DocumentText]:
@@ -89,34 +88,32 @@ def _package_texts(source: Path) -> list[DocumentText]:
 def _render_document(document: DocumentExtraction) -> list[str]:
     detail = ""
     if not document.attempted:
-        detail = messages.NOT_ATTEMPTED.format(reason=document.reason_not_attempted)
+        detail = messages.NOT_ATTEMPTED(reason=document.reason_not_attempted)
     elif document.model_error:
-        detail = messages.MODEL_ERROR.format(error=document.model_error)
+        detail = messages.MODEL_ERROR(error=document.model_error)
     lines = [
-        messages.DOCUMENT_LINE.format(
-            path=document.path, kind=document.document_kind.value, detail=detail
-        )
+        messages.DOCUMENT_LINE(path=document.path, kind=document.document_kind.value, detail=detail)
     ]
     for item in document.fields:
         if item.status is FieldStatus.FOUND:
             lines.append(
-                messages.FIELD_FOUND.format(
+                messages.FIELD_FOUND(
                     name=item.name, value=item.value, page=item.page, quote=item.quote
                 )
             )
         elif item.status is FieldStatus.UNVERIFIED:
-            lines.append(messages.FIELD_UNVERIFIED.format(name=item.name, note=item.note))
+            lines.append(messages.FIELD_UNVERIFIED(name=item.name, note=item.note))
         else:
-            lines.append(messages.FIELD_UNKNOWN.format(name=item.name))
+            lines.append(messages.FIELD_UNKNOWN(name=item.name))
     return lines
 
 
 def render_extraction_console(extraction: PackageExtraction) -> str:
     lines = [
-        messages.EXTRACTION_HEADER,
+        messages.EXTRACTION_HEADER(),
         extraction.label,
         "",
-        messages.EXTRACTION_SUMMARY.format(**extraction.counts.model_dump()),
+        messages.EXTRACTION_SUMMARY(**extraction.counts.model_dump()),
         "",
     ]
     for document in extraction.documents:
@@ -129,10 +126,15 @@ def _write_draft_manifest(
     extraction: PackageExtraction, manifest: PackageManifest, destination: Path
 ) -> None:
     if destination.exists():
-        typer.echo(f"Input error: refusing to overwrite existing file: {destination}", err=True)
+        typer.echo(
+            _("Input error: refusing to overwrite existing file: {destination}").format(
+                destination=destination
+            ),
+            err=True,
+        )
         raise typer.Exit(code=2)
     body = yaml.safe_dump(manifest.model_dump(mode="json"), sort_keys=False, allow_unicode=True)
-    header = messages.MANIFEST_COMMENT.format(
+    header = messages.MANIFEST_COMMENT(
         provider=extraction.provenance.provider,
         model=extraction.provenance.model,
         prompt_version=extraction.provenance.prompt_version,
@@ -173,13 +175,13 @@ def extract(
     """
 
     if output_format not in {"console", "json"}:
-        raise typer.BadParameter("must be console or json", param_hint="--format")
+        raise typer.BadParameter(_("must be console or json"), param_hint="--format")
     client = _client(provider, model)
     _announce(client)
     try:
         texts = _package_texts(source)
     except PackageLoadError as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
     event("ai_extract_started", provider=client.provider, documents=len(texts))
     extraction = extract_package(client, filing_type, texts)
@@ -193,18 +195,18 @@ def extract(
     else:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(rendered, encoding="utf-8")
-        typer.echo(f"Wrote AI extraction draft to {output}")
+        typer.echo(_("Wrote AI extraction draft to {output}").format(output=output))
     failed = any(document.model_error for document in extraction.documents)
     if write_manifest is not None:
         if failed:
-            typer.echo(messages.DRAFT_MANIFEST_FAILED_CLOSED, err=True)
+            typer.echo(messages.DRAFT_MANIFEST_FAILED_CLOSED(), err=True)
         elif extraction.draft_manifest is None:
-            typer.echo(messages.DRAFT_MANIFEST_NONE, err=True)
+            typer.echo(messages.DRAFT_MANIFEST_NONE(), err=True)
         else:
             _write_draft_manifest(extraction, extraction.draft_manifest, write_manifest)
-            typer.echo(messages.DRAFT_MANIFEST_WRITTEN.format(path=write_manifest))
+            typer.echo(messages.DRAFT_MANIFEST_WRITTEN(path=write_manifest))
             typer.echo(
-                messages.NEXT_STEP.format(
+                messages.NEXT_STEP(
                     package=source, filing_type=filing_type.value, manifest=write_manifest
                 )
             )
@@ -221,7 +223,10 @@ def _load_report(path: Path) -> InspectionReport:
     try:
         return InspectionReport.model_validate_json(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
-        typer.echo(f"Input error: could not load report {path}: {error}", err=True)
+        typer.echo(
+            _("Input error: could not load report {path}: {error}").format(path=path, error=error),
+            err=True,
+        )
         raise typer.Exit(code=2) from error
 
 
@@ -229,16 +234,16 @@ def _load_corpus() -> Corpus:
     try:
         return Corpus.load()
     except CorpusError as error:
-        typer.echo(f"Corpus error: {error}", err=True)
+        typer.echo(_("Corpus error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
 
 
 def _render_claims(claims: list[Claim]) -> list[str]:
     lines: list[str] = []
     for index, claim in enumerate(claims, start=1):
-        lines.append(messages.CLAIM_LINE.format(index=index, text=claim.text))
+        lines.append(messages.CLAIM_LINE(index=index, text=claim.text))
         lines.extend(
-            messages.CITATION_LINE.format(passage_id=citation.passage_id, quote=citation.quote)
+            messages.CITATION_LINE(passage_id=citation.passage_id, quote=citation.quote)
             for citation in claim.citations
         )
     return lines
@@ -253,7 +258,7 @@ def _render_sources(sources: list[SourceSummary]) -> list[str]:
         if source.heading and source.heading not in entry[1]:
             entry[1].append(source.heading)
     return [
-        messages.SOURCE_LINE.format(
+        messages.SOURCE_LINE(
             title=source.title,
             kind=source.kind.value,
             url=source.url,
@@ -266,33 +271,33 @@ def _render_sources(sources: list[SourceSummary]) -> list[str]:
 def _render_item(item: FindingExplanation) -> list[str]:
     location = f" ({item.document})" if item.document else ""
     lines = [
-        messages.FINDING_HEADER.format(
+        messages.FINDING_HEADER(
             rule_id=item.rule_id, status=item.status.value, title=item.title, location=location
         ),
-        messages.FINDING_MESSAGE.format(message=item.message),
+        messages.FINDING_MESSAGE(message=item.message),
     ]
     lines.extend(_render_claims(item.claims))
     lines.extend(_render_sources(item.sources))
     if item.withheld:
         reasons = "; ".join(sorted({withheld.reason for withheld in item.withheld}))
-        lines.append(messages.WITHHELD_LINE.format(count=len(item.withheld), reasons=reasons))
+        lines.append(messages.WITHHELD_LINE(count=len(item.withheld), reasons=reasons))
     if item.note:
-        lines.append(messages.NOTE_LINE.format(note=item.note))
+        lines.append(messages.NOTE_LINE(note=item.note))
     if item.model_error:
-        lines.append(messages.MODEL_ERROR_LINE.format(error=item.model_error))
+        lines.append(messages.MODEL_ERROR_LINE(error=item.model_error))
     return lines
 
 
 def render_explanations_console(explanations: ReportExplanations) -> str:
     lines = [
-        messages.EXPLANATION_HEADER[explanations.mode.value],
+        messages.EXPLANATION_HEADER(explanations.mode.value),
         explanations.label,
         "",
-        messages.EXPLANATION_SUMMARY.format(**explanations.counts.model_dump()),
+        messages.EXPLANATION_SUMMARY(**explanations.counts.model_dump()),
         "",
     ]
     if not explanations.items:
-        lines.append(messages.EXPLANATION_NONE)
+        lines.append(messages.EXPLANATION_NONE())
     for item in explanations.items:
         lines.extend(_render_item(item))
         lines.append("")
@@ -305,7 +310,7 @@ def _emit(rendered: str, output: Path | None, what: str) -> None:
         return
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(rendered, encoding="utf-8")
-    typer.echo(f"Wrote {what} to {output}")
+    typer.echo(_("Wrote {what} to {output}").format(what=what, output=output))
 
 
 def _run_explain(
@@ -318,7 +323,7 @@ def _run_explain(
     output: Path | None,
 ) -> None:
     if output_format not in {"console", "json"}:
-        raise typer.BadParameter("must be console or json", param_hint="--format")
+        raise typer.BadParameter(_("must be console or json"), param_hint="--format")
     report = _load_report(report_path)
     corpus = _load_corpus()
     client = _client(provider, model)
@@ -343,7 +348,7 @@ def _parse_rule_ids(raw: str | None) -> set[str] | None:
         return None
     identifiers = {token.strip().upper() for token in raw.split(",") if token.strip()}
     if not identifiers:
-        raise typer.BadParameter("expected a comma-separated list of rule identifiers")
+        raise typer.BadParameter(_("expected a comma-separated list of rule identifiers"))
     return identifiers
 
 
@@ -395,27 +400,25 @@ def draft_fix(
 
 def render_answer_console(answer: Answer, report: InspectionReport) -> str:
     lines = [
-        messages.ASK_HEADER,
+        messages.ASK_HEADER(),
         answer.label,
         "",
-        messages.ASK_QUESTION.format(question=answer.question),
+        messages.ASK_QUESTION(question=answer.question),
         "",
     ]
     if answer.refused:
         found = findings_summary(report)
-        findings_text = "\n".join(f"  {line}" for line in found) or messages.REFUSAL_NO_FINDINGS
-        lines.append(
-            messages.REFUSAL.format(category=answer.refusal_category, findings=findings_text)
-        )
+        findings_text = "\n".join(f"  {line}" for line in found) or messages.REFUSAL_NO_FINDINGS()
+        lines.append(messages.REFUSAL(category=answer.refusal_category, findings=findings_text))
         return "\n".join(lines) + "\n"
     if answer.model_error:
-        lines.append(messages.MODEL_ERROR_LINE.format(error=answer.model_error))
+        lines.append(messages.MODEL_ERROR_LINE(error=answer.model_error))
         return "\n".join(lines) + "\n"
-    lines.extend(_render_claims(answer.claims) or [messages.ASK_NOTHING])
+    lines.extend(_render_claims(answer.claims) or [messages.ASK_NOTHING()])
     lines.extend(_render_sources(answer.sources))
     if answer.withheld:
         reasons = "; ".join(sorted({withheld.reason for withheld in answer.withheld}))
-        lines.append(messages.WITHHELD_LINE.format(count=len(answer.withheld), reasons=reasons))
+        lines.append(messages.WITHHELD_LINE(count=len(answer.withheld), reasons=reasons))
     return "\n".join(lines) + "\n"
 
 
@@ -435,9 +438,9 @@ def ask_command(
     """
 
     if output_format not in {"console", "json"}:
-        raise typer.BadParameter("must be console or json", param_hint="--format")
+        raise typer.BadParameter(_("must be console or json"), param_hint="--format")
     if not question.strip():
-        raise typer.BadParameter("question must not be empty", param_hint="QUESTION")
+        raise typer.BadParameter(_("question must not be empty"), param_hint="QUESTION")
     report = _load_report(report_path)
     corpus = _load_corpus()
     client = _client(provider, model)

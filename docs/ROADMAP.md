@@ -33,9 +33,19 @@
 
 - Complete an accessibility review of console and HTML outputs with recorded
   assistive-technology evidence.
-- Implement the [internationalization release gate](I18N.md): gettext entry
-  point, reviewed English and Spanish catalogs, catalog parity checks, and
-  deterministic CLI locale selection.
+- **Done:** implement the [internationalization release gate](I18N.md)'s
+  engineering side: gettext entry point (`ceqa_preflight.i18n`), catalog
+  parity/freshness checks wired into `make verify`, and deterministic CLI
+  locale selection (`--locale` / `CEQA_PREFLIGHT_LOCALE`, English fallback,
+  no OS-locale/network/document inference). Committed English and Spanish
+  catalogs cover the report renderers, the `ai` command prose, and top-level
+  CLI messages; see I18N.md's "What is not yet implemented" for the
+  rule-engine message text this pass did not reach.
+- **Open:** a qualified Spanish-language reviewer has not approved the
+  drafted `es` catalog's CEQA terminology or advisory/non-legal framing (same
+  reviewer gap as the `ai` prompts below); the rule-engine's finding and
+  remediation text (`rules/*.py`, `rule_catalog.py`) is not yet wrapped in the
+  gettext seam.
 - Publish a residual-risk review, SBOM, provenance, and release notes.
 - Exit criteria: all CI/security checks green, release checklist signed,
   no open critical vulnerability, and the release remains advisory-only.
@@ -56,12 +66,15 @@
   publisher's currency statement recorded as each document's edition (see
   [corpus/README.md](../corpus/README.md)); the NOD and NOE rules are wired to
   the sections governing their forms for explanation retrieval only.
+- **Done:** the `ai` strings are wired to the gettext seam
+  ([#39](https://github.com/ChelseaKR/ceqa-preflight/issues/39)); see
+  [I18N.md](I18N.md).
 - **Open:** the default model `claude-sonnet-5` has not been run live (the
   recorded runs used Bedrock `claude-sonnet-4-6`); a qualified CEQA reviewer
   and a native Spanish reader have not reviewed the prompts, the refusal
-  cases, the Spanish phrasings, or the retained Guidelines text
-  ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)); the `ai`
-  strings await the gettext seam ([#39](https://github.com/ChelseaKR/ceqa-preflight/issues/39)).
+  cases, the Spanish phrasings, the retained Guidelines text, or the drafted
+  `es` report catalog
+  ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)).
 
 ## Not planned
 
@@ -71,7 +84,7 @@
 
 ## Metrics ledger
 
-Last reviewed: 2026-08-07. Owner: maintainer. This is the enforcement ledger
+Last reviewed: 2026-08-22. Owner: maintainer. This is the enforcement ledger
 required by the portfolio Quality & Metrics standard: each row is an AUTO gate
 (merge-blocking), a REVIEW gate with a durable evidence artifact, or an
 explicit N/A with a reason. Values are project-specific; the rigor is defined
@@ -86,7 +99,8 @@ by the owning standard.
 | Known-vulnerable dependencies | 0 in `uv.lock` | `make audit` (pip-audit) in CI | AUTO | Maintainer |
 | Secret leaks | 0 | gitleaks in the security workflow | AUTO | Maintainer |
 | SHA-pinned workflow `uses:` | 100% | portfolio conformance tripwire (weekly) plus PR review | REVIEW | Maintainer |
-| EN/ES catalog parity | 100% keys and placeholders before first public tag | [i18n release gate](I18N.md); not yet implemented (pre-release gap) | REVIEW | Maintainer |
+| EN/ES catalog parity | 100% keys and placeholders for every wrapped string | `make i18n-check` (`scripts/check_i18n.py`) in `make verify` | AUTO | Maintainer |
+| EN/ES catalog scope + review | All user-facing prose wrapped; `es` catalog approved by a qualified Spanish-language reviewer before first public tag | [i18n release gate](I18N.md); rule-engine text not yet wrapped, `es` catalog not yet reviewed (pre-release gap) | REVIEW | Maintainer |
 | Accessibility review of console/HTML output | Recorded assistive-technology evidence per release | Release checklist; no tagged release yet | REVIEW | Maintainer |
 | Pilot false-positive rate | Measured on synthetic or permissioned packages; aggregate results only | `pilot summarize` evidence kit | REVIEW | Maintainer |
 

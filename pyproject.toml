@@ -47,6 +47,7 @@ ceqa-preflight = "ceqa_preflight.cli:app"
 [dependency-groups]
 dev = [
   "anthropic[bedrock]>=0.125,<1",
+  "babel>=2.14,<3",
   "bandit[toml]>=1.8.3",
   "hypothesis>=6.127",
   "mypy>=1.18",
@@ -65,6 +66,8 @@ include = [
   "src/ceqa_preflight/**/*.py",
   "src/ceqa_preflight/**/*.yaml",
   "src/ceqa_preflight/**/*.j2",
+  # Compiled gettext catalogs (docs/I18N.md); the .po sources are not needed at runtime.
+  "src/ceqa_preflight/**/*.mo",
 ]
 # The committed official-source corpus (ADR 0002) ships inside the package so the opt-in
 # `ai explain` command can verify quotes against it after installation.
