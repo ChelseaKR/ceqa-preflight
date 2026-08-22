@@ -7,7 +7,13 @@ from collections import Counter
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from ceqa_preflight.models import Finding, FindingStatus, InspectionReport, SkippedCheck
+from ceqa_preflight.models import (
+    Finding,
+    FindingStatus,
+    InspectionReport,
+    SkippedCheck,
+    SourceKind,
+)
 
 _TEMPLATES = Environment(
     loader=PackageLoader("ceqa_preflight", "templates"),
@@ -87,11 +93,31 @@ def render_console(report: InspectionReport) -> str:
     return "\n".join(lines) + "\n"
 
 
+# A citation link is the one affordance a reader has for checking a rule's authority, so
+# its label must say what kind of authority sits behind it (issue #38).
+SOURCE_LABELS = {
+    SourceKind.OFFICIAL: "Official source",
+    SourceKind.TECHNICAL_REFERENCE: "Technical reference",
+    SourceKind.PROJECT_ADVISORY: "Project advisory rule",
+}
+SOURCE_NOTES = {
+    SourceKind.OFFICIAL: "",
+    SourceKind.TECHNICAL_REFERENCE: "Not CEQA guidance; a general technical reference.",
+    SourceKind.PROJECT_ADVISORY: (
+        "Not an official source: no official guidance states this threshold. The link "
+        "explains the project's reasoning."
+    ),
+}
+
+
 def render_html(report: InspectionReport) -> str:
     """Render a self-contained, semantic HTML report without JavaScript."""
 
     return _TEMPLATES.get_template("report.html.j2").render(
-        report=report, counts=summarize_counts(report)
+        report=report,
+        counts=summarize_counts(report),
+        source_labels=SOURCE_LABELS,
+        source_notes=SOURCE_NOTES,
     )
 
 

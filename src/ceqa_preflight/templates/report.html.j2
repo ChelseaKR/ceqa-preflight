@@ -1,3 +1,9 @@
+{%- macro cite(source) -%}
+{%- if source -%}
+<br><a href="{{ source.url }}">{{ source_labels[source.kind] }}</a>
+{%- if source.kind != "official" %}<br><small class="source-kind">{{ source_notes[source.kind] }}</small>{% endif -%}
+{%- endif -%}
+{%- endmacro -%}
 <!doctype html>
 <html lang="en">
   <head>
@@ -15,6 +21,7 @@
       .warning, .manual { color: #7a4d00; }
       .pass { color: #146c2e; }
       .metadata { color: #444; font-size: .9rem; }
+      .source-kind { color: #444; }
       @media print {
         body { margin: 0; max-width: none; }
         a { color: inherit; text-decoration: none; }
@@ -55,7 +62,7 @@
         {% for finding in report.findings %}
           <tr>
             <td class="status {{ finding.status }}">{{ finding.status }}</td>
-            <td>{{ finding.rule_id }}{% if finding.source %}<br><a href="{{ finding.source.url }}">Source</a>{% endif %}</td>
+            <td>{{ finding.rule_id }}{{ cite(finding.source) }}</td>
             <td>{{ finding.message }}{% if finding.document %}<br><small>Document: {{ finding.document }}</small>{% endif %}</td>
             <td>{{ finding.remediation }}</td>
           </tr>
@@ -72,7 +79,7 @@
         <thead><tr><th scope="col">Rule</th><th scope="col">Item</th><th scope="col">Remediation</th></tr></thead>
         <tbody>
         {% for finding in report.manual_review %}
-          <tr><td>{{ finding.rule_id }}{% if finding.source %}<br><a href="{{ finding.source.url }}">Source</a>{% endif %}</td><td>{{ finding.message }}</td><td>{{ finding.remediation }}</td></tr>
+          <tr><td>{{ finding.rule_id }}{{ cite(finding.source) }}</td><td>{{ finding.message }}</td><td>{{ finding.remediation }}</td></tr>
         {% endfor %}
         </tbody>
       </table>
@@ -86,7 +93,7 @@
         <thead><tr><th scope="col">Rule</th><th scope="col">Check</th><th scope="col">Why it did not run</th></tr></thead>
         <tbody>
         {% for skipped in report.not_run %}
-          <tr><td>{{ skipped.rule_id }}{% if skipped.source %}<br><a href="{{ skipped.source.url }}">Source</a>{% endif %}</td><td>{{ skipped.title }}</td><td>{{ skipped.detail }}</td></tr>
+          <tr><td>{{ skipped.rule_id }}{{ cite(skipped.source) }}</td><td>{{ skipped.title }}</td><td>{{ skipped.detail }}</td></tr>
         {% endfor %}
         </tbody>
       </table>

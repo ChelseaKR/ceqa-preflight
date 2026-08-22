@@ -1,0 +1,109 @@
+{
+  "manifest_version": "1.0",
+  "built_at": "2026-08-22T02:08:49.430018Z",
+  "documents": [
+    {
+      "id": "ceqa-preflight-source-review-addendum-2026-07-27",
+      "title": "CEQA Preflight advisory technical rule",
+      "url": "https://github.com/ChelseaKR/ceqa-preflight/blob/main/docs/audits/rule-source-review-2026-07-27-addendum.md",
+      "kind": "project_advisory",
+      "retrieved_at": "2026-08-22T02:08:46.976424Z",
+      "content_type": "text/markdown",
+      "source_sha256": "8630d546ff0533e1f4b8fd931e0f3a270346b039e4b10101dd14d26d21638de7",
+      "text_sha256": "3ae02e900cb195b979636fc00b36820b4107a0f3646d5b366934eee89b86f567",
+      "passage_count": 4,
+      "cited_by": [
+        "FILE-004",
+        "FILE-005"
+      ]
+    },
+    {
+      "id": "lci-sch-common-mistakes-2025",
+      "title": "LCI CEQA Submit common mistakes",
+      "url": "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf",
+      "kind": "official",
+      "retrieved_at": "2026-08-22T02:08:47.703479Z",
+      "content_type": "application/pdf",
+      "source_sha256": "4eebfe30b7118b3499366fd1f56248a98885f351d3f11be06d9d3bdbe7ad523a",
+      "text_sha256": "dcf6cf410b32aa4ccd8f146306f300e2b097995c203a13c0a3f116100fd6e02f",
+      "passage_count": 10,
+      "cited_by": [
+        "FILE-001",
+        "FILE-003",
+        "NOD-002",
+        "NOE-002",
+        "PDF-001",
+        "PDF-002",
+        "PDF-003"
+      ]
+    },
+    {
+      "id": "lci-sch-document-submission",
+      "title": "LCI State Clearinghouse document submission guidance",
+      "url": "https://lci.ca.gov/sch/document-submission/",
+      "kind": "official",
+      "retrieved_at": "2026-08-22T02:08:48.085924Z",
+      "content_type": "text/html",
+      "source_sha256": "184c31cb49249eb0676ef25265dc6c5b0b69a7e984311d05a0d2ad7e7b49bf2c",
+      "text_sha256": "1a3650f9f40b00f05fc4509bb4b7f294d7f7085144ccdfd06ca31e255ea639c8",
+      "passage_count": 24,
+      "cited_by": []
+    },
+    {
+      "id": "lci-sch-faq",
+      "title": "LCI CEQA Submit FAQ",
+      "url": "https://lci.ca.gov/sch/faq/",
+      "kind": "official",
+      "retrieved_at": "2026-08-22T02:08:48.575968Z",
+      "content_type": "text/html",
+      "source_sha256": "3d95f185bc11fca1d429f68707a590c52d93da254460cd45abfcd3b46804e7fd",
+      "text_sha256": "143227566263a6e671512b958f473e6ceae4e941cd666819206597c2d3939ee8",
+      "passage_count": 49,
+      "cited_by": [
+        "CORE-001",
+        "FILE-002",
+        "NOD-001",
+        "NOD-003",
+        "NOD-M001",
+        "NOE-001",
+        "NOE-003"
+      ]
+    },
+    {
+      "id": "lci-sch-presubmission-checklist-2025",
+      "title": "LCI CEQA Submit pre-submission checklist",
+      "url": "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf",
+      "kind": "official",
+      "retrieved_at": "2026-08-22T02:08:49.321787Z",
+      "content_type": "application/pdf",
+      "source_sha256": "060fde5635c86329591f4f7aad85ae8952944d13f6d500ce90045e9590b3c237",
+      "text_sha256": "4d4f560d89e1a881dcab41c791e498446eab569b87accf73d9a29f9125b43e3a",
+      "passage_count": 13,
+      "cited_by": [
+        "CAT-001",
+        "MAN-001",
+        "NOD-M002",
+        "NOD-M003",
+        "NOE-M001",
+        "NOE-M002",
+        "NOE-M003",
+        "PDF-007",
+        "PDF-008"
+      ]
+    },
+    {
+      "id": "owasp-unrestricted-file-upload",
+      "title": "CEQA Preflight security rule",
+      "url": "https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload",
+      "kind": "technical_reference",
+      "retrieved_at": "2026-08-22T02:08:49.429904Z",
+      "content_type": "text/html",
+      "source_sha256": "62dab29a011ba33e920238e8fc7c809a545d8c413f59642c151992d9b160f45c",
+      "text_sha256": "672d8fa506f243044eb4edd8b439ef9a672b1e838f08c4a612746b0b35e777a2",
+      "passage_count": 32,
+      "cited_by": [
+        "PDF-006"
+      ]
+    }
+  ]
+}

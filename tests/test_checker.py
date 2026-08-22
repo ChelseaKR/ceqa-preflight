@@ -10,7 +10,13 @@ from pypdf import PdfWriter
 from pytest_socket import SocketBlockedError
 
 from ceqa_preflight.checker import check_package
-from ceqa_preflight.models import FilingType, FindingStatus, PackageManifest, SkipReason
+from ceqa_preflight.models import (
+    FilingType,
+    FindingStatus,
+    PackageManifest,
+    SkipReason,
+    SourceKind,
+)
 from ceqa_preflight.reporting import (
     render_checklist,
     render_console,
@@ -146,3 +152,28 @@ def test_a_complete_run_states_that_nothing_was_skipped(tmp_path: Path) -> None:
     assert report.not_run == []
     for rendered in (render_console(report), render_checklist(report), render_html(report)):
         assert "Every check that applies to this filing type ran." in rendered
+
+
+def test_html_report_labels_the_kind_of_authority_behind_each_citation(tmp_path: Path) -> None:
+    """Issue #38: a self-cited rule must not render the same "Source" link as official guidance.
+
+    FILE-004 and FILE-005 cite this project's own reasoning because no official guidance
+    states their thresholds. The HTML report has to say so next to the link, and the link
+    has to point at the page that explains the threshold rather than a repository root.
+    """
+
+    package, manifest = _package(tmp_path)
+    (package / "bad name!.pdf").write_bytes((package / "NOE_example.pdf").read_bytes())
+
+    report, _ = check_package(package, FilingType.NOE, manifest=manifest)
+    html = render_html(report)
+
+    file_005 = next(finding for finding in report.findings if finding.rule_id == "FILE-005")
+    assert file_005.source is not None
+    assert file_005.source.kind is SourceKind.PROJECT_ADVISORY
+    assert file_005.source.url.endswith("rule-source-review-2026-07-27-addendum.md")
+    assert "Project advisory rule" in html
+    assert "Not an official source" in html
+    assert "Official source" in html
+    assert ">Source<" not in html
+    assert '"kind": "project_advisory"' in render_json(report)

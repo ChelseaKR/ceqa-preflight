@@ -1,0 +1,19 @@
+Common mistakes to avoid and tips to ensure a smooth process when submitting to CEQA Submit: Being thorough and ensuring compliance with submission requirements saves time and helps avoid consequences. The errors referenced below not only delay the publication process but also extend the timelines for public and state agency reviews, potentially delaying project approvals. Additionally, recurring mistakes to bypass the SCH publishing requirements will delay publication and cause unnecessary setbacks and hardship on all parties involved.
+
+• Mistake: Failing to provide detailed and accurate project information, or address inconsistencies between the Environmental Document(s), applicable Notice of Completion (NOC), Notice of Determination (NOD), Notice of Exemption (NOE) forms, and CEQA Submit fields. • Solution: Double-check that project titles, descriptions, and other details in CEQA Submit match those on the Environmental Document(s) and applicable NOC, NOD, and NOE forms.
+
+• Mistake: Not including required documents or incorrectly categorizing attachments (e.g., not categorizing an NOC, NOD, or NOE as such). • Solution: Include all necessary and applicable files and make sure they are properly labeled and categorized.
+
+• Mistake: Submitting documents that are not fully accessible, such as containing fillable form fields or files without full text-searchable capabilities. • Solution: Flatten documents, run optical character recognition (OCR) scans and keyword searches, and ensure all uploaded files meet accessibility standards.
+
+• Mistake: Selecting the wrong document type in CEQA Submit (e.g., Notice of Intent instead of Mitigated Negative Declaration). 1 • Solution: Confirm the document type aligns with the submission purpose, and update the "Document Details" tab, as needed.
+
+• Mistake: Leaving out key information such as regions, counties, cities/designated communities, coordinates, or agency contact names reflected on the Environmental Document(s) and NOC, NOD and NOE forms and submittal attachments. • Solution: Enter all location details and make sure contact fields are complete and align with the Environmental Document(s), submittal attachments, and NOC, NOD and NOE forms.
+
+• Mistake: Mismatched entries within tabs like Local Action Types, Development Types, and Project Issues between the Environmental Document(s), applicable NOC, NOD, NOE forms, and CEQA Submit. • Solution: Verify all tabs in CEQA Submit match project details on the Environmental Document(s) and NOC, NOD, and NOE forms.
+
+• Mistake: Providing insufficient information about whether a State Agency review is required, leading to delays. • Solution: Carefully assess with your agency.If a State Agency review is necessary, confirm your selection in CEQA Submit, and advise the State Clearinghouse via email: State.Clearinghouse@lci.ca.gov.
+
+• Mistake: Uploading editable forms, which are not fully text searchable. • Solution: Convert forms to static, fully text-searchable PDFs before submission.
+
+• Mistake: Overlooking the resources and guidelines provided by SCH. • Solution: Use tools like the CEQA Database User Guide and SCH Submission Instructions to ensure compliance. 2
