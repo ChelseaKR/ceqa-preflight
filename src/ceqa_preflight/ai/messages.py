@@ -41,3 +41,34 @@ MANIFEST_COMMENT = (
     "# or left at a placeholder. Review and correct it before running `check --manifest`.\n"
     "# This is not a finding and not a determination of anything.\n"
 )
+
+EXPLANATION_HEADER = {
+    "explain": "CEQA Preflight AI explanations",
+    "draft_fix": "CEQA Preflight AI correction drafts",
+}
+EXPLANATION_SUMMARY = (
+    "Summary: {findings} finding(s) covered, {claims_shown} claim(s) shown with verified "
+    "quotes, {claims_withheld} claim(s) withheld (unverified or determination language), "
+    "{model_errors} model error(s)."
+)
+EXPLANATION_NONE = "No failure, warning, or manual-review finding to cover."
+FINDING_HEADER = "{rule_id} [{status}] {title}{location}"
+FINDING_MESSAGE = "  Finding: {message}"
+CLAIM_LINE = "  {index}. {text}"
+CITATION_LINE = '     [{passage_id}] "{quote}"'
+SOURCE_LINE = "  Source: {title} ({kind}) — {url}{headings}"
+WITHHELD_LINE = "  Withheld: {count} claim(s) did not pass verification ({reasons})."
+NOTE_LINE = "  Note: {note}"
+MODEL_ERROR_LINE = "  Model error: {error}"
+ASK_HEADER = "CEQA Preflight AI answer"
+ASK_QUESTION = "Question: {question}"
+REFUSAL = (
+    "CEQA Preflight does not determine legal sufficiency, predict whether a filing will be "
+    "accepted, judge whether an exemption or determination is valid, or assess an agency's "
+    "compliance. This question asks for that ({category}), so it is not answered here, in "
+    "any wording.\n\nWhat this tool can tell you is the objective, technical findings in the "
+    "report:\n{findings}\n\nFor whether the filing is sufficient, compliant, or will be "
+    "accepted, consult a qualified CEQA reviewer or counsel."
+)
+REFUSAL_NO_FINDINGS = "  (no failure, warning, or manual-review findings in this report)"
+ASK_NOTHING = "No claim passed verification, so nothing is shown."

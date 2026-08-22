@@ -13,17 +13,28 @@ import typer
 import yaml
 
 from ceqa_preflight.ai import messages
+from ceqa_preflight.ai.ask import Answer, ask, findings_summary
 from ceqa_preflight.ai.client import ModelClient, ModelError, build_client
+from ceqa_preflight.ai.corpus import Corpus, CorpusError
+from ceqa_preflight.ai.explain import (
+    ExplainMode,
+    FindingExplanation,
+    ReportExplanations,
+    explain_report,
+)
 from ceqa_preflight.ai.extraction import (
     DocumentExtraction,
     FieldStatus,
     PackageExtraction,
     extract_package,
 )
+from ceqa_preflight.ai.grounding import Claim, SourceSummary
+from ceqa_preflight.ai.guard import classify_question
 from ceqa_preflight.ai.text import DocumentText, extract_document_text
-from ceqa_preflight.models import FilingType, PackageManifest
+from ceqa_preflight.models import FilingType, InspectionReport, PackageManifest
 from ceqa_preflight.observability import event
 from ceqa_preflight.package_loader import PackageLoadError, open_package
+from ceqa_preflight.rule_registry import default_catalog
 
 ai_app = typer.Typer(
     help=(
@@ -204,3 +215,241 @@ def extract(
         unverified=extraction.counts.unverified,
     )
     raise typer.Exit(code=2 if failed else 0)
+
+
+def _load_report(path: Path) -> InspectionReport:
+    try:
+        return InspectionReport.model_validate_json(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        typer.echo(f"Input error: could not load report {path}: {error}", err=True)
+        raise typer.Exit(code=2) from error
+
+
+def _load_corpus() -> Corpus:
+    try:
+        return Corpus.load()
+    except CorpusError as error:
+        typer.echo(f"Corpus error: {error}", err=True)
+        raise typer.Exit(code=2) from error
+
+
+def _render_claims(claims: list[Claim]) -> list[str]:
+    lines: list[str] = []
+    for index, claim in enumerate(claims, start=1):
+        lines.append(messages.CLAIM_LINE.format(index=index, text=claim.text))
+        lines.extend(
+            messages.CITATION_LINE.format(passage_id=citation.passage_id, quote=citation.quote)
+            for citation in claim.citations
+        )
+    return lines
+
+
+def _render_sources(sources: list[SourceSummary]) -> list[str]:
+    """One line per cited document, naming the headings of the passages it quoted."""
+
+    by_url: dict[str, tuple[SourceSummary, list[str]]] = {}
+    for source in sources:
+        entry = by_url.setdefault(source.url, (source, []))
+        if source.heading and source.heading not in entry[1]:
+            entry[1].append(source.heading)
+    return [
+        messages.SOURCE_LINE.format(
+            title=source.title,
+            kind=source.kind.value,
+            url=source.url,
+            headings=f" — {'; '.join(headings)}" if headings else "",
+        )
+        for source, headings in by_url.values()
+    ]
+
+
+def _render_item(item: FindingExplanation) -> list[str]:
+    location = f" ({item.document})" if item.document else ""
+    lines = [
+        messages.FINDING_HEADER.format(
+            rule_id=item.rule_id, status=item.status.value, title=item.title, location=location
+        ),
+        messages.FINDING_MESSAGE.format(message=item.message),
+    ]
+    lines.extend(_render_claims(item.claims))
+    lines.extend(_render_sources(item.sources))
+    if item.withheld:
+        reasons = "; ".join(sorted({withheld.reason for withheld in item.withheld}))
+        lines.append(messages.WITHHELD_LINE.format(count=len(item.withheld), reasons=reasons))
+    if item.note:
+        lines.append(messages.NOTE_LINE.format(note=item.note))
+    if item.model_error:
+        lines.append(messages.MODEL_ERROR_LINE.format(error=item.model_error))
+    return lines
+
+
+def render_explanations_console(explanations: ReportExplanations) -> str:
+    lines = [
+        messages.EXPLANATION_HEADER[explanations.mode.value],
+        explanations.label,
+        "",
+        messages.EXPLANATION_SUMMARY.format(**explanations.counts.model_dump()),
+        "",
+    ]
+    if not explanations.items:
+        lines.append(messages.EXPLANATION_NONE)
+    for item in explanations.items:
+        lines.extend(_render_item(item))
+        lines.append("")
+    return "\n".join(lines).rstrip("\n") + "\n"
+
+
+def _emit(rendered: str, output: Path | None, what: str) -> None:
+    if output is None:
+        typer.echo(rendered, nl=False)
+        return
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(rendered, encoding="utf-8")
+    typer.echo(f"Wrote {what} to {output}")
+
+
+def _run_explain(
+    report_path: Path,
+    mode: ExplainMode,
+    provider: str | None,
+    model: str | None,
+    rules: str | None,
+    output_format: str,
+    output: Path | None,
+) -> None:
+    if output_format not in {"console", "json"}:
+        raise typer.BadParameter("must be console or json", param_hint="--format")
+    report = _load_report(report_path)
+    corpus = _load_corpus()
+    client = _client(provider, model)
+    _announce(client)
+    rule_ids = _parse_rule_ids(rules)
+    event("ai_explain_started", mode=mode.value, provider=client.provider)
+    explanations = explain_report(
+        client, corpus, report, default_catalog(), mode=mode, rule_ids=rule_ids
+    )
+    rendered = (
+        explanations.model_dump_json(indent=2) + "\n"
+        if output_format == "json"
+        else render_explanations_console(explanations)
+    )
+    _emit(rendered, output, f"AI {mode.value.replace('_', ' ')} output")
+    event("ai_explain_completed", **explanations.counts.model_dump())
+    raise typer.Exit(code=2 if explanations.counts.model_errors else 0)
+
+
+def _parse_rule_ids(raw: str | None) -> set[str] | None:
+    if raw is None:
+        return None
+    identifiers = {token.strip().upper() for token in raw.split(",") if token.strip()}
+    if not identifiers:
+        raise typer.BadParameter("expected a comma-separated list of rule identifiers")
+    return identifiers
+
+
+ReportArgument = Annotated[
+    Path,
+    typer.Argument(exists=True, readable=True, help="A JSON report written by `check`."),
+]
+RulesOption = Annotated[
+    str | None, typer.Option("--rules", help="Limit to these comma-separated rule identifiers.")
+]
+FormatOption = Annotated[str, typer.Option("--format", help="Output format: console or json.")]
+OutputOption = Annotated[Path | None, typer.Option("--output", help="Optional output file.")]
+
+
+@ai_app.command("explain")
+def explain(
+    report_path: ReportArgument,
+    provider: ProviderOption = None,
+    model: ModelOption = None,
+    rules: RulesOption = None,
+    output_format: FormatOption = "console",
+    output: OutputOption = None,
+) -> None:
+    """Explain each non-passing finding in plain language, quoting the official source it cites.
+
+    Every claim carries a verbatim quote from the committed corpus, verified before display;
+    claims that do not verify are withheld and counted. Nothing here is a finding.
+    """
+
+    _run_explain(report_path, ExplainMode.EXPLAIN, provider, model, rules, output_format, output)
+
+
+@ai_app.command("draft-fix")
+def draft_fix(
+    report_path: ReportArgument,
+    provider: ProviderOption = None,
+    model: ModelOption = None,
+    rules: RulesOption = None,
+    output_format: FormatOption = "console",
+    output: OutputOption = None,
+) -> None:
+    """Draft concrete correction steps for each non-passing finding, grounded in the corpus.
+
+    Drafts are AI-generated suggestions for a person to review; they promise no outcome.
+    """
+
+    _run_explain(report_path, ExplainMode.DRAFT_FIX, provider, model, rules, output_format, output)
+
+
+def render_answer_console(answer: Answer, report: InspectionReport) -> str:
+    lines = [
+        messages.ASK_HEADER,
+        answer.label,
+        "",
+        messages.ASK_QUESTION.format(question=answer.question),
+        "",
+    ]
+    if answer.refused:
+        found = findings_summary(report)
+        findings_text = "\n".join(f"  {line}" for line in found) or messages.REFUSAL_NO_FINDINGS
+        lines.append(
+            messages.REFUSAL.format(category=answer.refusal_category, findings=findings_text)
+        )
+        return "\n".join(lines) + "\n"
+    if answer.model_error:
+        lines.append(messages.MODEL_ERROR_LINE.format(error=answer.model_error))
+        return "\n".join(lines) + "\n"
+    lines.extend(_render_claims(answer.claims) or [messages.ASK_NOTHING])
+    lines.extend(_render_sources(answer.sources))
+    if answer.withheld:
+        reasons = "; ".join(sorted({withheld.reason for withheld in answer.withheld}))
+        lines.append(messages.WITHHELD_LINE.format(count=len(answer.withheld), reasons=reasons))
+    return "\n".join(lines) + "\n"
+
+
+@ai_app.command("ask")
+def ask_command(
+    report_path: ReportArgument,
+    question: Annotated[str, typer.Argument(help="A question about the report's findings.")],
+    provider: ProviderOption = None,
+    model: ModelOption = None,
+    output_format: FormatOption = "console",
+    output: OutputOption = None,
+) -> None:
+    """Answer a question about the technical findings; refuse legal-sufficiency questions.
+
+    Any form of "is this sufficient / will it be accepted / is the exemption valid / did
+    the agency comply" is refused before the model runs, and again after it.
+    """
+
+    if output_format not in {"console", "json"}:
+        raise typer.BadParameter("must be console or json", param_hint="--format")
+    if not question.strip():
+        raise typer.BadParameter("question must not be empty", param_hint="QUESTION")
+    report = _load_report(report_path)
+    corpus = _load_corpus()
+    client = _client(provider, model)
+    verdict = classify_question(question)
+    if not verdict.refused:
+        _announce(client)  # a refused question is never sent anywhere
+    answer = ask(client, corpus, report, default_catalog(), question)
+    event("ai_ask_completed", refused=answer.refused, claims=len(answer.claims))
+    rendered = (
+        answer.model_dump_json(indent=2) + "\n"
+        if output_format == "json"
+        else render_answer_console(answer, report)
+    )
+    _emit(rendered, output, "AI answer")
+    raise typer.Exit(code=2 if answer.model_error else 0)
