@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """CodeQL SARIF gate — fails the build on any error-severity finding.
 
-ceqa-preflight is a private repo with no GitHub Advanced Security, so `codeql-action/analyze`
-runs with `upload: never` (the code-scanning SARIF-upload API isn't available and would otherwise
-fail the job with "Code scanning is not enabled for this repository"). Without upload, nothing else
-makes the CodeQL job reflect its own findings — this script reads the SARIF CodeQL writes locally
-and fails if any result's rule carries `problem.severity: error` (CodeQL's own severity, surfaced
-per-result in `properties.problem.severity` or via the rule's default `level`).
+Code scanning is not enabled for this repository, so `codeql-action/analyze` runs with
+`upload: never` (the SARIF-upload API would otherwise fail the job with "Code scanning is not
+enabled for this repository"). Without upload, nothing else makes the CodeQL job reflect its own
+findings — this script reads the SARIF CodeQL writes locally and fails if any result's rule
+carries `problem.severity: error` (CodeQL's own severity, surfaced per-result in
+`properties.problem.severity` or via the rule's default `level`).
 
 CodeQL emits its rule metadata under `runs[].tool.extensions[].rules`, NOT under
 `runs[].tool.driver.rules` (which it leaves empty), and it does not put a `level` on individual

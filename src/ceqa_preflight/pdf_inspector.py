@@ -33,6 +33,10 @@ class PdfInspection(StrictModel):
     text_coverage: float | None = None
     active_form_field_count: int = 0
     active_form_field_names: list[str] = Field(default_factory=list)
+    # False when the form dictionary could not be parsed. Without this flag, an
+    # unreadable AcroForm and a document with no form fields are both a count of zero,
+    # and "not measured" reads as "measured clean".
+    form_fields_readable: bool = True
     structure_tree_present: bool | None = None
     embedded_file_count: int = 0
     javascript_present: bool = False
@@ -128,13 +132,15 @@ def _active_content_signals(reader: PdfReader, root: Mapping[str, Any]) -> tuple
     return javascript_present, launch_action_present
 
 
-def _field_names(reader: PdfReader, parser_warnings: list[str]) -> list[str]:
+def _field_names(reader: PdfReader, parser_warnings: list[str]) -> tuple[list[str], bool]:
+    """Return the form-field names and whether the form dictionary could be read at all."""
+
     try:
         fields = reader.get_fields() or {}
-        return sorted(str(name) for name in fields)
+        return sorted(str(name) for name in fields), True
     except Exception:
         parser_warnings.append(_warning_label("PDF form fields could not be read"))
-        return []
+        return [], False
 
 
 def _extract_sample_characters(
@@ -207,7 +213,7 @@ def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
     root = _mapping(reader.trailer.get("/Root"))
     names = _mapping(root.get("/Names"))
     javascript_present, launch_action_present = _active_content_signals(reader, root)
-    field_names = _field_names(reader, parser_warnings)
+    field_names, form_fields_readable = _field_names(reader, parser_warnings)
     sampled_pages = select_sample_pages(page_count)
     extracted_characters = _extract_sample_characters(path, sampled_pages, parser_warnings)
 
@@ -224,6 +230,7 @@ def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
         text_coverage=text_coverage,
         active_form_field_count=len(field_names),
         active_form_field_names=field_names,
+        form_fields_readable=form_fields_readable,
         structure_tree_present="/StructTreeRoot" in root,
         embedded_file_count=_name_tree_item_count(names.get("/EmbeddedFiles")),
         javascript_present=javascript_present,

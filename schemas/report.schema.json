@@ -142,6 +142,66 @@
       "title": "FindingStatus",
       "type": "string"
     },
+    "SkipReason": {
+      "description": "Why an applicable rule did not run during a check.",
+      "enum": [
+        "experimental_not_included",
+        "withdrawn",
+        "not_selected",
+        "excluded_by_request"
+      ],
+      "title": "SkipReason",
+      "type": "string"
+    },
+    "SkippedCheck": {
+      "additionalProperties": false,
+      "description": "A rule that applied to this filing type but did not run, and why.\n\nA report that lists only what ran cannot be read as a statement about the whole\npackage: a reader has no way to tell an all-clear from an all-clear with checks\nremoved. Every skip is recorded here so a clean result always carries its own scope.",
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "reason": {
+          "$ref": "#/$defs/SkipReason"
+        },
+        "rule_id": {
+          "minLength": 1,
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "rule_version": {
+          "minLength": 1,
+          "title": "Rule Version",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceCitation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id",
+        "rule_version",
+        "title",
+        "reason",
+        "detail"
+      ],
+      "title": "SkippedCheck",
+      "type": "object"
+    },
     "SourceCitation": {
       "additionalProperties": false,
       "description": "A current, traceable source for a rule or report finding.",
@@ -236,8 +296,15 @@
       "title": "Manual Review",
       "type": "array"
     },
+    "not_run": {
+      "items": {
+        "$ref": "#/$defs/SkippedCheck"
+      },
+      "title": "Not Run",
+      "type": "array"
+    },
     "report_schema_version": {
-      "default": "1.0",
+      "default": "1.1",
       "title": "Report Schema Version",
       "type": "string"
     },

@@ -11,7 +11,7 @@ from ceqa_preflight.rule_engine import RuleContext, RuleEngine
 from ceqa_preflight.rules.common import COMMON_RULES
 
 
-def _run(documents: object) -> dict[str, Finding]:
+def _all_findings(documents: object) -> list[Finding]:
     root = Path(__file__).parents[1]
     catalog = load_rule_catalog([root / "src/ceqa_preflight/rulepacks/common.yaml"])
     facts: dict[str, object] = {"documents": documents}
@@ -25,7 +25,20 @@ def _run(documents: object) -> dict[str, Finding]:
         RuleContext(filing_type=FilingType.NOE, facts=facts)
     )
     assert result.exit_code == 0
-    return {finding.rule_id: finding for finding in result.findings}
+    return result.findings
+
+
+def _run(documents: object) -> dict[str, Finding]:
+    return {finding.rule_id: finding for finding in _all_findings(documents)}
+
+
+def _statuses(documents: object) -> dict[str, set[str]]:
+    """Every status each rule emitted, since a rule may report more than one outcome."""
+
+    statuses: dict[str, set[str]] = {}
+    for finding in _all_findings(documents):
+        statuses.setdefault(finding.rule_id, set()).add(finding.status.value)
+    return statuses
 
 
 def _inspection(**updates: object) -> PdfInspection:
@@ -113,6 +126,86 @@ def test_maps_incomplete_or_timed_out_facts_to_manual_review() -> None:
 
     assert {finding.status.value for finding in incomplete.values()} == {"manual"}
     assert timed_out["PDF-002"].status.value == "manual"
+
+
+# Every rule whose conclusion comes from PdfInspection rather than from the file
+# inventory. Each of these is phrased as an absence or an "all documents" claim, so an
+# uninspected document must never be counted toward one.
+_INSPECTION_DERIVED_RULES = ("PDF-003", "PDF-006", "PDF-007", "PDF-008")
+
+
+def _document(path: str, **updates: object) -> dict[str, object]:
+    document: dict[str, object] = {
+        "path": path,
+        "is_pdf": True,
+        "signature_is_pdf": True,
+        "sha256": path,
+        "size_bytes": 2048,
+        "category": "Notice of Exemption",
+        "inspection": _inspection(),
+    }
+    document.update(updates)
+    return document
+
+
+def test_a_pdf_that_was_never_inspected_never_produces_a_pass() -> None:
+    """A timed-out PDF was not measured, so no check may report it as clean.
+
+    An inspection that timed out carries every absence signal at its default: zero form
+    fields, zero embedded files, no JavaScript, no launch action. Those defaults describe
+    what was read, which is nothing. Counting them as observations makes the report for a
+    package nobody could open byte-identical to the report for a package that is fine.
+    """
+
+    statuses = _statuses([_document("notice.pdf", inspection=_inspection(timed_out=True))])
+
+    for rule_id in _INSPECTION_DERIVED_RULES:
+        assert "pass" not in statuses[rule_id], rule_id
+        assert statuses[rule_id] == {"manual"}, rule_id
+
+
+def test_an_encrypted_pdf_is_excluded_from_absence_claims_not_folded_into_a_pass() -> None:
+    """One readable PDF must not carry an "all clear" that also covers an unreadable one."""
+
+    findings = _run(
+        [
+            _document("NOE_example_project.pdf"),
+            _document("NOE_locked_appendix.pdf", inspection=_inspection(readable=False)),
+        ]
+    )
+    statuses = _statuses(
+        [
+            _document("NOE_example_project.pdf"),
+            _document("NOE_locked_appendix.pdf", inspection=_inspection(readable=False)),
+        ]
+    )
+
+    assert findings["PDF-002"].status.value == "failure"
+    for rule_id in _INSPECTION_DERIVED_RULES:
+        # The pass stands for the one document that was read, and the document that was
+        # not read is reported rather than silently absorbed.
+        assert statuses[rule_id] == {"pass", "manual"}, rule_id
+        assert "1 " in findings[rule_id].message, findings[rule_id].message
+
+
+def test_a_package_with_no_pdfs_passes_no_pdf_check() -> None:
+    """Zero PDFs is an empty denominator, not a clean bill of health."""
+
+    statuses = _statuses([{"path": "notes.txt", "is_pdf": False, "size_bytes": 12}])
+
+    for rule_id in ("PDF-001", "PDF-002", *_INSPECTION_DERIVED_RULES):
+        assert "pass" not in statuses[rule_id], rule_id
+
+
+def test_unreadable_form_fields_do_not_pass_the_flattened_form_check() -> None:
+    """A PDF whose form dictionary could not be parsed has an unknown field count."""
+
+    statuses = _statuses(
+        [_document("NOE_broken_acroform.pdf", inspection=_inspection(form_fields_readable=False))]
+    )
+
+    assert "pass" not in statuses["PDF-007"]
+    assert statuses["PDF-007"] == {"manual"}
 
 
 def test_warns_on_duplicate_hashes() -> None:

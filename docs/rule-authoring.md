@@ -10,5 +10,9 @@ to a manual-review result, never a failure.
 
 Only `active` rules run by default. `experimental` rules require an explicit
 caller opt-in; deprecated and retired rules remain in the catalog history but
-do not run. Rule functions should return stable evidence and should not include
+do not run. Every rule that applies to the filing type and does not run is
+recorded in the report's `not_run` list with its reason, so a lifecycle change
+is visible to report readers rather than only to catalog readers. A rule that
+does not apply to the requested filing type is not a skipped check and is not
+listed. Rule functions should return stable evidence and should not include
 extracted PDF text or personal information in findings.

@@ -11,7 +11,7 @@ Thanks for improving CEQA Preflight.
 - Periodically confirm rule source citations still resolve with
   `make audit-sources` (network access required; not part of `make verify`).
 - Keep runtime processing local; do not add telemetry or network calls.
-- Read the pinned [Portfolio Standards](STANDARDS/README.md); project-specific
+- Read the vendored [Portfolio Standards](docs/standards/README.md); project-specific
   applicability is declared in the README.
 
 ## Development setup

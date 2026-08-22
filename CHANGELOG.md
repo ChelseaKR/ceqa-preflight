@@ -11,6 +11,44 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   resolves. It is deliberately excluded from `make verify` and CI: the product
   and its test suite make no real network calls, and this stays a manual,
   periodic companion to the existing rule-source review audits.
+- Every report now names the checks that did not run. A rule that applies to the
+  filing type but was skipped — experimental without `--include-experimental`,
+  removed by `--rules` or `--exclude-rules`, or withdrawn — is listed with its
+  identifier, source citation, and the reason, in the console, JSON, HTML, and
+  checklist formats. Previously a default NOE or NOD run silently omitted the six
+  filing-specific rules (six of the twenty that apply), two of which can produce a
+  failure, and `--exclude-rules` could turn a report with warnings into `0
+  failure(s), 0 warning(s)` with no trace of the removal; the printable sign-off
+  checklist, whose next step is submission, was identical either way. Exit codes
+  are unchanged: a skipped check still exits `0`, which the README now states
+  explicitly.
+- Report schema version `1.1` adds the `not_run` array. The addition is
+  backwards compatible; existing consumers of `findings` and `manual_review` are
+  unaffected.
+- Fixed checks that reported a clean result for documents they never read. A PDF
+  that timed out, failed to parse, or is encrypted still produced a
+  `PdfInspection` with every absence signal at its default, so the searchable
+  text, active content, fillable form, and structure tag checks passed on it.
+  A package whose PDFs all timed out therefore produced the same passing lines
+  as a package that was genuinely clean. Those checks now examine only
+  completed inspections, state the number of documents each pass covers, and
+  report anything they could not examine as a manual-review item.
+- `PdfInspection` now carries `form_fields_readable`, so a form dictionary that
+  could not be parsed is distinguishable from a document with no form fields
+  rather than both reporting a field count of zero.
+- CI and the security workflow install with `uv sync --locked` instead of
+  `--frozen`; `--frozen` exits 0 on a lockfile that has drifted from
+  `pyproject.toml`, so lockfile drift previously passed unnoticed.
+- Enabled `pytest-socket` through `--disable-socket`. It was a declared
+  development dependency that was never activated, so nothing enforced the
+  documented "no network requests at runtime" boundary; a test now fails if the
+  guard is ever switched off.
+- Corrected workflow and script comments that described this public repository
+  as private.
+- Named every portfolio standard explicitly in the README conformance table
+  with reasoned N/A rows, added a Quality & Metrics ledger and
+  AI-development-measurement declaration to the roadmap, and disclosed
+  AI-assisted development in the README.
 - Release publication now authorizes an existing SSH-signed stable tag from
   reviewed `main`, verifies and builds the exact selected commit without a
   shared cache, and hands artifacts to a checkout-free publisher that rechecks

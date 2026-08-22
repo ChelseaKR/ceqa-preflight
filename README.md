@@ -63,6 +63,13 @@ identifiers. The default run includes active technical checks only. Add
 `--log-format json` for minimal, package-content-free operational events on
 stderr, including inspection progress counts for large packages.
 
+Every report states its own scope. Any rule that applies to the filing type but
+did not run — because it is experimental and `--include-experimental` was not
+given, because `--rules` or `--exclude-rules` removed it, or because it has been
+withdrawn — is listed by identifier, with the reason and the way to run it, in
+all four report formats. A report with no failures therefore always says whether
+it covered every applicable check or only some of them.
+
 The `synth` command generates plainly fictional synthetic packages, optionally
 seeded with objective defects (scanned pages, fillable forms, encrypted or
 truncated PDFs, duplicates, and more) for demos, regression tests, and pilot
@@ -80,6 +87,10 @@ manual-review items may still exist), `1` when at least one failure finding
 was produced, and `2` on input or internal rule errors. With multiple
 packages, the worst exit code wins.
 
+Exit code `0` is not a statement that every applicable check ran: skipped
+checks do not change it. Read the `not_run` list, or the "check(s) not run"
+count in the summary line, before treating a `0` as a complete result.
+
 ## Non-affiliation and disclaimer
 
 CEQA Preflight is an independent open-source project. It is not affiliated
@@ -90,6 +101,11 @@ Submit, or CEQAnet. See [DISCLAIMER.md](DISCLAIMER.md).
 ## Development
 
     make verify
+
+This project is developed with AI-assisted tooling. Every change, whether
+AI-assisted or not, must pass the same review, tests, and `make verify` gate
+before merge; AI-assisted development measurement is tracked in the
+[responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the
 [architecture decision](docs/decisions/0001-local-first-deterministic-cli.md).
@@ -108,20 +124,27 @@ Breaking changes may occur before the first tagged release. See
 
 ## Standards conformance
 
-This project follows the pinned [Portfolio Standards](STANDARDS/README.md)
-submodule at release `v1.0.1`. “Applies” means an automated or documented
+This project follows the vendored [Portfolio Standards](docs/standards/README.md).
+“Applies” means an automated or documented
 control exists; release-only evidence is collected before a tagged release.
 
-| Standard | Status | Evidence / scope |
+| Standard | State | Evidence / scope |
 | --- | --- | --- |
-| Core delivery, documentation, quality | Applies | `Makefile`, CI, [definition of done](DEFINITION_OF_DONE.md) |
-| Security, supply chain, responsible technology | Applies | [security policy](SECURITY.md), [audits](docs/RESPONSIBLE-TECH-AUDITS.md) |
-| Accessibility | Applies | [accessibility boundaries](docs/accessibility.md); release review pending first tag |
-| Observability | N/A hosted telemetry | Stateless local CLI; opt-in JSON operational events only, no package contents |
-| i18n/l10n | Applies; pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
-| Performance | N/A service SLO | No hosted service; bounded PDF/ZIP parsing is in the threat model |
-| AI evaluation | N/A runtime | No model, prompt, or AI inference is shipped |
-| Data governance | Applies | [local filing package data card](docs/data/local-filing-packages.md) |
+| Responsible-Tech Framework | Applies | [Responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md), [threat model](docs/threat-model.md), and [data card](docs/data/local-filing-packages.md) |
+| Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with a 90% branch-coverage floor, and complexity <= 10), `uv.lock`, and `.python-version` |
+| Security & Supply-Chain | Applies | [Security policy](SECURITY.md); bandit, pip-audit, gitleaks, and CodeQL in CI; SHA-pinned actions and a committed lockfile |
+| CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
+| Release & Versioning | Applies — pre-release gap | The signed-tag release workflow is committed; the first public tag and its release evidence are still pending |
+| Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
+| Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
+| Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
+| Internationalization | Applies — pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
+| AI Evaluation | N/A (no AI runtime) | No model, prompt, or AI inference is shipped |
+| Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), and the [definition of done](DEFINITION_OF_DONE.md) |
+| Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |
+| AI Development Measurement | Applies | `docs/ROADMAP.md` declares `AI-DEV-MEASUREMENT: APPLIES`; the baseline is recorded in the [responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md) |
+| Incident Response | Applies — local CLI scope | Security, privacy, and data-exposure incidents remain in scope even though there is no hosted service |
+| Data Governance | Applies | The [local filing package data card](docs/data/local-filing-packages.md) defines the processing and retention boundary |
 
 The central standards register is maintained separately and must be updated
 when this repository is published.
