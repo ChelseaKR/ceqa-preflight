@@ -6,6 +6,20 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Added `ceqa-preflight ai extract`, the first command of the opt-in `ai`
+  group (ADR 0002). It reads each PDF's text layer through a bounded,
+  process-isolated extractor, asks the configured model (Anthropic API or
+  Amazon Bedrock via the public `anthropic` SDK; `claude-sonnet-5` by default)
+  to copy out manifest facts, and verifies every proposed value against a
+  verbatim quote from the document before it is shown. Values whose quote does
+  not verify are withheld and counted; fields the text does not state are
+  `unknown`; image-only PDFs are reported as having no text layer and never
+  sent. The output is a draft manifest for a person to review; `check` is
+  unchanged and never invokes it. The provider SDK is an optional extra
+  (`ceqa-preflight[ai]`, `[ai-bedrock]`) imported only inside `ai` commands;
+  a test proves the default path never imports it. Every output carries
+  provenance (provider, model, prompt version, tool version, time).
+
 - Added `corpus/`, the committed, hashed, dated plain text of every official
   source the rule catalog cites (plus the LCI document-submission page and the
   project's own source-review addendum), split into addressable passages, with
