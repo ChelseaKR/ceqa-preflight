@@ -19,7 +19,7 @@ from typing import Any, NamedTuple
 from pydantic import Field
 
 from ceqa_preflight.ai.client import ModelClient, ModelError
-from ceqa_preflight.ai.corpus import normalize_whitespace
+from ceqa_preflight.ai.corpus import normalize_for_match, normalize_whitespace
 from ceqa_preflight.ai.provenance import AI_GENERATED_LABEL, Provenance, provenance_for
 from ceqa_preflight.ai.text import DocumentText
 from ceqa_preflight.models import (
@@ -205,11 +205,11 @@ def _proposal(raw: Any) -> _Proposal:
 def _locate_quote(document: DocumentText, quote: str) -> int | None:
     """Return the first page whose text contains the quote, or ``None``."""
 
-    needle = normalize_whitespace(quote)
+    needle = normalize_for_match(quote)
     if len(needle) < 3:
         return None
     for page in document.pages:
-        if needle in normalize_whitespace(page.text):
+        if needle in normalize_for_match(page.text):
             return page.page
     return None
 
@@ -254,7 +254,7 @@ def _verify_field(spec: FieldSpec, proposal: _Proposal, document: DocumentText) 
                 withheld_value=proposal.value,
                 note="the value is not one of the allowed values",
             )
-    elif normalize_whitespace(proposal.value) not in normalize_whitespace(proposal.quote):
+    elif normalize_for_match(proposal.value) not in normalize_for_match(proposal.quote):
         return ExtractedField(
             name=spec.name,
             status=FieldStatus.UNVERIFIED,

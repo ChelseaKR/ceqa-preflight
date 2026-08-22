@@ -16,7 +16,7 @@ from typing import Any
 from pydantic import Field
 
 from ceqa_preflight.ai.client import ModelClient, ModelError
-from ceqa_preflight.ai.corpus import Corpus, Passage, normalize_whitespace
+from ceqa_preflight.ai.corpus import Corpus, Passage, normalize_for_match
 from ceqa_preflight.ai.guard import determination_language
 from ceqa_preflight.models import SourceKind, StrictModel
 from ceqa_preflight.rule_catalog import RuleDefinition
@@ -110,8 +110,8 @@ def parse_claims(text: str) -> list[Claim]:
 def quote_in(passage: Passage, quote: str) -> bool:
     """Return whether ``quote`` appears verbatim (modulo whitespace) in the passage."""
 
-    needle = normalize_whitespace(quote)
-    return bool(needle) and needle in normalize_whitespace(passage.text)
+    needle = normalize_for_match(quote)
+    return bool(needle) and needle in normalize_for_match(passage.text)
 
 
 def verify_claims(
