@@ -10,7 +10,10 @@ Thanks for improving CEQA Preflight.
 - Do not add a CEQA-specific rule without a current official source and tests.
 - Periodically confirm rule source citations still resolve with
   `make audit-sources` (network access required; not part of `make verify`).
-- Keep runtime processing local; do not add telemetry or network calls.
+- Keep the default `check` path local; do not add telemetry or network calls
+  to it. Model calls live only in the opt-in `ai` command group
+  ([ADR 0002](docs/adr/0002-ai-at-the-edges.md)), import the SDK lazily, and
+  never produce a finding.
 - Read the vendored [Portfolio Standards](docs/standards/README.md); project-specific
   applicability is declared in the README.
 
