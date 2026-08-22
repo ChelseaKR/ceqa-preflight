@@ -6,6 +6,20 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Added `ai explain`, `ai draft-fix`, and `ai ask` (ADR 0002). Explanations and
+  correction drafts are grounded in `corpus/`: every claim must cite a passage
+  of the official source the rule cites and quote it verbatim, and a verifier
+  checks each quote against the corpus and each sentence for determination
+  language before display, withholding and counting what fails. `ai ask`
+  answers questions about a report's findings behind a deterministic
+  legal-sufficiency guard that refuses every phrasing of "is this sufficient /
+  will it be accepted / is the exemption valid / did the agency comply" before
+  any model call; the model is instructed to refuse as a second layer and the
+  verifier is a third. `evals/` now holds the refusal suite (109 refuse
+  phrasings, 30 technical questions, English and Spanish), its two-layer
+  harness, and the results contract: a recorded result must carry provider,
+  model, prompt version, commit, and time, or say `not_run`.
+
 - Added `ceqa-preflight ai extract`, the first command of the opt-in `ai`
   group (ADR 0002). It reads each PDF's text layer through a bounded,
   process-isolated extractor, asks the configured model (Anthropic API or

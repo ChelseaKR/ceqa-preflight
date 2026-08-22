@@ -116,6 +116,30 @@ manifest for a person to review and correct; only `check --manifest` on the
 reviewed manifest produces findings. The model structures input. It never
 decides anything, and the rule engine never sees its output directly.
 
+    uv run ceqa-preflight check ./my-package --filing-type NOE --format json --output ./reports
+    uv run ceqa-preflight ai explain ./reports/report.json
+    uv run ceqa-preflight ai draft-fix ./reports/report.json --rules PDF-003,PDF-007
+    uv run ceqa-preflight ai ask ./reports/report.json "What does PDF-003 mean?"
+
+`ai explain` and `ai draft-fix` read a JSON report written by `check` and,
+for each failure, warning, or manual-review item, ask the model for a
+plain-language explanation (or a numbered correction draft) in which every
+claim cites a passage of the official source the rule cites and quotes it
+verbatim. The passages come from [`corpus/`](corpus/README.md), the committed,
+hashed text of those sources; a verifier checks every quote against it and
+checks every sentence for determination language before anything is shown.
+Claims that fail are withheld and counted. A self-cited rule (FILE-004,
+FILE-005) is explained from the project's own reasoning and says so.
+
+`ai ask` answers questions about the findings in a report. Any form of "is
+this legally sufficient", "will it be accepted", "is this exemption valid",
+or "did the agency comply", in English or Spanish, direct or indirect, is
+refused before the model runs and redirected to the objective findings and
+to qualified review; the model is instructed to refuse as well, and its
+answers pass the same verifier. The refusal suite in [`evals/`](evals/README.md)
+has zero tolerance. None of this output is a finding; `check` alone produces
+findings, and its output is unchanged by the `ai` commands.
+
 ### Exit codes
 
 `check` exits `0` when no automated failure was found (warnings and
