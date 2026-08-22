@@ -48,6 +48,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a test proves the default path never imports it. Every output carries
   provenance (provider, model, prompt version, tool version, time).
 
+- Added `make audit-sources` / `scripts/check_rule_sources.py`, a maintainer-run
+  link-rot check that confirms every rule catalog source citation URL still
+  resolves. It is deliberately excluded from `make verify` and CI: the product
+  and its test suite make no real network calls, and this stays a manual,
+  periodic companion to the existing rule-source review audits.
 - Added `corpus/`, the committed, hashed, dated plain text of every official
   source the rule catalog cites (plus the LCI document-submission page and the
   project's own source-review addendum), split into addressable passages, with
