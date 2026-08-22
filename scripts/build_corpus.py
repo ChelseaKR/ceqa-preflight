@@ -14,6 +14,16 @@ sockets. Run it by hand when a source review finds that official guidance change
 the diff, and commit the result together with the updated source review.
 
     python3 scripts/build_corpus.py [--corpus-dir corpus] [--timeout SECONDS]
+        [--ccr-cache DIR]   # reuse section pages crawled into DIR (see CCR_CACHE_INDEX)
+
+CEQA Guidelines (14 CCR § 15000 et seq.)
+    The Office of Administrative Law publishes no snapshot or PDF of the CCR. Its official
+    online edition is the Barclays/Thomson Reuters site OAL contracts for
+    (https://govt.westlaw.com/calregs), updated weekly, and OAL says not to rely on any other
+    source. This script walks that site's table of contents for Title 14, Division 6,
+    Chapter 3 and retains every section as its own corpus document, recording the site's
+    own currency statement ("current through ... Register ...") as the edition. It is a
+    dated retrieval of the weekly edition, not an annual snapshot; the edition label says so.
 """
 
 from __future__ import annotations
@@ -24,6 +34,7 @@ import html
 import json
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -54,6 +65,18 @@ _USER_AGENT = "ceqa-preflight-corpus-build/1.0 (+https://github.com/ChelseaKR/ce
 _MAX_BYTES = 20 * 1024 * 1024
 _MAX_PASSAGE_CHARS = 1200
 _MIN_PASSAGE_CHARS = 60
+_MIN_REQUEST_INTERVAL = 1.0
+
+CCR_BASE = "https://govt.westlaw.com"
+CCR_INDEX_URL = (
+    "https://govt.westlaw.com/calregs/Index?transitionType=Default&contextData=%28sc.Default%29"
+)
+CCR_TITLE = "Title 14. Natural Resources"
+CCR_DIVISION = "Division 6. Resources Agency"
+CCR_CHAPTER = "Chapter 3."
+CCR_KIND_TITLE = "Barclays Official California Code of Regulations"
+CCR_CACHE_INDEX = "ccr-index.json"  # [{"title", "url", "file"}] written by a prior crawl
+_last_request = 0.0
 
 
 @dataclass(frozen=True)
@@ -107,17 +130,187 @@ Fetcher = Callable[[str, float], tuple[bytes, str]]
 
 
 def _fetch(url: str, timeout: float) -> tuple[bytes, str]:
-    """Return the response bytes and content type for one absolute HTTP(S) URL."""
+    """Return the response bytes and content type for one absolute HTTP(S) URL, politely."""
 
+    global _last_request
     if not url.startswith(("http://", "https://")):
         raise ValueError(f"unsupported URL scheme: {url}")
+    wait = _MIN_REQUEST_INTERVAL - (time.monotonic() - _last_request)
+    if wait > 0:
+        time.sleep(wait)
     request = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})  # noqa: S310
     with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
         content_type = str(response.headers.get("Content-Type", "")).split(";")[0].strip()
         data = response.read(_MAX_BYTES + 1)
+    _last_request = time.monotonic()
     if len(data) > _MAX_BYTES:
         raise ValueError(f"source exceeds {_MAX_BYTES} bytes: {url}")
     return data, content_type
+
+
+# --- CEQA Guidelines from the official online CCR -----------------------------------------
+
+
+def _anchor_links(page: str) -> list[tuple[str, str]]:
+    """Return (text, href) for every anchor on a Westlaw table-of-contents page."""
+
+    found: list[tuple[str, str]] = []
+    for match in re.finditer(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', page, re.S):
+        text = " ".join(html.unescape(re.sub(r"<[^>]+>", "", match.group(2))).split())
+        found.append((text, html.unescape(match.group(1))))
+    return found
+
+
+def _toc_child(page: str, prefix: str) -> str:
+    for text, href in _anchor_links(page):
+        if text.startswith(prefix):
+            return CCR_BASE + href if href.startswith("/") else href
+    raise ValueError(f"table of contents entry not found: {prefix}")
+
+
+def ccr_section_links(fetch: Fetcher, timeout: float) -> list[tuple[str, str]]:
+    """Walk the official CCR table of contents to every section and appendix of Chapter 3."""
+
+    def page(url: str) -> str:
+        return fetch(url, timeout)[0].decode("utf-8", errors="replace")
+
+    chapter = _toc_child(
+        page(_toc_child(page(_toc_child(page(CCR_INDEX_URL), CCR_TITLE)), CCR_DIVISION)),
+        CCR_CHAPTER,
+    )
+    sections: list[tuple[str, str]] = []
+    for text, href in _anchor_links(page(chapter)):
+        url = CCR_BASE + href if href.startswith("/") else href
+        if text.startswith("§"):
+            sections.append((text, url))
+        elif text.startswith(("Article", "Appendix")):
+            children = [
+                (t, CCR_BASE + h if h.startswith("/") else h)
+                for t, h in _anchor_links(page(url))
+                if t.startswith(("§", "Appendix"))
+            ]
+            sections.extend(children or [(text, url)])
+    return sections
+
+
+class _CcrParser(HTMLParser):
+    """Collect the regulation text of one Westlaw CCR section page.
+
+    The section title (``co_title``) becomes the heading; each ``co_paragraph`` inside the
+    ``co_body`` block becomes a paragraph block. Prelim headers, history notes, the currency
+    statement, and navigation are not regulation text and are dropped.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.blocks: list[tuple[str, str]] = []
+        self.title: str | None = None
+        self.edition: str | None = None
+        self._stack: list[str] = []
+        self._capture: list[str] | None = None
+        self._capture_kind: str | None = None
+        self._capture_depth = 0
+        self._in_body = 0
+        self._in_title = 0
+        self._in_currency = 0
+
+    @staticmethod
+    def _classes(attrs: list[tuple[str, str | None]]) -> set[str]:
+        return set((dict(attrs).get("class") or "").split())
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        classes = self._classes(attrs)
+        self._stack.append(tag)
+        if "co_body" in classes:
+            self._in_body = len(self._stack)
+        elif "co_title" in classes:
+            self._in_title = len(self._stack)
+            self._begin("heading")
+        elif "co_includeCurrencyBlock" in classes or "co_currency" in classes:
+            self._in_currency = len(self._stack)
+            self._begin("edition")
+        elif self._in_body and "co_paragraph" in classes and self._capture is None:
+            self._begin("paragraph")
+
+    def _begin(self, kind: str) -> None:
+        self._capture, self._capture_kind, self._capture_depth = [], kind, len(self._stack)
+
+    def handle_endtag(self, tag: str) -> None:
+        depth = len(self._stack)
+        if self._capture is not None and depth == self._capture_depth:
+            self._end()
+        if depth == self._in_body:
+            self._in_body = 0
+        if depth == self._in_title:
+            self._in_title = 0
+        if depth == self._in_currency:
+            self._in_currency = 0
+        if self._stack:
+            self._stack.pop()
+
+    def _end(self) -> None:
+        text = normalize_whitespace("".join(self._capture or []))
+        if text and self._capture_kind == "heading" and self.title is None:
+            self.title = text
+            self.blocks.append(("heading", text))
+        elif text and self._capture_kind == "edition" and self.edition is None:
+            self.edition = text
+        elif text and self._capture_kind == "paragraph":
+            self.blocks.append(("paragraph", text))
+        self._capture, self._capture_kind = None, None
+
+    def handle_data(self, data: str) -> None:
+        if self._capture is not None:
+            self._capture.append(data)
+
+    def close(self) -> None:
+        super().close()
+        if self._capture is not None:
+            self._end()
+
+
+def ccr_blocks(document: str) -> tuple[list[tuple[str, str]], str | None, str | None]:
+    """Return (blocks, section title, edition statement) from one CCR section page."""
+
+    parser = _CcrParser()
+    parser.feed(document)
+    parser.close()
+    edition = parser.edition
+    if edition:
+        match = re.search(r"current through.*?(?:Register \d{4}, No\.\s*\d+\.?|$)", edition, re.I)
+        edition = f"{CCR_KIND_TITLE}, {match.group(0).strip()}" if match else edition
+    return parser.blocks, parser.title, edition
+
+
+def ccr_document_id(title: str) -> str:
+    """``"§ 15064.3. Determining ..."`` -> ``ccr-14-15064-3``; appendices keep their letter."""
+
+    match = re.match(r"§\s*(15\d{3}(?:\.\d+)?)", title)
+    if match:
+        return "ccr-14-" + match.group(1).replace(".", "-")
+    appendix = re.match(r"Appendix\s+([A-Z])", title)
+    if appendix:
+        return f"ccr-14-appendix-{appendix.group(1).lower()}"
+    raise ValueError(f"cannot name a corpus document for {title!r}")
+
+
+def ccr_section_number(title: str) -> str | None:
+    match = re.match(r"§\s*(15\d{3}(?:\.\d+)?)", title)
+    return match.group(1) if match else None
+
+
+def _ccr_pages(fetch: Fetcher, timeout: float, cache: Path | None) -> list[tuple[str, str, bytes]]:
+    """Return (title, url, page bytes) for every Chapter 3 section, from cache or live."""
+
+    if cache is not None:
+        index = json.loads((cache / CCR_CACHE_INDEX).read_text(encoding="utf-8"))
+        return [
+            (str(item["title"]), str(item["url"]), (cache / item["file"]).read_bytes())
+            for item in index
+        ]
+    return [
+        (title, url, fetch(url, timeout)[0]) for title, url in ccr_section_links(fetch, timeout)
+    ]
 
 
 class _BlockTextParser(HTMLParser):
@@ -320,7 +513,51 @@ def _cited_by() -> dict[str, list[str]]:
     cited: dict[str, list[str]] = {}
     for rule in default_catalog().rules:
         cited.setdefault(KNOWN_SOURCE_IDS[rule.source.url], []).append(rule.id)
+        for section in rule.guidelines:
+            cited.setdefault("ccr-14-" + section.replace(".", "-"), []).append(rule.id)
     return cited
+
+
+def _ccr_documents(
+    result: BuildResult,
+    cited_by: dict[str, list[str]],
+    fetch: Fetcher,
+    timeout: float,
+    cache: Path | None,
+) -> list[CorpusDocument]:
+    documents: list[CorpusDocument] = []
+    for title, url, data in _ccr_pages(fetch, timeout, cache):
+        blocks, page_title, edition = ccr_blocks(data.decode("utf-8", errors="replace"))
+        try:
+            document_id = ccr_document_id(page_title or title)
+        except ValueError:
+            print(f"[skip] {title!r}: not a section or appendix (a repealed article placeholder)")
+            continue
+        passages = passages_from_blocks(document_id, blocks)
+        if not passages:
+            print(f"[skip] {document_id}: no regulation text (repealed or empty)")
+            continue
+        text = "\n\n".join(passage.text for passage in passages) + "\n"
+        documents.append(
+            CorpusDocument(
+                id=document_id,
+                title=f"14 CCR {page_title or title}",
+                url=url,
+                kind=SourceKind.OFFICIAL,
+                retrieved_at=datetime.now(UTC),
+                content_type="text/html",
+                source_sha256=hashlib.sha256(data).hexdigest(),
+                text_sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                passage_count=len(passages),
+                cited_by=sorted(cited_by.get(document_id, [])),
+                section=ccr_section_number(page_title or title),
+                edition=edition,
+            )
+        )
+        result.passages[document_id] = passages
+        result.texts[document_id] = text
+    print(f"[ok] CEQA Guidelines: {len(documents)} section document(s)")
+    return documents
 
 
 @dataclass
@@ -330,13 +567,22 @@ class BuildResult:
     texts: dict[str, str] = field(default_factory=dict)
 
 
-def build(corpus_dir: Path, *, timeout: float, fetch: Fetcher = _fetch) -> BuildResult:
+def build(
+    corpus_dir: Path,
+    *,
+    timeout: float,
+    fetch: Fetcher = _fetch,
+    ccr: bool = True,
+    ccr_cache: Path | None = None,
+) -> BuildResult:
     """Fetch every source, extract and split its text, and write the corpus files."""
 
     scratch = corpus_dir / ".build"
     cited_by = _cited_by()
     documents: list[CorpusDocument] = []
     result = BuildResult(manifest=CorpusManifest(built_at=datetime.now(UTC), documents=[]))
+    if ccr:
+        documents.extend(_ccr_documents(result, cited_by, fetch, timeout, ccr_cache))
     for spec in _source_specs():
         if spec.local_path is not None:
             data, content_type = spec.local_path.read_bytes(), "text/markdown"
@@ -397,9 +643,19 @@ def main(argv: list[str] | None = None, fetch: Fetcher = _fetch) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus-dir", type=Path, default=ROOT / "corpus")
     parser.add_argument("--timeout", type=float, default=_DEFAULT_TIMEOUT)
+    parser.add_argument("--no-ccr", action="store_true", help="skip the CEQA Guidelines")
+    parser.add_argument(
+        "--ccr-cache", type=Path, help=f"directory holding {CCR_CACHE_INDEX} from a prior crawl"
+    )
     args = parser.parse_args(argv)
     try:
-        result = build(args.corpus_dir, timeout=args.timeout, fetch=fetch)
+        result = build(
+            args.corpus_dir,
+            timeout=args.timeout,
+            fetch=fetch,
+            ccr=not args.no_ccr,
+            ccr_cache=args.ccr_cache,
+        )
     except (urllib.error.URLError, ValueError, OSError) as error:
         print(f"corpus build failed: {error}", file=sys.stderr)
         return 1

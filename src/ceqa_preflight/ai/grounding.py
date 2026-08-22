@@ -61,6 +61,10 @@ def passages_for_rule(
 
     document = corpus.document_for_url(rule.source.url)
     document_ids = [] if document is None else [document.id]
+    for section in rule.guidelines:
+        held = corpus.document_for_section(section)
+        if held is not None and held.id not in document_ids:
+            document_ids.append(held.id)
     if len(rule.filing_types) == 1 and any(
         item.id == _FILING_CONTEXT_DOCUMENT for item in corpus.documents
     ):

@@ -6,6 +6,7 @@ rules:
     check: "nod_primary_form"
     lifecycle: "experimental"
     filing_types: ["NOD"]
+    guidelines: ["15075", "15094"]
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
@@ -15,6 +16,7 @@ rules:
     check: "nod_primary_readable"
     lifecycle: "experimental"
     filing_types: ["NOD"]
+    guidelines: ["15075", "15094"]
     source:
       title: "LCI CEQA Submit common mistakes"
       url: "https://lci.ca.gov/sch/docs/20250911-Common_Mistakes_to_Avoid_in_CEQA_Submit_2025.pdf"
@@ -24,6 +26,7 @@ rules:
     check: "nod_primary_category"
     lifecycle: "experimental"
     filing_types: ["NOD"]
+    guidelines: ["15075", "15094"]
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
@@ -33,6 +36,7 @@ rules:
     check: "nod_cdfw_fee"
     lifecycle: "experimental"
     filing_types: ["NOD"]
+    guidelines: ["15075", "15094"]
     source:
       title: "LCI CEQA Submit FAQ"
       url: "https://lci.ca.gov/sch/faq/"
@@ -42,6 +46,7 @@ rules:
     check: "nod_supporting_materials"
     lifecycle: "experimental"
     filing_types: ["NOD"]
+    guidelines: ["15091", "15093", "15097"]
     source:
       title: "LCI CEQA Submit pre-submission checklist"
       url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"
@@ -51,6 +56,7 @@ rules:
     check: "nod_signature_timing"
     lifecycle: "experimental"
     filing_types: ["NOD"]
+    guidelines: ["15075", "15094"]
     source:
       title: "LCI CEQA Submit pre-submission checklist"
       url: "https://lci.ca.gov/sch/docs/20250911-CEQA_Submit_Pre-Submission_Checklist_2025.pdf"

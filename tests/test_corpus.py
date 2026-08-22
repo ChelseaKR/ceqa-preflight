@@ -208,3 +208,39 @@ def test_malformed_manifest_and_passages_are_refused(tmp_path: Path) -> None:
     (tmp_path / "copy" / "passages.json").write_text('{"x": [{"bad": 1}]}', encoding="utf-8")
     with pytest.raises(CorpusError, match="passages could not be loaded"):
         Corpus.load(tmp_path / "copy")
+
+
+def test_document_for_section_finds_ccr_sections(small_corpus: Path) -> None:
+    corpus = Corpus.load(small_corpus)
+    assert corpus.document_for_section("15062") is None
+    ccr_text = "(a) A notice of exemption shall include a brief description of the project.\n"
+    passages = {
+        "ccr-14-15062": [Passage(id="ccr-14-15062#p001", heading="§ 15062.", text=ccr_text.strip())]
+    }
+    _write_corpus(small_corpus / "ccr", {"ccr-14-15062": ccr_text}, passages)
+    manifest = json.loads((small_corpus / "ccr" / "manifest.json").read_text(encoding="utf-8"))
+    manifest["documents"][0]["section"] = "15062"
+    manifest["documents"][0]["edition"] = "current through 8/14/26 Register 2026, No. 33."
+    (small_corpus / "ccr" / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    held = Corpus.load(small_corpus / "ccr").document_for_section("15062")
+    assert held is not None and held.edition and held.id == "ccr-14-15062"
+
+
+def test_committed_corpus_holds_the_guidelines_sections_the_rules_are_wired_to() -> None:
+    """Every section a rule pack names must be held, labeled official, with an edition."""
+
+    corpus = Corpus.load()
+    for rule in default_catalog().rules:
+        for section in rule.guidelines:
+            document = corpus.document_for_section(section)
+            assert document is not None, f"{rule.id} is wired to 14 CCR § {section}"
+            assert document.kind is SourceKind.OFFICIAL
+            assert document.edition and "current through" in document.edition
+            assert rule.id in document.cited_by
+            assert document.url.startswith("https://govt.westlaw.com/calregs/")
+    assert corpus.document_for_section("15000") is not None  # the chapter starts here
+    # The form appendices (A, C, D, E) are images in the official edition; no text to hold.
+    assert not any(document.id == "ccr-14-appendix-e" for document in corpus.documents)
+    assert any(document.id == "ccr-14-appendix-g" for document in corpus.documents)
+    editions = {document.edition for document in corpus.documents if document.section}
+    assert len(editions) == 1, "every section must come from one retrieval of one edition"

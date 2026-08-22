@@ -42,6 +42,17 @@ class RuleDefinition(StrictModel):
     filing_types: list[FilingType] = Field(min_length=1)
     source: SourceCitation
     parameters: dict[str, Any] = Field(default_factory=dict)
+    # CEQA Guidelines sections (14 CCR, e.g. "15062") whose text the explanation layer may
+    # quote for this rule. Retrieval scope only: the rule engine never reads them.
+    guidelines: list[str] = Field(default_factory=list)
+
+    @field_validator("guidelines")
+    @classmethod
+    def require_guidelines_section_numbers(cls, value: list[str]) -> list[str]:
+        for section in value:
+            if not re.fullmatch(r"15\d{3}(?:\.\d+)?", section):
+                raise ValueError("guidelines must be 14 CCR section numbers such as 15062")
+        return value
 
     @field_validator("version")
     @classmethod

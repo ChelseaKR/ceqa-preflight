@@ -87,6 +87,11 @@ class CorpusDocument(StrictModel):
     text_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     passage_count: int = Field(ge=0)
     cited_by: list[str] = Field(default_factory=list)
+    # For a regulation retrieved from the official online CCR: which section this document
+    # is, and the publisher's own currency statement ("current through ... Register ..."),
+    # so a reader knows exactly which edition was quoted and that it may lag the live code.
+    section: str | None = None
+    edition: str | None = None
 
 
 class CorpusManifest(StrictModel):
@@ -157,6 +162,14 @@ class Corpus:
 
         document_id = self._by_url.get(url)
         return None if document_id is None else self._documents[document_id]
+
+    def document_for_section(self, section: str) -> CorpusDocument | None:
+        """Return the CCR section document (for example ``"15062"``), or ``None``."""
+
+        return next(
+            (document for document in self.manifest.documents if document.section == section),
+            None,
+        )
 
     def passages(self, document_id: str) -> list[Passage]:
         self.document(document_id)

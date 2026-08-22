@@ -37,18 +37,64 @@ The OWASP "Unrestricted File Upload" page is © OWASP Foundation and licensed
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); its text is
 reproduced under that license with this attribution.
 
-## What is deliberately not here
+## The CEQA Guidelines (14 CCR § 15000 et seq.)
 
-The text of the CEQA statute and Guidelines (for example Guidelines
-§ 15062 on Notice of Exemption contents, § 15075 and § 15094 on Notice of
-Determination contents). The official publisher of the California Code of
-Regulations is Westlaw under contract with the Office of Administrative Law,
-and LCI's own site refers readers to a professional association's reprint.
-Neither is a source the maintainer has reviewed for this corpus. Until an
-official, reviewable text is added, explanations do not cite the Guidelines
-and say so when a user asks about them.
+Every section and appendix of Title 14, Division 6, Chapter 3 of the
+California Code of Regulations is a corpus document of its own
+(`ccr-14-<section>`, for example `ccr-14-15062`; appendices are
+`ccr-14-appendix-<letter>`). The rules that check filing forms are wired to
+the sections that govern those forms through the `guidelines` field in the
+rule packs (NOE rules to § 15062 and § 15061; NOD rules to § 15075 and
+§ 15094; supporting-material prompts to § 15091, § 15093, § 15097), so
+`ai explain` and `ai draft-fix` can quote the regulation verbatim. That
+wiring is retrieval scope only: the rule engine never reads these texts.
+
+**Edition and provenance.** The Office of Administrative Law publishes no
+snapshot or PDF of the CCR. Its official online edition is the
+Barclays/Thomson Reuters site that OAL contracts for
+(https://govt.westlaw.com/calregs), updated weekly, and OAL states that it
+cannot vouch for regulations obtained anywhere else. The text here was
+retrieved from that site, section by section; each document's `edition`
+field records the site's own currency statement at retrieval (for example
+"current through 8/14/26 Register 2026, No. 33") and its `retrieved_at` the
+time of retrieval. This is a dated retrieval of the weekly official edition,
+not an annual snapshot: it may lag the live code, and a reader who needs the
+current regulation should follow the document's URL. The regulation text is
+kept; history notes, annotations, and navigation are not.
+
+**Not held as text.** Appendices A (process flow chart), C (Notice of
+Completion), D (Notice of Determination), and E (Notice of Exemption) are
+published as images in the official edition, with no text layer, so they
+are not in the corpus; an explanation that needs the form itself cannot
+quote it and will say nothing rather than describe a picture. Repealed
+sections whose pages carry no regulation text are likewise omitted.
+
+**Retrieval compliance, checked 2026-08-21.** `https://govt.westlaw.com`
+serves no `robots.txt` (a request for it 302s to `/SiteList`, the site's
+generic catch-all for any unrecognized path — there is no disallow file to
+honor). The site's only usage terms are inline on the page: "By using this
+website, you agree not to use it in any manner that could disable,
+overburden, damage, or impair the site or interfere with any other party's
+use of the website, or to use any device, software or routine that
+interferes with the proper working of the website." No separate Terms of
+Use page is linked (the footer carries only Privacy, Accessibility, and a
+link to OAL); nothing in that sentence forbids automated retrieval or
+retention, only abuse. `build_corpus.py`'s crawl is one request per second
+for about 260 requests, consistent with not overburdening the site.
+Separately, OAL's own [Conditions of
+Use](https://oal.ca.gov/use/) states that information on its site is "in
+the public domain" and "may be distributed or copied as permitted by law,"
+consistent with California regulation text being a state edict rather than
+copyrighted work. Full findings, including the independent check of OAL's
+"no snapshot exists" claim and the historical-versions page, are in
+[`docs/audits/ccr-guidelines-retrieval-review-2026-08-21.md`](../docs/audits/ccr-guidelines-retrieval-review-2026-08-21.md).
 
 ## Rebuilding
+
+The Guidelines walk is about 260 requests at one per second. To reuse a prior
+crawl instead of re-fetching, pass `--ccr-cache DIR` where `DIR` holds the
+pages and a `ccr-index.json` listing `title`, `url`, and `file` for each;
+`--no-ccr` skips the Guidelines entirely.
 
     uv run python scripts/build_corpus.py
 
