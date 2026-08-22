@@ -1,0 +1,33 @@
+{
+  "id": "2025010929-5",
+  "sch_number": "2025010929",
+  "document_id": "5",
+  "document_url": "https://ceqanet.lci.ca.gov/2025010929/5",
+  "document_type": "NOD",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2025010929/5/Attachment/RreHRJ",
+  "attachment_category": "Notice of Determination",
+  "attachment_label": "EPIMS-SOL-60647-R3-NOD   PDF 168 K",
+  "attachment_sha256": "7e15a39946481f355afb8953b75cbbca8ba65597bc476ce5fdd0b1f266058235",
+  "attachment_bytes": 171143,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:43:49+00:00",
+  "gold": {
+    "project_title": [
+      "Cache Slough Mitigation Bank Project (Streambed Alteration Agreement No. EPIMS-SOL-60647-R3)",
+      "Cache Slough Mitigation Bank Project (U-23-03)"
+    ],
+    "lead_agency": "Solano County, Resource Management Department of",
+    "sch_number": "2025010929",
+    "county": "Solano",
+    "city_or_community": "Rio Vista",
+    "project_location": null,
+    "contact_name": "Matt Walsh",
+    "exemption_status": null,
+    "exemption_citation": null,
+    "nod_approval_date": "4/13/2026",
+    "nod_environmental_document": [
+      "Negative Declaration",
+      "Mitigated Negative Declaration"
+    ]
+  }
+}

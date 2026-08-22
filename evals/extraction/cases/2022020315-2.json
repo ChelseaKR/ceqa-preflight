@@ -1,0 +1,30 @@
+{
+  "id": "2022020315-2",
+  "sch_number": "2022020315",
+  "document_id": "2",
+  "document_url": "https://ceqanet.lci.ca.gov/2022020315/2",
+  "document_type": "NOE",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2022020315/2/Attachment/Na1yl_",
+  "attachment_category": "Notice of Exemption",
+  "attachment_label": "NOTICE OF EXEMPTION - Form - PHK 2   PDF 165 K",
+  "attachment_sha256": "6996b289ae9ef6cd91aab90b629cd149713ad8760b5579258dd3de72be30ec66",
+  "attachment_bytes": 168786,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:47:46+00:00",
+  "gold": {
+    "project_title": [
+      "The Weingart Greenleaf, Whittier",
+      "Project Homekey � The Weingart Greenleaf, Whittier"
+    ],
+    "lead_agency": "Los Angeles County",
+    "sch_number": "2022020315",
+    "county": "Los Angeles",
+    "city_or_community": null,
+    "project_location": null,
+    "contact_name": "Ben Rosen",
+    "exemption_status": "Emergency Project",
+    "exemption_citation": "Sec. 21080(b)(4); 15269(b)(c)",
+    "nod_approval_date": null,
+    "nod_environmental_document": null
+  }
+}

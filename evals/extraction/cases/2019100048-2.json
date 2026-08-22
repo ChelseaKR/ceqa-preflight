@@ -1,0 +1,27 @@
+{
+  "id": "2019100048-2",
+  "sch_number": "2019100048",
+  "document_id": "2",
+  "document_url": "https://ceqanet.lci.ca.gov/2019100048/2",
+  "document_type": "NOE",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2019100048/2/Attachment/-EfBei",
+  "attachment_category": "Notice of Exemption",
+  "attachment_label": "2019100048_state route 198   PDF 240 K",
+  "attachment_sha256": "c71044b01372ee21a4d88aa20e521dfaa016b3132568ff6d83be96e9ccd8e5de",
+  "attachment_bytes": 245403,
+  "other_attachments": 1,
+  "fetched_at": "2026-08-22T02:49:00+00:00",
+  "gold": {
+    "project_title": "State Route 198 RHMA Overlay",
+    "lead_agency": "Caltrans, District 6 - Fresno/Bakersfield",
+    "sch_number": "2019100048",
+    "county": "Fresno",
+    "city_or_community": "Coalinga",
+    "project_location": null,
+    "contact_name": "Shane Gunn",
+    "exemption_status": "Categorical Exemption",
+    "exemption_citation": "15301",
+    "nod_approval_date": null,
+    "nod_environmental_document": null
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "2025010989-2",
+  "sch_number": "2025010989",
+  "document_id": "2",
+  "document_url": "https://ceqanet.lci.ca.gov/2025010989/2",
+  "document_type": "NOE",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2025010989/2/Attachment/MghepZ",
+  "attachment_category": "Notice of Exemption",
+  "attachment_label": "_Memo   PDF 734 K",
+  "attachment_sha256": "508765368767d646568d636db9a7a428a6cf0ca0f6abf72b5157445be1e77e29",
+  "attachment_bytes": 750742,
+  "other_attachments": 2,
+  "fetched_at": "2026-08-22T02:47:50+00:00",
+  "gold": {
+    "project_title": "Emerald Necklace Rio Hondo Greenway Phase III",
+    "lead_agency": "Natural Resources Agency, California",
+    "sch_number": "2025010989",
+    "county": "Los Angeles",
+    "city_or_community": "El Monte",
+    "project_location": null,
+    "contact_name": "Ron Benny",
+    "exemption_status": "Categorical Exemption",
+    "exemption_citation": "Class 1, 15301 and Class 4, 15304",
+    "nod_approval_date": null,
+    "nod_environmental_document": null
+  }
+}

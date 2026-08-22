@@ -1,0 +1,27 @@
+{
+  "id": "2026080811-1",
+  "sch_number": "2026080811",
+  "document_id": "1",
+  "document_url": "https://ceqanet.lci.ca.gov/2026080811/1",
+  "document_type": "NOE",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2026080811/1/Attachment/_TyUga",
+  "attachment_category": "Notice of Exemption",
+  "attachment_label": "CEQA NOE   PDF 485 K",
+  "attachment_sha256": "b40696e6a75bff47563442c418ba17edc9405e3de01aad054e2c7f649bdf4a20",
+  "attachment_bytes": 495888,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:42:18+00:00",
+  "gold": {
+    "project_title": "Bakersfield High School Auditorium Re-roofing",
+    "lead_agency": "Kern Union High School District",
+    "sch_number": "2026080811",
+    "county": "Kern",
+    "city_or_community": "Bakersfield",
+    "project_location": "California Ave. & H St.",
+    "contact_name": "Randall Rowles",
+    "exemption_status": "Categorical Exemption",
+    "exemption_citation": "California Code of Regulations, Title 14, Section 15301",
+    "nod_approval_date": null,
+    "nod_environmental_document": null
+  }
+}

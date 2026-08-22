@@ -1,0 +1,33 @@
+{
+  "id": "2025020895-3",
+  "sch_number": "2025020895",
+  "document_id": "3",
+  "document_url": "https://ceqanet.lci.ca.gov/2025020895/3",
+  "document_type": "NOD",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2025020895/3/Attachment/rfnxy8",
+  "attachment_category": "Notice of Determination",
+  "attachment_label": "EPIMS-SOL-59787-R3_NOD   PDF 189 K",
+  "attachment_sha256": "b908c252cc58e3d9d4ad65ef3389e958e87fd5ee734e3126d872891efa57c405",
+  "attachment_bytes": 193052,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:43:46+00:00",
+  "gold": {
+    "project_title": [
+      "Post-Fire Riparian Forest Restoration and Arundo and Tamarisk Eradication Project (Lake or Streambed Alteration Agreement No. EPIMS-SOL-59787-R3)",
+      "Post-fire Riparian Forest Restoration and Arundo and Tamarisk Eradication Project"
+    ],
+    "lead_agency": "Solano Resource Conservation District",
+    "sch_number": "2025020895",
+    "county": "Solano",
+    "city_or_community": null,
+    "project_location": null,
+    "contact_name": "Jordan Beaton",
+    "exemption_status": null,
+    "exemption_citation": null,
+    "nod_approval_date": "8/3/2026",
+    "nod_environmental_document": [
+      "Negative Declaration",
+      "Mitigated Negative Declaration"
+    ]
+  }
+}

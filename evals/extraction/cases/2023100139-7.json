@@ -1,0 +1,30 @@
+{
+  "id": "2023100139-7",
+  "sch_number": "2023100139",
+  "document_id": "7",
+  "document_url": "https://ceqanet.lci.ca.gov/2023100139/7",
+  "document_type": "NOD",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2023100139/7/Attachment/o_ta8G",
+  "attachment_category": "Notice of Determination",
+  "attachment_label": "EPIMS-SMO-57571-R3_NOD   PDF 184 K",
+  "attachment_sha256": "0e12c3593f7fcbc0752cefc71d170f8c47fafc1830daab81456dda430c6be58d",
+  "attachment_bytes": 187622,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:43:35+00:00",
+  "gold": {
+    "project_title": [
+      "Twin Pines Park Stormwater Detention Basin Project (Streambed Alteration Agreement No. EPIMS-SMO-57571-R3)",
+      "Twin Pines Stormwater Detention Basin Project"
+    ],
+    "lead_agency": "Belmont, City of",
+    "sch_number": "2023100139",
+    "county": "San Mateo",
+    "city_or_community": null,
+    "project_location": null,
+    "contact_name": "Shannon Husband",
+    "exemption_status": null,
+    "exemption_citation": null,
+    "nod_approval_date": "5/13/2026",
+    "nod_environmental_document": "EIR"
+  }
+}

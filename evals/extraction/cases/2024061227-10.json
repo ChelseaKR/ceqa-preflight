@@ -1,0 +1,33 @@
+{
+  "id": "2024061227-10",
+  "sch_number": "2024061227",
+  "document_id": "10",
+  "document_url": "https://ceqanet.lci.ca.gov/2024061227/10",
+  "document_type": "NOD",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2024061227/10/Attachment/hqCxUg",
+  "attachment_category": "Notice of Determination",
+  "attachment_label": "EPIMS-SAC-50748_R3_NOD   PDF 181 K",
+  "attachment_sha256": "69d90ed2fc56306fbe1197fa30d2f5e3e53cbddc8e72c6787d1aa814ab13e732",
+  "attachment_bytes": 184500,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:43:27+00:00",
+  "gold": {
+    "project_title": [
+      "Georgiana Slough Erosion Control and Habitat Enhancement Project (Streambed Alteration Agreement No. EPIMS-SAC-50748-R3)",
+      "GEORGIANA SLOUGH EROSION CONTROL AND HABITAT ENHANCEMENT PROJECT"
+    ],
+    "lead_agency": "Brannan-Andrus Levee Maintenance District",
+    "sch_number": "2024061227",
+    "county": "Sacramento",
+    "city_or_community": null,
+    "project_location": null,
+    "contact_name": "Rhonda Paiste",
+    "exemption_status": null,
+    "exemption_citation": null,
+    "nod_approval_date": "4/21/2026",
+    "nod_environmental_document": [
+      "Negative Declaration",
+      "Mitigated Negative Declaration"
+    ]
+  }
+}
