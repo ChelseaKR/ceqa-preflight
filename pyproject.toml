@@ -60,6 +60,12 @@ include = [
   "src/ceqa_preflight/**/*.yaml",
   "src/ceqa_preflight/**/*.j2",
 ]
+# The committed official-source corpus (ADR 0002) ships inside the package so the opt-in
+# `ai explain` command can verify quotes against it after installation.
+[tool.hatch.build.targets.wheel.force-include]
+"corpus/manifest.json" = "ceqa_preflight/corpus/manifest.json"
+"corpus/passages.json" = "ceqa_preflight/corpus/passages.json"
+"corpus/text" = "ceqa_preflight/corpus/text"
 
 [tool.ruff]
 target-version = "py312"

@@ -42,6 +42,7 @@ rules:
     source:
       title: "CEQA Preflight security rule"
       url: "https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload"
+      kind: "technical_reference"
   - id: "PDF-007"
     version: "1.0.0"
     title: "Flattened, non-fillable PDF"
@@ -94,7 +95,8 @@ rules:
       maximum_megabytes: 50
     source:
       title: "CEQA Preflight advisory technical rule"
-      url: "https://github.com/ChelseaKR/ceqa-preflight"
+      url: "https://github.com/ChelseaKR/ceqa-preflight/blob/main/docs/audits/rule-source-review-2026-07-27-addendum.md"
+      kind: "project_advisory"
   - id: "FILE-005"
     version: "1.0.0"
     title: "Portable filename characters"
@@ -102,7 +104,8 @@ rules:
     filing_types: ["NOD", "NOE"]
     source:
       title: "CEQA Preflight advisory technical rule"
-      url: "https://github.com/ChelseaKR/ceqa-preflight"
+      url: "https://github.com/ChelseaKR/ceqa-preflight/blob/main/docs/audits/rule-source-review-2026-07-27-addendum.md"
+      kind: "project_advisory"
   - id: "CAT-001"
     version: "1.0.0"
     title: "Declared PDF document categories"
