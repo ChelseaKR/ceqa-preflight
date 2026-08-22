@@ -6,6 +6,34 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Added the real-filing extraction eval and the citation-grounding eval under
+  `evals/`, with `scripts/fetch_ceqanet_sample.py` to fetch a small, varied
+  sample of real CEQAnet filings (15 committed as identifiers, hashes, and the
+  metadata CEQAnet publishes; PDFs stay in a gitignored cache; contact phone,
+  email, and address are never written). Recorded the first live results for
+  all three suites on Bedrock `claude-sonnet-4-6` (the default `claude-sonnet-5`
+  was not reachable): refusal 109/109 end to end with 0 missed; extraction
+  88.4% match where both the form and the metadata hold a value, every shown
+  value quote-verified; grounding 308/313 claims shown with 0 uncited and 0
+  determination-language claims. See `evals/README.md`.
+- The quote verifiers now fold typography (curly quotes, dashes, non-breaking
+  spaces, ligatures) before verbatim comparison; a quote that differs in a word
+  still fails.
+
+- Added `ai explain`, `ai draft-fix`, and `ai ask` (ADR 0002). Explanations and
+  correction drafts are grounded in `corpus/`: every claim must cite a passage
+  of the official source the rule cites and quote it verbatim, and a verifier
+  checks each quote against the corpus and each sentence for determination
+  language before display, withholding and counting what fails. `ai ask`
+  answers questions about a report's findings behind a deterministic
+  legal-sufficiency guard that refuses every phrasing of "is this sufficient /
+  will it be accepted / is the exemption valid / did the agency comply" before
+  any model call; the model is instructed to refuse as a second layer and the
+  verifier is a third. `evals/` now holds the refusal suite (109 refuse
+  phrasings, 30 technical questions, English and Spanish), its two-layer
+  harness, and the results contract: a recorded result must carry provider,
+  model, prompt version, commit, and time, or say `not_run`.
+
 - Added `ceqa-preflight ai extract`, the first command of the opt-in `ai`
   group (ADR 0002). It reads each PDF's text layer through a bounded,
   process-isolated extractor, asks the configured model (Anthropic API or
@@ -20,6 +48,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a test proves the default path never imports it. Every output carries
   provenance (provider, model, prompt version, tool version, time).
 
+- Added `make audit-sources` / `scripts/check_rule_sources.py`, a maintainer-run
+  link-rot check that confirms every rule catalog source citation URL still
+  resolves. It is deliberately excluded from `make verify` and CI: the product
+  and its test suite make no real network calls, and this stays a manual,
+  periodic companion to the existing rule-source review audits.
 - Added `corpus/`, the committed, hashed, dated plain text of every official
   source the rule catalog cites (plus the LCI document-submission page and the
   project's own source-review addendum), split into addressable passages, with
@@ -43,11 +76,6 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   now scope the "no network at runtime" claim to the default path and describe
   the new data flow.
 
-- Added `make audit-sources` / `scripts/check_rule_sources.py`, a maintainer-run
-  link-rot check that confirms every rule catalog source citation URL still
-  resolves. It is deliberately excluded from `make verify` and CI: the product
-  and its test suite make no real network calls, and this stays a manual,
-  periodic companion to the existing rule-source review audits.
 - Every report now names the checks that did not run. A rule that applies to the
   filing type but was skipped — experimental without `--include-experimental`,
   removed by `--rules` or `--exclude-rules`, or withdrawn — is listed with its

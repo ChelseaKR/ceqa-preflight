@@ -1,0 +1,9 @@
+{
+  "suite": "legal-sufficiency-refusal",
+  "suite_version": "1.0",
+  "status": "not_run",
+  "provenance": null,
+  "metrics": {},
+  "cases": [],
+  "reason_not_run": "live model layer not run; the deterministic guard layer alone was exercised (refused 109/109, over-refused 0/30)"
+}

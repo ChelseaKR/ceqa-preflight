@@ -116,6 +116,30 @@ manifest for a person to review and correct; only `check --manifest` on the
 reviewed manifest produces findings. The model structures input. It never
 decides anything, and the rule engine never sees its output directly.
 
+    uv run ceqa-preflight check ./my-package --filing-type NOE --format json --output ./reports
+    uv run ceqa-preflight ai explain ./reports/report.json
+    uv run ceqa-preflight ai draft-fix ./reports/report.json --rules PDF-003,PDF-007
+    uv run ceqa-preflight ai ask ./reports/report.json "What does PDF-003 mean?"
+
+`ai explain` and `ai draft-fix` read a JSON report written by `check` and,
+for each failure, warning, or manual-review item, ask the model for a
+plain-language explanation (or a numbered correction draft) in which every
+claim cites a passage of the official source the rule cites and quotes it
+verbatim. The passages come from [`corpus/`](corpus/README.md), the committed,
+hashed text of those sources; a verifier checks every quote against it and
+checks every sentence for determination language before anything is shown.
+Claims that fail are withheld and counted. A self-cited rule (FILE-004,
+FILE-005) is explained from the project's own reasoning and says so.
+
+`ai ask` answers questions about the findings in a report. Any form of "is
+this legally sufficient", "will it be accepted", "is this exemption valid",
+or "did the agency comply", in English or Spanish, direct or indirect, is
+refused before the model runs and redirected to the objective findings and
+to qualified review; the model is instructed to refuse as well, and its
+answers pass the same verifier. The refusal suite in [`evals/`](evals/README.md)
+has zero tolerance. None of this output is a finding; `check` alone produces
+findings, and its output is unchanged by the `ai` commands.
+
 ### Exit codes
 
 `check` exits `0` when no automated failure was found (warnings and
@@ -177,7 +201,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
 | Internationalization | Applies — pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
-| AI Evaluation | Applies — in build | [ADR 0002](docs/adr/0002-ai-at-the-edges.md) adds opt-in model-backed commands; the committed `evals/` harness (extraction vs. CEQAnet gold, legal-sufficiency refusal, citation grounding) is the evidence and records `not_run` until a live run is recorded |
+| AI Evaluation | Applies | [ADR 0002](docs/adr/0002-ai-at-the-edges.md); the committed [`evals/`](evals/README.md) harnesses (legal-sufficiency refusal, real-filing extraction vs. CEQAnet metadata, citation grounding) with provenance-stamped results; a test rejects any result file without provenance |
 | Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), and the [definition of done](DEFINITION_OF_DONE.md) |
 | Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |
 | AI Development Measurement | Applies | `docs/ROADMAP.md` declares `AI-DEV-MEASUREMENT: APPLIES`; the baseline is recorded in the [responsible technology audits](docs/RESPONSIBLE-TECH-AUDITS.md) |

@@ -1,0 +1,30 @@
+{
+  "id": "2009091022-9",
+  "sch_number": "2009091022",
+  "document_id": "9",
+  "document_url": "https://ceqanet.lci.ca.gov/2009091022/9",
+  "document_type": "NOD",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2009091022/9/Attachment/Y7HK6d",
+  "attachment_category": "Notice of Determination",
+  "attachment_label": "Paloma Wash Pedestrian Bridge   PDF 1534 K",
+  "attachment_sha256": "572ddb5a9e6507f36d9b8e98eee04baf821a31a90725672a176725abf26583d3",
+  "attachment_bytes": 1569966,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:48:07+00:00",
+  "gold": {
+    "project_title": [
+      "Paloma Wash Pedestrian Bridge",
+      "Menifee Town Center Specific plan"
+    ],
+    "lead_agency": "Menifee, City of",
+    "sch_number": "2009091022",
+    "county": "Riverside",
+    "city_or_community": "Menifee",
+    "project_location": "south of Newport Road, east of Town Center Drive, and west of Haun Road (adjacent to Central Par",
+    "contact_name": "Ryan Fowler",
+    "exemption_status": null,
+    "exemption_citation": null,
+    "nod_approval_date": "5/10/2023",
+    "nod_environmental_document": "EIR"
+  }
+}

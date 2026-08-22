@@ -1,0 +1,33 @@
+{
+  "id": "2018031021-4",
+  "sch_number": "2018031021",
+  "document_id": "4",
+  "document_url": "https://ceqanet.lci.ca.gov/2018031021/4",
+  "document_type": "NOD",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2018031021/4/Attachment/t1RwzG",
+  "attachment_category": "Notice of Determination",
+  "attachment_label": "1600-2019-0287-R6_MND_NOD   PDF 226 K",
+  "attachment_sha256": "ae40b5859dcc2ef2839dac9750db9320eb8aaa2ace8d8adad0600c37b7409b49",
+  "attachment_bytes": 231015,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:48:04+00:00",
+  "gold": {
+    "project_title": [
+      "Temescal Canyon Bridge and Road Realignment Project (Lake or Streambed Alteration Agreement No.1600-2019-0287-R6)",
+      "Temescal Canyon Bridge and Road Realignment Project"
+    ],
+    "lead_agency": "Lake Elsinore, City of",
+    "sch_number": "2018031021",
+    "county": "Riverside",
+    "city_or_community": "Lake Elsinore",
+    "project_location": null,
+    "contact_name": "Katrina Rehrer",
+    "exemption_status": null,
+    "exemption_citation": null,
+    "nod_approval_date": "3/1/2024",
+    "nod_environmental_document": [
+      "Negative Declaration",
+      "Mitigated Negative Declaration"
+    ]
+  }
+}

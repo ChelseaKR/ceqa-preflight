@@ -1,0 +1,33 @@
+{
+  "id": "2008072088-6",
+  "sch_number": "2008072088",
+  "document_id": "6",
+  "document_url": "https://ceqanet.lci.ca.gov/2008072088/6",
+  "document_type": "NOD",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2008072088/6/Attachment/oGttsv",
+  "attachment_category": "Notice of Determination",
+  "attachment_label": "EPIMS-SMO-65963-R3_NOD   PDF 185 K",
+  "attachment_sha256": "607ba7b679ecaea8ae51dc1523d606abcd6965e5a0a321bf9472d815620cc0c8",
+  "attachment_bytes": 188566,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:43:38+00:00",
+  "gold": {
+    "project_title": [
+      "San Francisco Garter Snake Recovery Action Plan, SFO West of Bayshore Property (Lake or Streambed Alteration Agreement No. EPIMS-SMO-65963-R3)",
+      "San Francisco Garter Snake Recovery Action Plan"
+    ],
+    "lead_agency": "San Francisco, City and County of",
+    "sch_number": "2008072088",
+    "county": "San Mateo",
+    "city_or_community": null,
+    "project_location": null,
+    "contact_name": "Shannon Husband",
+    "exemption_status": null,
+    "exemption_citation": null,
+    "nod_approval_date": "7/31/2026",
+    "nod_environmental_document": [
+      "Negative Declaration",
+      "Mitigated Negative Declaration"
+    ]
+  }
+}

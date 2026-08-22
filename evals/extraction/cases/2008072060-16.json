@@ -1,0 +1,30 @@
+{
+  "id": "2008072060-16",
+  "sch_number": "2008072060",
+  "document_id": "16",
+  "document_url": "https://ceqanet.lci.ca.gov/2008072060/16",
+  "document_type": "NOE",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2008072060/16/Attachment/YcGFRC",
+  "attachment_category": "Notice of Exemption",
+  "attachment_label": "2023   PDF 158 K",
+  "attachment_sha256": "215726d8b08d5cfc42d2e9fb44813ca41d814491f2a06ed2246f89f79a04ceff",
+  "attachment_bytes": 161568,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:47:58+00:00",
+  "gold": {
+    "project_title": [
+      "Permit No. 19548: - American River Watershed Common Features Project / Natomas Post-Authorization Change Report / Natomas Levee Improvement Program / Landside I",
+      "Natomas Levee Improvement Program, Phase 3 Landslide Improvements Project"
+    ],
+    "lead_agency": "Central Valley Flood Protection Board",
+    "sch_number": "2008072060",
+    "county": "Sacramento",
+    "city_or_community": null,
+    "project_location": null,
+    "contact_name": "Angela Nguyen-Tan",
+    "exemption_status": "Categorical Exemption",
+    "exemption_citation": "Section 15301",
+    "nod_approval_date": null,
+    "nod_environmental_document": null
+  }
+}

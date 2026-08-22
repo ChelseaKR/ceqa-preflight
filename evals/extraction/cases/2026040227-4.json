@@ -1,0 +1,33 @@
+{
+  "id": "2026040227-4",
+  "sch_number": "2026040227",
+  "document_id": "4",
+  "document_url": "https://ceqanet.lci.ca.gov/2026040227/4",
+  "document_type": "NOD",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2026040227/4/Attachment/VmiKFr",
+  "attachment_category": "Notice of Determination",
+  "attachment_label": "ELD-67136-R2 NOD   PDF 166 K",
+  "attachment_sha256": "527b50d0f40562ce68324af95268ee732b79ec03a7b7752ecb3085d331f50b19",
+  "attachment_bytes": 169868,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:43:42+00:00",
+  "gold": {
+    "project_title": [
+      "TKM Bulkhead Replacement (Lake Alteration Agreement EPIMS Notification No. ELD-67136-R2)",
+      "Tahoe Keys Marina Redevelopment Project"
+    ],
+    "lead_agency": "South Lake Tahoe, City of",
+    "sch_number": "2026040227",
+    "county": "El Dorado",
+    "city_or_community": "South Lake Tahoe",
+    "project_location": null,
+    "contact_name": "Patrick Moeszinger",
+    "exemption_status": null,
+    "exemption_citation": null,
+    "nod_approval_date": "8/19/2026",
+    "nod_environmental_document": [
+      "Negative Declaration",
+      "Mitigated Negative Declaration"
+    ]
+  }
+}

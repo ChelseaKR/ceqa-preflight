@@ -1,0 +1,27 @@
+{
+  "id": "2021100368-2",
+  "sch_number": "2021100368",
+  "document_id": "2",
+  "document_url": "https://ceqanet.lci.ca.gov/2021100368/2",
+  "document_type": "NOE",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2021100368/2/Attachment/qEuM9c",
+  "attachment_category": "Notice of Exemption",
+  "attachment_label": "07 NOE_ARV-21-002-02_EVmatch   PDF 206 K",
+  "attachment_sha256": "d670122e93407d8b22237dffdc3109d973fa413f67bcbefa5200aa2cdb676ea6",
+  "attachment_bytes": 209928,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:48:53+00:00",
+  "gold": {
+    "project_title": "EVmatch Reservation-Based Shared EV Charging in Multi-Family Properties",
+    "lead_agency": "Energy Commission",
+    "sch_number": "2021100368",
+    "county": "Alameda, Los Angeles, Orange, San Diego, San Francisco, San Mateo, Santa Clara",
+    "city_or_community": null,
+    "project_location": "1530 Cassil Pl",
+    "contact_name": "Heather Hochrein",
+    "exemption_status": "Categorical Exemption",
+    "exemption_citation": "California Code of Regulations, title 14, section 15301 and section 15303",
+    "nod_approval_date": null,
+    "nod_environmental_document": null
+  }
+}

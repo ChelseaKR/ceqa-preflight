@@ -17,6 +17,7 @@ from ceqa_preflight.ai.corpus import (
     CorpusManifest,
     Passage,
     default_corpus_dir,
+    normalize_for_match,
     normalize_whitespace,
 )
 from ceqa_preflight.models import SourceKind
@@ -88,6 +89,13 @@ def test_normalize_whitespace_collapses_wrapping() -> None:
     assert normalize_whitespace("  a\n  b\t c ") == "a b c"
 
 
+def test_normalize_for_match_folds_typography_but_not_words() -> None:
+    curly = "categorized as \u201cNotice of Completion.\u201d \u2013 Misclassi\ufb01ed"
+    assert normalize_for_match(curly) == 'categorized as "Notice of Completion." - Misclassified'
+    assert normalize_for_match("it\u2019s") == "it's"
+    assert normalize_for_match("Notice") != normalize_for_match("Notices")
+
+
 def test_committed_corpus_loads_and_verifies() -> None:
     """The corpus in the repository must verify against its own manifest."""
 
@@ -125,6 +133,10 @@ def test_self_cited_rules_are_marked_as_project_advisory_in_the_corpus() -> None
 def test_quote_verifies_modulo_whitespace(small_corpus: Path) -> None:
     corpus = Corpus.load(small_corpus)
     assert corpus.quote_verifies("guide#p001", "fully   text-searchable\n(OCR-enabled)")
+    assert (
+        corpus.quote_verifies("guide#p001", "fully text\u2011searchable") is False
+    )  # not a typographic fold
+    assert corpus.quote_verifies("guide#p001", "text-searchable (OCR\u2010enabled)") is False
     assert not corpus.quote_verifies("guide#p001", "fully text-searchable (OCR enabled)")
     assert not corpus.quote_verifies("guide#p001", "")
     assert not corpus.quote_verifies("guide#p999", "Documents")

@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
@@ -35,6 +36,34 @@ def normalize_whitespace(text: str) -> str:
     """Collapse runs of whitespace so wrapped lines compare equal to their unwrapped form."""
 
     return _WHITESPACE.sub(" ", text).strip()
+
+
+_QUOTE_FOLDS = str.maketrans(
+    {
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u201a": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u201e": '"',
+        "\u2013": "-",
+        "\u2014": "-",
+        "\u2212": "-",
+        "\u00a0": " ",
+    }
+)
+
+
+def normalize_for_match(text: str) -> str:
+    """Normalize text for verbatim comparison without changing its words.
+
+    Typography is folded (curly quotes to straight, dashes to hyphens, NFKC so ligatures like
+    "ﬁ" become "fi", non-breaking spaces to spaces) and whitespace is collapsed. A quote
+    that differs from its passage only in these ways is the same quote; a quote that differs
+    in a word is not.
+    """
+
+    return normalize_whitespace(unicodedata.normalize("NFKC", text).translate(_QUOTE_FOLDS))
 
 
 class Passage(StrictModel):
@@ -109,7 +138,7 @@ class Corpus:
             for passage in entries:
                 if not passage.id.startswith(f"{document.id}#"):
                     raise CorpusError(f"passage {passage.id} is filed under {document.id}")
-                if normalize_whitespace(passage.text) not in normalize_whitespace(text):
+                if normalize_for_match(passage.text) not in normalize_for_match(text):
                     raise CorpusError(f"passage text is not in its document text: {passage.id}")
         return cls(manifest, passages)
 
@@ -142,8 +171,8 @@ class Corpus:
         passage = self.passage(passage_id)
         if passage is None:
             return False
-        needle = normalize_whitespace(quote)
-        return bool(needle) and needle in normalize_whitespace(passage.text)
+        needle = normalize_for_match(quote)
+        return bool(needle) and needle in normalize_for_match(passage.text)
 
     def retrieve(self, document_ids: list[str], query: str, *, limit: int = 6) -> list[Passage]:
         """Rank passages from the given documents by lexical overlap with ``query``.

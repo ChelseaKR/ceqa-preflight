@@ -1,0 +1,1629 @@
+{
+  "suite": "real-filing-extraction",
+  "suite_version": "1.0",
+  "status": "run",
+  "provenance": {
+    "provider": "bedrock",
+    "model": "global.anthropic.claude-sonnet-4-6",
+    "prompt_version": "extract-v1",
+    "tool_version": "0.1.0",
+    "commit": "f7665f5382a870a1a6766c0abbd35f8261691cd6",
+    "generated_at": "2026-08-22T03:19:17.806912Z",
+    "notes": null
+  },
+  "metrics": {
+    "cases": 15,
+    "cases_attempted": 15,
+    "cases_without_text_layer": 0,
+    "cases_with_model_error": 0,
+    "document_kind_correct": 14,
+    "field_outcomes": {
+      "withheld": 6,
+      "match": 84,
+      "both_absent": 34,
+      "filled_gold_absent": 16,
+      "mismatch": 11,
+      "abstained_gold_present": 14
+    },
+    "exact_or_normalized_match_rate_when_filled": 0.884,
+    "filled_gold_absent": 16,
+    "per_field": {
+      "project_title": {
+        "withheld": 1,
+        "match": 14
+      },
+      "lead_agency": {
+        "match": 10,
+        "mismatch": 3,
+        "withheld": 1,
+        "abstained_gold_present": 1
+      },
+      "sch_number": {
+        "match": 9,
+        "withheld": 1,
+        "abstained_gold_present": 5
+      },
+      "county": {
+        "match": 14,
+        "abstained_gold_present": 1
+      },
+      "city_or_community": {
+        "both_absent": 3,
+        "match": 5,
+        "filled_gold_absent": 5,
+        "withheld": 1,
+        "abstained_gold_present": 1
+      },
+      "project_location": {
+        "filled_gold_absent": 11,
+        "mismatch": 2,
+        "withheld": 1,
+        "both_absent": 1
+      },
+      "contact_name": {
+        "match": 10,
+        "mismatch": 5
+      },
+      "exemption_status": {
+        "match": 6,
+        "both_absent": 8,
+        "abstained_gold_present": 1
+      },
+      "exemption_citation": {
+        "match": 4,
+        "both_absent": 8,
+        "withheld": 1,
+        "mismatch": 1,
+        "abstained_gold_present": 1
+      },
+      "nod_environmental_document": {
+        "both_absent": 7,
+        "match": 8
+      },
+      "nod_approval_date": {
+        "both_absent": 7,
+        "abstained_gold_present": 4,
+        "match": 4
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "2008072060-16",
+      "document_type": "NOE",
+      "document_url": "https://ceqanet.lci.ca.gov/2008072060/16",
+      "has_text_layer": true,
+      "pages_read": 1,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "noe_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "withheld",
+          "status": "unverified",
+          "extracted": null,
+          "gold": [
+            "Permit No. 19548: - American River Watershed Common Features Project / Natomas Post-Authorization Change Report / Natomas Levee Improvement Program / Landside I",
+            "Natomas Levee Improvement Program, Phase 3 Landslide Improvements Project"
+          ],
+          "quote": null
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Central Valley Flood Protection Board",
+          "gold": "Central Valley Flood Protection Board",
+          "quote": "FROM: Central Valley Flood Protection Board"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "State Clearinghouse Number (SCH No.): [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Sacramento County",
+          "gold": "Sacramento",
+          "quote": "The project is located on Reservoir Road on the intersection of Reservoir Road and Garden Highway, in Sacramento County"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "The project is located on Reservoir Road on the intersection of Reservoir Road and Garden Highway, in Sacramento County",
+          "gold": null,
+          "quote": "Project Location/Address/City/County: The project is located on Reservoir Road on the intersection of Reservoir Road and Garden Highway, in Sacramento County"
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Categorical Exemption",
+          "gold": "Categorical Exemption",
+          "quote": "☒ Categorical Exemption. State type and section number: § 15301 Existing Facilities"
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "§ 15301 Existing Facilities",
+          "gold": "Section 15301",
+          "quote": "☒ Categorical Exemption. State type and section number: § 15301 Existing Facilities"
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2008072088-6",
+      "document_type": "NOD",
+      "document_url": "https://ceqanet.lci.ca.gov/2008072088/6",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "nod_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "San Francisco Garter Snake Recovery Action Plan, SFO West of Bayshore Property (Lake or Streambed Alteration Agreement No. EPIMS-SMO-65963-R3)",
+          "gold": [
+            "San Francisco Garter Snake Recovery Action Plan, SFO West of Bayshore Property (Lake or Streambed Alteration Agreement No. EPIMS-SMO-65963-R3)",
+            "San Francisco Garter Snake Recovery Action Plan"
+          ],
+          "quote": "Project Title: San Francisco Garter Snake Recovery Action Plan, SFO West of Bayshore Property (Lake or Streambed Alteration Agreement No. EPIMS-SMO-65963-R3)"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "mismatch",
+          "status": "found",
+          "extracted": "San Francisco Planning Department",
+          "gold": "San Francisco, City and County of",
+          "quote": "Lead Agency San Francisco Planning Department 49 South Van Ness Ave. 14th Floor San Francisco, CA 94103"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "State Clearinghouse Number: [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "San Mateo",
+          "gold": "San Mateo",
+          "quote": "Project Location (San Mateo County):"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "The project sites are located at the San Francisco International Airport, West of Bayshore (WOB) Property, and routine maintenance activities will occur in Cupid Row sediment trap, Cupid Row Canal, San Felipe Canal, and South Lomita Canal, in the County of San Mateo, State of California.",
+          "gold": null,
+          "quote": "The project sites are located at the San Francisco International Airport, West of Bayshore (WOB) Property, and routine maintenance activities will occur in Cupid Row sediment trap, Cupid Row Canal, San Felipe Canal, and South Lomita Canal, in the County of San Mateo, State of California."
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Mitigated Negative Declaration",
+          "gold": [
+            "Negative Declaration",
+            "Mitigated Negative Declaration"
+          ],
+          "quote": "CDFW considered the Mitigated Negative Declaration prepared by the Lead Agency for this project pursuant to California Code of Regulations section 15096, subdivision (f)."
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "7/31/2026",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2009091022-9",
+      "document_type": "NOD",
+      "document_url": "https://ceqanet.lci.ca.gov/2009091022/9",
+      "has_text_layer": true,
+      "pages_read": 4,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "nod_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Paloma Wash Pedestrian Bridge, CIP 20-13",
+          "gold": [
+            "Paloma Wash Pedestrian Bridge",
+            "Menifee Town Center Specific plan"
+          ],
+          "quote": "Project Title: Paloma Wash Pedestrian Bridge, CIP 20-13"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "mismatch",
+          "status": "found",
+          "extracted": "City of Menifee Com. Dev. Department",
+          "gold": "Menifee, City of",
+          "quote": "Lead Agency: City of Menifee Com. Dev. Department"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "withheld",
+          "status": "unverified",
+          "extracted": null,
+          "gold": "[phone redacted]",
+          "quote": null
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Riverside",
+          "gold": "Riverside",
+          "quote": "The project site is located south of Newport Road, east of Town Center Drive, and west of Haun Road (adjacent to Central Park) in the City of Menifee, County of Riverside, California."
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Menifee",
+          "gold": "Menifee",
+          "quote": "in the City of Menifee, County of Riverside, California."
+        },
+        {
+          "field": "project_location",
+          "outcome": "mismatch",
+          "status": "found",
+          "extracted": "south of Newport Road, east of Town Center Drive, and west of Haun Road (adjacent to Central Park) in the City of Menifee, County of Riverside, California",
+          "gold": "south of Newport Road, east of Town Center Drive, and west of Haun Road (adjacent to Central Par",
+          "quote": "The project site is located south of Newport Road, east of Town Center Drive, and west of Haun Road (adjacent to Central Park) in the City of Menifee, County of Riverside, California."
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "EIR",
+          "gold": "EIR",
+          "quote": "Environmental Impact Report No. 2010-152 (SCH#[phone redacted]) was prepared for the Town Center Specific Plan development pursuant to the provisions of CEQA."
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "May 10, 2023",
+          "gold": "5/10/2023",
+          "quote": "has approved the above referenced project on May 10, 2023"
+        }
+      ]
+    },
+    {
+      "id": "2013081079-4136",
+      "document_type": "NOE",
+      "document_url": "https://ceqanet.lci.ca.gov/2013081079/4136",
+      "has_text_layer": true,
+      "pages_read": 1,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "noe_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "PLN22-00910",
+          "gold": [
+            "PLN22-00910",
+            "Second Supplemental Recirculated Environmental Impact Report (SSREIR) for Revisions to Title 19- Kern County Zoning Ordinance (2024) focused on oil and gas"
+          ],
+          "quote": "Project Title: PLN22-00910"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Kern County Planning and Natural Resources Department",
+          "gold": "Kern County",
+          "quote": "Kern County Planning and Natural Resources Department 2700 \"M\" Street, Suite 100 Bakersfield, CA 93301"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "[phone redacted]",
+          "quote": null
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Kern",
+          "gold": "Kern",
+          "quote": "Project Location -- County: Kern"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "Unincorporated area of Kern County",
+          "gold": null,
+          "quote": "Project Location -- City: Unincorporated area of Kern County"
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "157-040-023",
+          "gold": null,
+          "quote": "Project Location -- Specific: 157-040-023"
+        },
+        {
+          "field": "contact_name",
+          "outcome": "mismatch",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Ministerial",
+          "gold": "Ministerial",
+          "quote": "O&G Conformity Review are ministerial under Kern County Zoning Ordinance and are exempt under Sections 21080(b)(1) and 15268 of the State CEQA Guidelines"
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Sections 21080(b)(1) and 15268",
+          "gold": "Sec. 21080(b)(1); 15268",
+          "quote": "Exempt Status: (Sections 21080(b)(1) and 15268"
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2018031021-4",
+      "document_type": "NOD",
+      "document_url": "https://ceqanet.lci.ca.gov/2018031021/4",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "nod_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Temescal Canyon Bridge and Road Realignment Project (Lake or Streambed Alteration Agreement No.1600-2019-0287-R6)",
+          "gold": [
+            "Temescal Canyon Bridge and Road Realignment Project (Lake or Streambed Alteration Agreement No.1600-2019-0287-R6)",
+            "Temescal Canyon Bridge and Road Realignment Project"
+          ],
+          "quote": "Project Title: Temescal Canyon Bridge and Road Realignment Project (Lake or Streambed Alteration Agreement No.1600-2019-0287-R6)"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "City of Lake Elsinore",
+          "gold": "Lake Elsinore, City of",
+          "quote": "Lead Agency City of Lake Elsinore 130 S. Main Street Lake Elsinore, California 92530"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "State Clearinghouse Number: [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Riverside",
+          "gold": "Riverside",
+          "quote": "Project Location (Riverside County): The Project is located 1,000 feet northwest of the existing Temescal Canyon Road Bridge and generally at the northwest intersection of Interstate 15 and Lake Street, in the City of Lake Elsinore, County of Riverside, State of California"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "City of Lake Elsinore",
+          "gold": "Lake Elsinore",
+          "quote": "in the City of Lake Elsinore, County of Riverside, State of California"
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "1,000 feet northwest of the existing Temescal Canyon Road Bridge and generally at the northwest intersection of Interstate 15 and Lake Street, in the City of Lake Elsinore, County of Riverside, State of California; Latitude 33.72998° N, Longitude -117.39976° W",
+          "gold": null,
+          "quote": "The Project is located 1,000 feet northwest of the existing Temescal Canyon Road Bridge and generally at the northwest intersection of Interstate 15 and Lake Street, in the City of Lake Elsinore, County of Riverside, State of California; Latitude 33.72998° N, Longitude -117.39976° W."
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Mitigated Negative Declaration",
+          "gold": [
+            "Negative Declaration",
+            "Mitigated Negative Declaration"
+          ],
+          "quote": "CDFW considered the Mitigated Negative Declaration prepared by the Lead Agency for this project pursuant to California Code of Regulations section 15096, subdivision (f)."
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "March 1, 2024",
+          "gold": "3/1/2024",
+          "quote": "CDFW, acting as a Responsible Agency, approved the project described above on March 1, 2024"
+        }
+      ]
+    },
+    {
+      "id": "2019100048-2",
+      "document_type": "NOE",
+      "document_url": "https://ceqanet.lci.ca.gov/2019100048/2",
+      "has_text_layer": true,
+      "pages_read": 1,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "noe_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "State Route 198 RHMA Overlay",
+          "gold": "State Route 198 RHMA Overlay",
+          "quote": "Project Title: State Route 198 RHMA Overlay"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "withheld",
+          "status": "unverified",
+          "extracted": null,
+          "gold": "Caltrans, District 6 - Fresno/Bakersfield",
+          "quote": null
+        },
+        {
+          "field": "sch_number",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "[phone redacted]",
+          "quote": null
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Fresno",
+          "gold": "Fresno",
+          "quote": "Project Location - County: Fresno"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "withheld",
+          "status": "unverified",
+          "extracted": null,
+          "gold": "Coalinga",
+          "quote": null
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "State Routes 198 at post miles 7.8-9.8 and 13.6-16.6 in Fresno County.",
+          "gold": null,
+          "quote": "State Routes 198 at post miles 7.8-9.8 and 13.6-16.6 in Fresno County."
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Categorical Exemption",
+          "gold": "Categorical Exemption",
+          "quote": "Categorical Exemption. State type and section number: _1_5_30_1"
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "withheld",
+          "status": "unverified",
+          "extracted": null,
+          "gold": "15301",
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2021100368-2",
+      "document_type": "NOE",
+      "document_url": "https://ceqanet.lci.ca.gov/2021100368/2",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "noe_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "EVmatch Reservation-Based Shared EV Charging in Multi-Family Properties",
+          "gold": "EVmatch Reservation-Based Shared EV Charging in Multi-Family Properties",
+          "quote": "Project Title: EVmatch Reservation-Based Shared EV Charging in Multi-Family Properties"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "California Energy Commission",
+          "gold": "Energy Commission",
+          "quote": "From: Responsible Agency: California Energy Commission Fuels and Transportation Division 715 P Street, MS-6 Sacramento, CA 95814"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "[phone redacted]",
+          "quote": null
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Alameda, Los Angeles, Orange, San Diego, San Francisco, San Mateo, Santa Clara",
+          "gold": "Alameda, Los Angeles, Orange, San Diego, San Francisco, San Mateo, Santa Clara",
+          "quote": "Project Location - County: Alameda, Los Angeles, Orange, San Diego, San Francisco, San Mateo, Santa Clara"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "N/A",
+          "gold": null,
+          "quote": "Project Location - City: N/A"
+        },
+        {
+          "field": "project_location",
+          "outcome": "withheld",
+          "status": "unverified",
+          "extracted": null,
+          "gold": "1530 Cassil Pl",
+          "quote": null
+        },
+        {
+          "field": "contact_name",
+          "outcome": "mismatch",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Categorical Exemption",
+          "gold": "Categorical Exemption",
+          "quote": "☒ Categorical Exemption. State type and section number: Cal. Code Regs., tit. 14 §§ 15301, 15303"
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Cal. Code Regs., tit. 14 §§ 15301, 15303",
+          "gold": "California Code of Regulations, title 14, section 15301 and section 15303",
+          "quote": "☒ Categorical Exemption. State type and section number: Cal. Code Regs., tit. 14 §§ 15301, 15303"
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2022020315-2",
+      "document_type": "NOE",
+      "document_url": "https://ceqanet.lci.ca.gov/2022020315/2",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "noe_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Project Homekey – The Weingart Greenleaf, Whittier",
+          "gold": [
+            "The Weingart Greenleaf, Whittier",
+            "Project Homekey � The Weingart Greenleaf, Whittier"
+          ],
+          "quote": "PROJECT TITLE: Project Homekey – The Weingart Greenleaf, Whittier"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "County of Los Angeles",
+          "gold": "Los Angeles County",
+          "quote": "From: County of Los Angeles"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "[phone redacted]",
+          "quote": null
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Los Angeles",
+          "gold": "Los Angeles",
+          "quote": "PROJECT LOCATION – County: Los Angeles"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "Unincorporated",
+          "gold": null,
+          "quote": "PROJECT LOCATION – City: Unincorporated"
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "10317 Whittier Blvd., Whittier, CA 90606",
+          "gold": null,
+          "quote": "PROJECT LOCATION -- Specific: 10317 Whittier Blvd., Whittier, CA 90606"
+        },
+        {
+          "field": "contact_name",
+          "outcome": "mismatch",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Emergency Project",
+          "gold": "Emergency Project",
+          "quote": "☒ Emergency Project (Pub. Res. Code Sec. 21080(b)(4); Guidelines Sec. 15269(c))"
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "mismatch",
+          "status": "found",
+          "extracted": "Gov. Code Sec. 65650, et seq.; Pub. Res. Code Sec. 21080.27 & 21080.50",
+          "gold": "Sec. 21080(b)(4); 15269(b)(c)",
+          "quote": "☒ Statutory Exemption: Gov. Code Sec. 65650, et seq.; Pub. Res. Code Sec. 21080.27 & 21080.50"
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2023100139-7",
+      "document_type": "NOD",
+      "document_url": "https://ceqanet.lci.ca.gov/2023100139/7",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "nod_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Twin Pines Park Stormwater Detention Basin Project (Streambed Alteration Agreement No. EPIMS-SMO-57571-R3)",
+          "gold": [
+            "Twin Pines Park Stormwater Detention Basin Project (Streambed Alteration Agreement No. EPIMS-SMO-57571-R3)",
+            "Twin Pines Stormwater Detention Basin Project"
+          ],
+          "quote": "Project Title: Twin Pines Park Stormwater Detention Basin Project (Streambed Alteration Agreement No. EPIMS-SMO-57571-R3)"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "City of Belmont",
+          "gold": "Belmont, City of",
+          "quote": "Lead Agency City of Belmont 1 Twin Pines Lane Belmont, CA 94002"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "State Clearinghouse Number: [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "San Mateo County",
+          "gold": "San Mateo",
+          "quote": "Project Location (San Mateo County): The project is located at Belmont Creek, a tributary to the San Francisco Bay, in the County of San Mateo, State of California"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "Belmont",
+          "gold": null,
+          "quote": "1 Twin Pines Lane, Belmont, CA 94002"
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "1 Twin Pines Lane, Belmont, CA 94002",
+          "gold": null,
+          "quote": "Latitude 34.02884, Longitude -117.80324; 1 Twin Pines Lane, Belmont, CA 94002; Assessor's Parcel Number 045-170-080."
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "EIR",
+          "gold": "EIR",
+          "quote": "CDFW considered the environmental impact report prepared by the Lead Agency for this project pursuant to California Code of Regulations section 15096, subdivision (f)."
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "5/13/2026",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2024061227-10",
+      "document_type": "NOD",
+      "document_url": "https://ceqanet.lci.ca.gov/2024061227/10",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "nod_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Georgiana Slough Erosion Control and Habitat Enhancement Project (Streambed Alteration Agreement No. EPIMS-SAC-50748-R3)",
+          "gold": [
+            "Georgiana Slough Erosion Control and Habitat Enhancement Project (Streambed Alteration Agreement No. EPIMS-SAC-50748-R3)",
+            "GEORGIANA SLOUGH EROSION CONTROL AND HABITAT ENHANCEMENT PROJECT"
+          ],
+          "quote": "Project Title: Georgiana Slough Erosion Control and Habitat Enhancement Project (Streambed Alteration Agreement No. EPIMS-SAC-50748-R3)"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Brannan-Andrus Levee Maintenance District",
+          "gold": "Brannan-Andrus Levee Maintenance District",
+          "quote": "Lead Agency Brannan-Andrus Levee Maintenance District"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "State Clearinghouse Number: [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Sacramento",
+          "gold": "Sacramento",
+          "quote": "Project Location (Sacramento):"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "Walnut Grove",
+          "gold": null,
+          "quote": "Walnut Grove, CA 95690"
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "The project is located on the right bank of Georgiana Slough between levee stations 291+00 and 305+00 (river miles 25 to 55); Latitude 38.129603, Longitude -121.587636.",
+          "gold": null,
+          "quote": "The project is located on the right bank of Georgiana Slough between levee stations 291+00 and 305+00 (river miles 25 to 55); Latitude 38.129603, Longitude -121.587636."
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Mitigated Negative Declaration",
+          "gold": [
+            "Negative Declaration",
+            "Mitigated Negative Declaration"
+          ],
+          "quote": "CDFW considered the Mitigated Negative Declaration prepared by the Lead Agency for this project"
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "April 21, 2026",
+          "gold": "4/21/2026",
+          "quote": "approved the project described above on April 21, 2026"
+        }
+      ]
+    },
+    {
+      "id": "2025010929-5",
+      "document_type": "NOD",
+      "document_url": "https://ceqanet.lci.ca.gov/2025010929/5",
+      "has_text_layer": true,
+      "pages_read": 1,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "nod_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Cache Slough Mitigation Bank Project (Streambed Alteration Agreement No. EPIMS-SOL-60647-R3)",
+          "gold": [
+            "Cache Slough Mitigation Bank Project (Streambed Alteration Agreement No. EPIMS-SOL-60647-R3)",
+            "Cache Slough Mitigation Bank Project (U-23-03)"
+          ],
+          "quote": "Project Title: Cache Slough Mitigation Bank Project (Streambed Alteration Agreement No. EPIMS-SOL-60647-R3)"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Solano County Dept. of Resource Management",
+          "gold": "Solano County, Resource Management Department of",
+          "quote": "Lead Agency Solano County Dept. of Resource Management 675 Texas St. #5500 Fairfield, CA 94533"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "State Clearinghouse Number: [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Solano",
+          "gold": "Solano",
+          "quote": "Project Location (Solano County)"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Rio Vista",
+          "gold": "Rio Vista",
+          "quote": "unincorporated area approximately 1.2 miles north of Airport Road and the City of Rio Vista"
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "along Watson Hollow Slough and the tributary junction of Cache Slough and the Sacramento River in an unincorporated area approximately 1.2 miles north of Airport Road and the City of Rio Vista, located between Post Mile 2.0 and 2.1 on State Route 84 in the County of Solano, State of California; Latitude 38.18197, Longitude -121.66710",
+          "gold": null,
+          "quote": "The project is located along Watson Hollow Slough and the tributary junction of Cache Slough and the Sacramento River in an unincorporated area approximately 1.2 miles north of Airport Road and the City of Rio Vista, located between Post Mile 2.0 and 2.1 on State Route 84 in the County of Solano, State of California; Latitude 38.18197, Longitude -121.66710."
+        },
+        {
+          "field": "contact_name",
+          "outcome": "mismatch",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Mitigated Negative Declaration",
+          "gold": [
+            "Negative Declaration",
+            "Mitigated Negative Declaration"
+          ],
+          "quote": "CDFW considered the Mitigated Negative Declaration prepared by the Lead Agency for this project pursuant to California Code of Regulations section 15096, subdivision (f)."
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "4/13/2026",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2025010989-2",
+      "document_type": "NOE",
+      "document_url": "https://ceqanet.lci.ca.gov/2025010989/2",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "other_ceqa_material",
+      "document_kind_correct": false,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Emerald Necklace Rio Hondo Greenway Phase III",
+          "gold": "Emerald Necklace Rio Hondo Greenway Phase III",
+          "quote": "The correct project title is: Emerald Necklace Rio Hondo Greenway Phase III"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "Natural Resources Agency, California",
+          "quote": null
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "SCH # [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "Los Angeles",
+          "quote": null
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "El Monte",
+          "quote": null
+        },
+        {
+          "field": "project_location",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "contact_name",
+          "outcome": "mismatch",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "Categorical Exemption",
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "Class 1, 15301 and Class 4, 15304",
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2025020895-3",
+      "document_type": "NOD",
+      "document_url": "https://ceqanet.lci.ca.gov/2025020895/3",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "nod_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Post-Fire Riparian Forest Restoration and Arundo and Tamarisk Eradication Project (Lake or Streambed Alteration Agreement No. EPIMS-SOL-59787-R3)",
+          "gold": [
+            "Post-Fire Riparian Forest Restoration and Arundo and Tamarisk Eradication Project (Lake or Streambed Alteration Agreement No. EPIMS-SOL-59787-R3)",
+            "Post-fire Riparian Forest Restoration and Arundo and Tamarisk Eradication Project"
+          ],
+          "quote": "Project Title: Post-Fire Riparian Forest Restoration and Arundo and Tamarisk Eradication Project (Lake or Streambed Alteration Agreement No. EPIMS-SOL-59787-R3)"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Solano Resource Conservation District",
+          "gold": "Solano Resource Conservation District",
+          "quote": "Lead Agency Solano Resource Conservation District 1170 N Lincoln St., Suite 110 Dixon, CA 95620"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "State Clearinghouse Number: [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Solano",
+          "gold": "Solano",
+          "quote": "Project Location (Solano): The Project is located at various streams in the Ulatis and Putah Creek watersheds, in the County of Solano, State of California"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "various streams in the Ulatis and Putah Creek watersheds, in the County of Solano, State of California, approximate centroid of Latitude 38.433131°, Longitude -122.001139°",
+          "gold": null,
+          "quote": "The Project is located at various streams in the Ulatis and Putah Creek watersheds, in the County of Solano, State of California, approximate centroid of Latitude 38.433131°, Longitude -122.001139°."
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Mitigated Negative Declaration",
+          "gold": [
+            "Negative Declaration",
+            "Mitigated Negative Declaration"
+          ],
+          "quote": "CDFW considered the Mitigated Negative Declaration prepared by the Lead Agency for this project pursuant to California Code of Regulations section 15096, subdivision (f)."
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "August 3, 2026",
+          "gold": "8/3/2026",
+          "quote": "CDFW, acting as a Responsible Agency, approved the project described above on August 3, 2026"
+        }
+      ]
+    },
+    {
+      "id": "2026040227-4",
+      "document_type": "NOD",
+      "document_url": "https://ceqanet.lci.ca.gov/2026040227/4",
+      "has_text_layer": true,
+      "pages_read": 2,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "nod_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "TKM Bulkhead Replacement (Lake Alteration Agreement EPIMS Notification No. ELD-67136-R2)",
+          "gold": [
+            "TKM Bulkhead Replacement (Lake Alteration Agreement EPIMS Notification No. ELD-67136-R2)",
+            "Tahoe Keys Marina Redevelopment Project"
+          ],
+          "quote": "Project Title: TKM Bulkhead Replacement (Lake Alteration Agreement EPIMS Notification No. ELD-67136-R2)"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "City of South Lake Tahoe",
+          "gold": "South Lake Tahoe, City of",
+          "quote": "Lead Agency: City of South Lake Tahoe"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "[phone redacted]",
+          "gold": "[phone redacted]",
+          "quote": "State Clearinghouse Number: [phone redacted]"
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "El Dorado",
+          "gold": "El Dorado",
+          "quote": "in the County of El Dorado, State of California"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "South Lake Tahoe",
+          "gold": "South Lake Tahoe",
+          "quote": "2435 Venice Drive East, South Lake Tahoe, CA 96150"
+        },
+        {
+          "field": "project_location",
+          "outcome": "filled_gold_absent",
+          "status": "found",
+          "extracted": "2435 Venice Drive East, South Lake Tahoe, CA 96150",
+          "gold": null,
+          "quote": "2435 Venice Drive East, South Lake Tahoe, CA 96150"
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Mitigated Negative Declaration",
+          "gold": [
+            "Negative Declaration",
+            "Mitigated Negative Declaration"
+          ],
+          "quote": "CDFW considered the mitigated negative declaration prepared by the Lead Agency for this project pursuant to California Code of Regulations section 15096, subdivision (f)."
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "8/19/2026",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2026080811-1",
+      "document_type": "NOE",
+      "document_url": "https://ceqanet.lci.ca.gov/2026080811/1",
+      "has_text_layer": true,
+      "pages_read": 1,
+      "attempted": true,
+      "reason_not_attempted": null,
+      "model_error": null,
+      "document_kind": "noe_form",
+      "document_kind_correct": true,
+      "fields": [
+        {
+          "field": "project_title",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Bakersfield High School Auditorium Re-roofing",
+          "gold": "Bakersfield High School Auditorium Re-roofing",
+          "quote": "PROJECT TITLE & NO: Bakersfield High School Auditorium Re-roofing"
+        },
+        {
+          "field": "lead_agency",
+          "outcome": "mismatch",
+          "status": "found",
+          "extracted": "Kern High School District",
+          "gold": "Kern Union High School District",
+          "quote": "Kern High School District Facilities Planning 801 South Mt. Vernon Ave. Bakersfield, CA 93307"
+        },
+        {
+          "field": "sch_number",
+          "outcome": "abstained_gold_present",
+          "status": "unknown",
+          "extracted": null,
+          "gold": "[phone redacted]",
+          "quote": null
+        },
+        {
+          "field": "county",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Kern",
+          "gold": "Kern",
+          "quote": "COUNTY: Kern"
+        },
+        {
+          "field": "city_or_community",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Bakersfield",
+          "gold": "Bakersfield",
+          "quote": "PROJECT LOCATION - CITY: Bakersfield"
+        },
+        {
+          "field": "project_location",
+          "outcome": "mismatch",
+          "status": "found",
+          "extracted": "Bakersfield High School, 1241 G St., Bakersfield, CA 93301",
+          "gold": "California Ave. & H St.",
+          "quote": "PROJECT LOCATION - SPECIFIC: Bakersfield High School, 1241 G St., Bakersfield, CA 93301"
+        },
+        {
+          "field": "contact_name",
+          "outcome": "match",
+          "status": "found"
+        },
+        {
+          "field": "exemption_status",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Categorical Exemption",
+          "gold": "Categorical Exemption",
+          "quote": "Categorical Exemption. State type and section number: Existing Facilities CEQA § 15301"
+        },
+        {
+          "field": "exemption_citation",
+          "outcome": "match",
+          "status": "found",
+          "extracted": "Existing Facilities CEQA § 15301",
+          "gold": "California Code of Regulations, Title 14, Section 15301",
+          "quote": "Categorical Exemption. State type and section number: Existing Facilities CEQA § 15301"
+        },
+        {
+          "field": "nod_environmental_document",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        },
+        {
+          "field": "nod_approval_date",
+          "outcome": "both_absent",
+          "status": "unknown",
+          "extracted": null,
+          "gold": null,
+          "quote": null
+        }
+      ]
+    }
+  ],
+  "reason_not_run": null
+}

@@ -1,0 +1,30 @@
+{
+  "id": "2013081079-4136",
+  "sch_number": "2013081079",
+  "document_id": "4136",
+  "document_url": "https://ceqanet.lci.ca.gov/2013081079/4136",
+  "document_type": "NOE",
+  "attachment_url": "https://ceqanet.lci.ca.gov/2013081079/4136/Attachment/VhodV9",
+  "attachment_category": "Notice of Exemption",
+  "attachment_label": "Signed NOE PLN22-00910   PDF 14 K",
+  "attachment_sha256": "e3cb40bb7adf6106845f0cdb2be5a46c3cc9944c6000accfcb1ac96b948306c7",
+  "attachment_bytes": 14112,
+  "other_attachments": 0,
+  "fetched_at": "2026-08-22T02:47:55+00:00",
+  "gold": {
+    "project_title": [
+      "PLN22-00910",
+      "Second Supplemental Recirculated Environmental Impact Report (SSREIR) for Revisions to Title 19- Kern County Zoning Ordinance (2024) focused on oil and gas"
+    ],
+    "lead_agency": "Kern County",
+    "sch_number": "2013081079",
+    "county": "Kern",
+    "city_or_community": null,
+    "project_location": null,
+    "contact_name": "Ryan Jones",
+    "exemption_status": "Ministerial",
+    "exemption_citation": "Sec. 21080(b)(1); 15268",
+    "nod_approval_date": null,
+    "nod_environmental_document": null
+  }
+}
