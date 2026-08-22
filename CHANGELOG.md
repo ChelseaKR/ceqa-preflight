@@ -20,6 +20,14 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   thresholds rather than to the repository root, and are labeled "Project
   advisory rule — not an official source" (closes #38). Report schema `1.1`
   gains the optional `source.kind` field; existing consumers are unaffected.
+- Accepted [ADR 0002](docs/adr/0002-ai-at-the-edges.md), an owner-directed
+  change of direction: an opt-in `ai` command group will draft manifest fields
+  from document text, explain findings against the committed official-source
+  corpus, draft corrections, and refuse legal-sufficiency questions. The
+  default `check` path is unchanged and still makes no network requests. The
+  README, contributing guide, data card, threat model, roadmap, and audit log
+  now scope the "no network at runtime" claim to the default path and describe
+  the new data flow.
 
 - Every report now names the checks that did not run. A rule that applies to the
   filing type but was skipped — experimental without `--include-experimental`,
@@ -35,6 +43,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Report schema version `1.1` adds the `not_run` array. The addition is
   backwards compatible; existing consumers of `findings` and `manual_review` are
   unaffected.
+- The release workflow now installs with `uv sync --all-groups --locked`
+  instead of `--frozen`. `ci.yml` and `security.yml` already made this
+  substitution and said why; `release.yml` was the one job left installing a
+  lockfile it never compared against `pyproject.toml`, which is the job where
+  it matters most.
 - Fixed checks that reported a clean result for documents they never read. A PDF
   that timed out, failed to parse, or is encrypted still produced a
   `PdfInspection` with every absence signal at its default, so the searchable
