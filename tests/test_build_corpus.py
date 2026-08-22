@@ -103,7 +103,7 @@ def test_build_writes_a_corpus_that_loads(tmp_path: Path) -> None:
             return pdf, "application/pdf"
         return _HTML.encode("utf-8"), "text/html"
 
-    assert build_corpus.main(["--corpus-dir", str(tmp_path)], fetch=fetch) == 0
+    assert build_corpus.main(["--corpus-dir", str(tmp_path), "--no-ccr"], fetch=fetch) == 0
     corpus = Corpus.load(tmp_path)
     ids = {document.id for document in corpus.documents}
     assert "lci-sch-faq" in ids
@@ -117,7 +117,7 @@ def test_build_reports_fetch_failures(tmp_path: Path) -> None:
     def fetch(url: str, timeout: float) -> tuple[bytes, str]:
         raise ValueError("boom")
 
-    assert build_corpus.main(["--corpus-dir", str(tmp_path)], fetch=fetch) == 1
+    assert build_corpus.main(["--corpus-dir", str(tmp_path), "--no-ccr"], fetch=fetch) == 1
 
 
 def test_real_fetch_rejects_non_http_schemes() -> None:
@@ -128,3 +128,89 @@ def test_real_fetch_rejects_non_http_schemes() -> None:
 def test_every_catalog_url_has_a_stable_corpus_identifier() -> None:
     specs = build_corpus._source_specs()
     assert {spec.id for spec in specs} >= set(build_corpus.KNOWN_SOURCE_IDS.values())
+
+
+_CCR_PAGE = """
+<div class="co_docHeader"><div class="co_cites">14 CCR § 15062</div>
+<h2 class="co_title"><div class="co_headtext">
+<strong>§ 15062. Notice of Exemption.</strong></div></h2>
+<div class="co_currentness"><a href="#x">Currentness</a></div></div>
+<div class="co_contentBlock co_section"><div class="co_contentBlock co_body">
+<div class="co_contentBlock co_subsection"><div class="co_paragraph">
+<div class="co_paragraphText">
+(a) When a public agency decides that a project is exempt from CEQA pursuant to
+Section 15061, the agency may file a notice of exemption. Such a notice shall
+include:</div></div></div>
+<div class="co_contentBlock co_subsection"><div class="co_paragraph">
+<div class="co_paragraphText">
+(1) A brief description of the project, and the location of the project by street
+address.</div></div></div>
+</div></div>
+<div class="co_headtext co_hAlign2">History</div>
+<div class="co_contentBlock x_propagatedBlock"><div class="co_paragraph">
+1. Amendment filed 1-1-2000 (Register 2000, No. 1).</div></div>
+<div class="co_contentBlock co_includeCurrencyBlock"><div class="co_currency">
+This database is current through 8/14/26 Register 2026, No. 33.</div></div>
+"""
+
+
+def test_ccr_parser_keeps_regulation_text_and_edition_and_drops_history() -> None:
+    blocks, title, edition = build_corpus.ccr_blocks(_CCR_PAGE)
+    assert title == "§ 15062. Notice of Exemption."
+    assert edition == (
+        "Barclays Official California Code of Regulations, current through 8/14/26 "
+        "Register 2026, No. 33."
+    )
+    assert blocks[0] == ("heading", "§ 15062. Notice of Exemption.")
+    assert [kind for kind, _ in blocks[1:]] == ["paragraph", "paragraph"]
+    assert blocks[1][1].startswith("(a) When a public agency")
+    assert not any("Amendment filed" in text for _, text in blocks)
+    assert not any("current through" in text for _, text in blocks)
+    assert build_corpus.ccr_document_id(title) == "ccr-14-15062"
+    assert build_corpus.ccr_document_id("§ 15064.3. Transportation.") == "ccr-14-15064-3"
+    assert build_corpus.ccr_document_id("Appendix E Notice of Exemption") == "ccr-14-appendix-e"
+    assert build_corpus.ccr_section_number(title) == "15062"
+    assert build_corpus.ccr_section_number("Appendix E") is None
+    with pytest.raises(ValueError, match="cannot name"):
+        build_corpus.ccr_document_id("Something else")
+
+
+def test_ccr_documents_are_built_from_a_crawl_cache(tmp_path: Path) -> None:
+    cache = tmp_path / "cache"
+    cache.mkdir()
+    (cache / "000.html").write_text(_CCR_PAGE, encoding="utf-8")
+    (cache / "001.html").write_text(
+        "<div class='co_title'>§ 15999. Repealed.</div>", encoding="utf-8"
+    )
+    (cache / build_corpus.CCR_CACHE_INDEX).write_text(
+        json.dumps(
+            [
+                {
+                    "title": "§ 15062. Notice of Exemption.",
+                    "url": "https://govt.westlaw.com/x",
+                    "file": "000.html",
+                },
+                {
+                    "title": "§ 15999. Repealed.",
+                    "url": "https://govt.westlaw.com/y",
+                    "file": "001.html",
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    def fetch(url: str, timeout: float) -> tuple[bytes, str]:
+        return _HTML.encode("utf-8"), "text/html"
+
+    out = tmp_path / "corpus"
+    assert (
+        build_corpus.main(["--corpus-dir", str(out), "--ccr-cache", str(cache)], fetch=fetch) == 0
+    )
+    corpus = Corpus.load(out)
+    section = corpus.document_for_section("15062")
+    assert section is not None and section.id == "ccr-14-15062"
+    assert section.edition and "Register 2026, No. 33" in section.edition
+    assert section.kind.value == "official"
+    assert "NOE-001" in section.cited_by  # wired through the rule pack's guidelines field
+    assert corpus.document_for_section("15999") is None  # no regulation text: skipped

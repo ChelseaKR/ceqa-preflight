@@ -93,3 +93,28 @@ def test_rejects_missing_or_incompatible_catalogs(tmp_path: Path) -> None:
         load_rule_catalog([valid, mismatch])
     with pytest.raises(RuleCatalogError, match="at least one"):
         load_rule_catalog([])
+
+
+def test_guidelines_must_be_ccr_section_numbers() -> None:
+    from ceqa_preflight.rule_catalog import RuleDefinition
+
+    base = {
+        "id": "X-1",
+        "version": "1.0.0",
+        "title": "t",
+        "check": "pdf_present",
+        "filing_types": ["NOE"],
+        "source": {"title": "s", "url": "https://example.test/"},
+    }
+    assert RuleDefinition.model_validate({**base, "guidelines": ["15062", "15064.3"]}).guidelines
+    with pytest.raises(ValueError, match="section numbers"):
+        RuleDefinition.model_validate({**base, "guidelines": ["Section 15062"]})
+
+
+def test_filing_rules_are_wired_to_guidelines_sections() -> None:
+    from ceqa_preflight.rule_registry import default_catalog
+
+    rules = {rule.id: rule for rule in default_catalog().rules}
+    assert rules["NOE-001"].guidelines == ["15062"]
+    assert set(rules["NOD-001"].guidelines) == {"15075", "15094"}
+    assert rules["PDF-003"].guidelines == []

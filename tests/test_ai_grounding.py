@@ -42,9 +42,11 @@ def test_passages_for_rule_are_scoped_to_the_cited_document(corpus: Corpus) -> N
     shown = passages_for_rule(corpus, rules["PDF-003"], "searchable text OCR")
     assert shown
     assert all(p.id.startswith("lci-sch-common-mistakes-2025#") for p in shown)
-    filing = passages_for_rule(corpus, rules["NOE-M001"], "exemption findings")
+    filing = passages_for_rule(corpus, rules["NOE-M001"], "exemption findings", limit=40)
     assert any(p.id.startswith("lci-sch-document-submission#") for p in filing)
     assert any(p.id.startswith("lci-sch-presubmission-checklist-2025#") for p in filing)
+    assert any(p.id.startswith("ccr-14-15061#") for p in filing)  # wired Guidelines section
+    assert not any(p.id.startswith("ccr-14-15075#") for p in filing)  # not wired to NOE rules
     rendered = render_passages(shown[:1])
     assert rendered.startswith(f"[{shown[0].id}]")
 
@@ -153,3 +155,19 @@ def test_generate_grounded_fails_closed_on_model_errors(corpus: Corpus) -> None:
         max_tokens=10,
     )
     assert error is None and [c.text for c in verified] == ["Fine."] and withheld == []
+
+
+def test_passages_for_rule_includes_wired_guidelines_sections_when_held(corpus: Corpus) -> None:
+    rules = {rule.id: rule for rule in default_catalog().rules}
+    shown = passages_for_rule(
+        corpus, rules["NOE-001"], "notice of exemption shall include", limit=12
+    )
+    assert corpus.document_for_section("15062") is not None
+    assert any(passage.id.startswith("ccr-14-15062#") for passage in shown)
+    nod = passages_for_rule(
+        corpus, rules["NOD-001"], "notice of determination shall include", limit=12
+    )
+    assert any(
+        passage.id.startswith("ccr-14-1509") or passage.id.startswith("ccr-14-15075")
+        for passage in nod
+    )

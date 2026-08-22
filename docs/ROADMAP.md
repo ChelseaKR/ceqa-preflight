@@ -51,10 +51,16 @@
 - **Done:** committed `evals/` harnesses and first live results (see
   [evals/README.md](../evals/README.md)): refusal suite, real-filing
   extraction against CEQAnet metadata, and citation grounding.
-- **Open:** the CEQA Guidelines text is not in the corpus (no reviewed official
-  source); the default model `claude-sonnet-5` has not been run live (the
-  recorded runs used Bedrock `claude-sonnet-4-6`); a qualified reviewer has not
-  read the prompts, the refusal cases, or the Spanish phrasings; the `ai`
+- **Done:** the CEQA Guidelines (14 CCR § 15000 et seq.) are in the corpus,
+  retrieved section by section from the official online CCR with the
+  publisher's currency statement recorded as each document's edition (see
+  [corpus/README.md](../corpus/README.md)); the NOD and NOE rules are wired to
+  the sections governing their forms for explanation retrieval only.
+- **Open:** the default model `claude-sonnet-5` has not been run live (the
+  recorded runs used Bedrock `claude-sonnet-4-6`); a qualified CEQA reviewer
+  and a native Spanish reader have not reviewed the prompts, the refusal
+  cases, the Spanish phrasings, or the retained Guidelines text
+  ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)); the `ai`
   strings await the gettext seam ([#39](https://github.com/ChelseaKR/ceqa-preflight/issues/39)).
 
 ## Not planned
