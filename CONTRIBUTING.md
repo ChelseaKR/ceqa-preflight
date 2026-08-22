@@ -8,6 +8,8 @@ Thanks for improving CEQA Preflight.
 - Do not submit real filing packages, personal information, confidential
   locations, or copyrighted third-party documents without explicit permission.
 - Do not add a CEQA-specific rule without a current official source and tests.
+- Periodically confirm rule source citations still resolve with
+  `make audit-sources` (network access required; not part of `make verify`).
 - Keep the default `check` path local; do not add telemetry or network calls
   to it. Model calls live only in the opt-in `ai` command group
   ([ADR 0002](docs/adr/0002-ai-at-the-edges.md)), import the SDK lazily, and

@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install format lint typecheck test security audit schemas verify build
+.PHONY: help install format lint typecheck test security audit schemas verify build audit-sources
 
 help:
 	@uv run ceqa-preflight --help
@@ -34,6 +34,11 @@ audit:
 
 schemas:
 	uv run python -m ceqa_preflight.schema_export
+
+# Maintainer-only: checks that rule source citation URLs still resolve. Not part of `verify` —
+# it makes real network requests, which the shipped product and CI gate deliberately never do.
+audit-sources:
+	uv run python3 scripts/check_rule_sources.py
 
 verify: lint typecheck test security audit
 

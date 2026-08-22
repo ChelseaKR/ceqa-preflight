@@ -43,6 +43,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   now scope the "no network at runtime" claim to the default path and describe
   the new data flow.
 
+- Added `make audit-sources` / `scripts/check_rule_sources.py`, a maintainer-run
+  link-rot check that confirms every rule catalog source citation URL still
+  resolves. It is deliberately excluded from `make verify` and CI: the product
+  and its test suite make no real network calls, and this stays a manual,
+  periodic companion to the existing rule-source review audits.
 - Every report now names the checks that did not run. A rule that applies to the
   filing type but was skipped — experimental without `--include-experimental`,
   removed by `--rules` or `--exclude-rules`, or withdrawn — is listed with its
