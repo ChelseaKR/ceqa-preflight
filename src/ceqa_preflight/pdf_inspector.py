@@ -7,9 +7,11 @@ certification, and no result is legal advice.
 
 from __future__ import annotations
 
+import contextlib
+import logging
 import multiprocessing
 import warnings
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any
 
@@ -115,6 +117,44 @@ def _warning_label(prefix: str) -> str:
     return f"{prefix}; manual review recommended"
 
 
+class _LogEmittedHandler(logging.Handler):
+    """Note only whether a record was emitted; never retain document-derived message text."""
+
+    def __init__(self) -> None:
+        super().__init__(level=logging.WARNING)
+        self.emitted = False
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self.emitted = True
+
+
+@contextlib.contextmanager
+def _capture_pypdf_log_warnings() -> Iterator[_LogEmittedHandler]:
+    """Capture pypdf's own robustness-fix warnings, which bypass ``warnings.catch_warnings``.
+
+    Under ``strict=False`` (used here so a non-compliant PDF still gets inspected), pypdf
+    reports the recoverable problems it worked around — a rebuilt xref table, a missing EOF
+    marker, and the like — through Python's ``logging`` module via its own ``logger_warning``
+    helper, not ``warnings.warn``. Without this, a document pypdf had to repair is measured as
+    cleanly as one with no problems at all: a real "this needed a robustness fix" signal
+    silently becomes "measured clean" instead of lowering confidence like every other parser
+    warning already does. The handler is also kept from propagating to the real root logger, so
+    a caller's terminal is not spammed with library-internal parser chatter for every recovered
+    document.
+    """
+
+    handler = _LogEmittedHandler()
+    logger = logging.getLogger("pypdf")
+    previous_propagate = logger.propagate
+    logger.propagate = False
+    logger.addHandler(handler)
+    try:
+        yield handler
+    finally:
+        logger.removeHandler(handler)
+        logger.propagate = previous_propagate
+
+
 def _active_content_signals(reader: PdfReader, root: Mapping[str, Any]) -> tuple[bool, bool]:
     names = _mapping(root.get("/Names"))
     javascript_present = names.get("/JavaScript") is not None or _contains_action(
@@ -170,45 +210,57 @@ def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
     """Inspect one resolved PDF.  This is invoked in an isolated worker process."""
 
     parser_warnings: list[str] = []
-    try:
-        with warnings.catch_warnings(record=True) as captured:
-            warnings.simplefilter("always")
-            reader = PdfReader(path, strict=False)
-        if captured:
+    with _capture_pypdf_log_warnings() as log_warnings:
+        try:
+            with warnings.catch_warnings(record=True) as captured:
+                warnings.simplefilter("always")
+                reader = PdfReader(path, strict=False)
+        except Exception:  # pypdf has several parser exception classes across releases.
+            return PdfInspection(
+                readable=False,
+                parser_warnings=[_warning_label("PDF could not be parsed")],
+                extraction_confidence=Confidence.LOW,
+            )
+
+        if reader.is_encrypted:
+            return PdfInspection(
+                readable=False,
+                encrypted=True,
+                parser_warnings=[
+                    *parser_warnings,
+                    _warning_label("Encrypted PDFs are not inspected"),
+                ],
+                extraction_confidence=Confidence.LOW,
+            )
+
+        try:
+            page_count = len(reader.pages)
+        except Exception:
+            return PdfInspection(
+                readable=False,
+                parser_warnings=[
+                    *parser_warnings,
+                    _warning_label("PDF page count could not be read"),
+                ],
+                extraction_confidence=Confidence.LOW,
+            )
+        if page_count > limits.max_pdf_pages:
+            return PdfInspection(
+                readable=False,
+                page_count=page_count,
+                parser_warnings=[
+                    *parser_warnings,
+                    _warning_label(f"PDF exceeds the {limits.max_pdf_pages} page inspection limit"),
+                ],
+                extraction_confidence=Confidence.LOW,
+            )
+
+        # A robustness fix pypdf applied while reading (a rebuilt xref table, a missing EOF
+        # marker) is exactly the kind of parser warning that lowers confidence below, whether
+        # it surfaced through ``warnings.warn`` or, as most of pypdf's own recovery messages
+        # do, through ``logging``.
+        if captured or log_warnings.emitted:
             parser_warnings.append(_warning_label("PDF parser reported warnings"))
-    except Exception:  # pypdf has several parser exception classes across releases.
-        return PdfInspection(
-            readable=False,
-            parser_warnings=[_warning_label("PDF could not be parsed")],
-            extraction_confidence=Confidence.LOW,
-        )
-
-    if reader.is_encrypted:
-        return PdfInspection(
-            readable=False,
-            encrypted=True,
-            parser_warnings=[*parser_warnings, _warning_label("Encrypted PDFs are not inspected")],
-            extraction_confidence=Confidence.LOW,
-        )
-
-    try:
-        page_count = len(reader.pages)
-    except Exception:
-        return PdfInspection(
-            readable=False,
-            parser_warnings=[*parser_warnings, _warning_label("PDF page count could not be read")],
-            extraction_confidence=Confidence.LOW,
-        )
-    if page_count > limits.max_pdf_pages:
-        return PdfInspection(
-            readable=False,
-            page_count=page_count,
-            parser_warnings=[
-                *parser_warnings,
-                _warning_label(f"PDF exceeds the {limits.max_pdf_pages} page inspection limit"),
-            ],
-            extraction_confidence=Confidence.LOW,
-        )
 
     root = _mapping(reader.trailer.get("/Root"))
     names = _mapping(root.get("/Names"))
