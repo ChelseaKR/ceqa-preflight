@@ -82,6 +82,27 @@ def test_document_path_cannot_escape_package_root(unsafe_path: str) -> None:
         PackageManifest.model_validate(payload)
 
 
+def test_duplicate_document_paths_fail_at_manifest_load(tmp_path: Path) -> None:
+    payload = _manifest_payload()
+    payload["documents"] = [
+        {
+            "path": "form.pdf",
+            "category": "Notice of Exemption",
+            "primary": True,
+        },
+        {
+            "path": "form.pdf",
+            "category": "Supporting Findings",
+            "primary": False,
+        },
+    ]
+    path = tmp_path / "package.yaml"
+    path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+
+    with pytest.raises(ManifestError, match=r"duplicate document path.*form\.pdf"):
+        load_manifest(path)
+
+
 def test_report_serializes_with_schema_contract() -> None:
     report = InspectionReport(
         tool_version="0.1.0.dev0",

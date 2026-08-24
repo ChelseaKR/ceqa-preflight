@@ -184,6 +184,20 @@ class PackageManifest(StrictModel):
             raise ValueError("unsupported manifest schema major; expected 1.x")
         return value
 
+    @field_validator("documents")
+    @classmethod
+    def require_unique_document_paths(cls, value: list[DocumentEntry]) -> list[DocumentEntry]:
+        seen: set[str] = set()
+        duplicates: list[str] = []
+        for entry in value:
+            if entry.path in seen and entry.path not in duplicates:
+                duplicates.append(entry.path)
+            seen.add(entry.path)
+        if duplicates:
+            duplicate_list = ", ".join(sorted(duplicates))
+            raise ValueError(f"duplicate document path(s) in manifest: {duplicate_list}")
+        return value
+
 
 class InspectionReport(StrictModel):
     """Versioned, JSON-serializable output for an inspection run."""
