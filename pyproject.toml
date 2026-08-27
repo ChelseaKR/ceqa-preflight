@@ -47,6 +47,7 @@ ceqa-preflight = "ceqa_preflight.cli:app"
 [dependency-groups]
 dev = [
   "anthropic[bedrock]>=0.125,<1",
+  "babel>=2.17",
   "bandit[toml]>=1.8.3",
   "hypothesis>=6.127",
   "mypy>=1.18",
@@ -65,6 +66,11 @@ include = [
   "src/ceqa_preflight/**/*.py",
   "src/ceqa_preflight/**/*.yaml",
   "src/ceqa_preflight/**/*.j2",
+  # The compiled gettext catalogs. Without these the installed package has no catalog to
+  # load and `--locale` would have nothing to select.
+  "src/ceqa_preflight/locales/**/*.mo",
+  "src/ceqa_preflight/locales/**/*.po",
+  "src/ceqa_preflight/locales/*.pot",
 ]
 # The committed official-source corpus (ADR 0002) ships inside the package so the opt-in
 # `ai explain` command can verify quotes against it after installation.

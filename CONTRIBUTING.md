@@ -22,6 +22,17 @@ Thanks for improving CEQA Preflight.
     uv sync --all-groups
     make verify
 
+## User-visible strings
+
+Anything a person reads goes through the gettext seam: `from
+ceqa_preflight.i18n import gettext as _`, then `_("…")` with `{name}`
+placeholders. Rule identifiers, finding status values, JSON field names,
+command names, and source citations are stable identifiers and stay out of the
+catalogs. After adding or rewording a string, run `make i18n-update`, carry the
+message into `en` and `es`, and translate it. `make verify` fails while any
+message is unextracted, untranslated, fuzzy, or out of placeholder parity.
+[docs/I18N.md](docs/I18N.md) has the full loop and the reasoning.
+
 ## Pull requests
 
 Keep each pull request narrowly scoped. Include tests and documentation for
