@@ -523,3 +523,53 @@ def test_a_locale_does_not_leak_out_of_the_command_that_asked_for_it(tmp_path: P
     english = runner.invoke(app, ["check", str(package), "--filing-type", "NOE"])
     assert "CEQA Preflight advisory report" in english.output
     assert "Informe orientativo" not in english.output
+
+
+def test_gate_fails_when_a_wrapped_string_never_reached_the_template(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Extraction freshness: a string can be translated only if it was extracted."""
+
+    root = _sandbox(tmp_path, monkeypatch)
+    template = root / "messages.pot"
+    text = template.read_text(encoding="utf-8")
+    template.write_text(text.replace('msgid "Batch summary"\nmsgstr ""\n', ""), encoding="utf-8")
+    code, stderr = _run_gate(capsys)
+    assert code == 1
+    assert "is wrapped in source but not extracted" in stderr
+    assert "make i18n-update" in stderr
+
+
+def test_gate_fails_when_the_template_carries_a_message_source_no_longer_has(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The other direction: a reworded string must not leave its old self behind."""
+
+    root = _sandbox(tmp_path, monkeypatch)
+    template = root / "messages.pot"
+    template.write_text(
+        template.read_text(encoding="utf-8") + '\nmsgid "A string no source wraps."\nmsgstr ""\n',
+        encoding="utf-8",
+    )
+    code, stderr = _run_gate(capsys)
+    assert code == 1
+    assert "extracted but no longer in source" in stderr
+
+
+def test_gate_fails_when_a_compiled_catalog_differs_only_in_its_header(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The byte check backstops the semantic one, which cannot see a header change."""
+
+    root = _sandbox(tmp_path, monkeypatch)
+    path = _po(root, "es")
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            '"Project-Id-Version: CEQA Preflight\\n"', '"Project-Id-Version: CEQA Preflight 9\\n"'
+        ),
+        encoding="utf-8",
+    )
+    # Every message still agrees, so only the byte comparison can catch this.
+    code, stderr = _run_gate(capsys)
+    assert code == 1
+    assert "does not match its source" in stderr

@@ -2,9 +2,8 @@
 
 `docs/I18N.md` promises four things of `make verify`: that catalogs compile, that EN and
 ES are at key and placeholder parity, that every shipped locale tag is valid BCP 47, and
-that extraction is fresh. The Makefile's `i18n` target owns compilation and extraction
-freshness, because both are naturally expressed as "regenerate and compare". This script
-owns the rest, plus two invariants the standard implies but does not name:
+that extraction is fresh. All four live here, along with two invariants the standard
+implies but does not name:
 
 * English is a catalog, not an implicit fallback, so every English msgstr must be
   byte-identical to its msgid. Without this, English report prose could drift away from
@@ -12,20 +11,31 @@ owns the rest, plus two invariants the standard implies but does not name:
 * A compiled catalog must agree with the `.po` it came from. A stale `.mo` is the exact
   shape of the worst i18n bug: `--locale es` is accepted, no error is raised, and the
   reader gets English while believing they asked for Spanish.
+
+Extraction and compilation are regenerated in memory and compared byte for byte, so the
+gate writes nothing: running `make verify` can never quietly repair the drift it exists to
+report. Doing it in Python rather than shelling out to `pybabel` and `cmp` also keeps the
+gate working on Windows, where a POSIX scratch path is not a path the interpreter can
+write to. That is not hypothetical; it is how the first version of this gate failed.
 """
 
 from __future__ import annotations
 
 import gettext
+import io
 import re
 import sys
 from collections import Counter
 from pathlib import Path
 
 from babel import Locale, UnknownLocaleError
-from babel.messages import pofile
+from babel.messages import frontend, mofile, pofile
+from babel.messages.catalog import Catalog
+from babel.messages.extract import extract_from_dir
 
 ROOT = Path(__file__).resolve().parents[1]
+SOURCE = ROOT / "src"
+MAPPING = ROOT / "babel.cfg"
 LOCALES = ROOT / "src" / "ceqa_preflight" / "locales"
 TEMPLATE = LOCALES / "messages.pot"
 DOMAIN = "messages"
@@ -141,13 +151,18 @@ def _source_identity_failures(catalog: dict[str, str]) -> list[str]:
 
 
 def _compiled_failures(catalogs: dict[str, dict[str, str]]) -> list[str]:
-    """Prove the compiled catalog a run actually loads says what the `.po` says."""
+    """Prove the compiled catalog a run actually loads says what the `.po` says.
+
+    Two comparisons, because they fail differently. The semantic one names the message
+    that drifted, which is what a person needs in order to fix it. The byte one catches
+    anything the semantic one cannot see, such as a header that stopped matching.
+    """
 
     failures: list[str] = []
     for locale, messages in catalogs.items():
         compiled = LOCALES / locale / "LC_MESSAGES" / f"{DOMAIN}.mo"
         if not compiled.is_file():
-            failures.append(f"{locale}: no compiled catalog; run `make i18n`")
+            failures.append(f"{locale}: no compiled catalog; run `make i18n-update`")
             continue
         with compiled.open("rb") as stream:
             translations = gettext.GNUTranslations(stream)
@@ -159,7 +174,65 @@ def _compiled_failures(catalogs: dict[str, dict[str, str]]) -> list[str]:
         for message in sorted(stale)[:5]:
             failures.append(f"{locale}: compiled catalog is stale for {message[:60]!r}")
         if stale:
-            failures.append(f"{locale}: {len(stale)} stale compiled message(s); run `make i18n`")
+            failures.append(
+                f"{locale}: {len(stale)} stale compiled message(s); run `make i18n-update`"
+            )
+        elif compiled.read_bytes() != _compile(locale):
+            failures.append(
+                f"{locale}: compiled catalog does not match its source; run `make i18n-update`"
+            )
+    return failures
+
+
+def _compile(locale: str) -> bytes:
+    """Compile one catalog in memory, exactly as `pybabel compile` would write it."""
+
+    path = LOCALES / locale / "LC_MESSAGES" / f"{DOMAIN}.po"
+    with path.open(encoding="utf-8") as stream:
+        catalog = pofile.read_po(stream, locale=locale)
+    buffer = io.BytesIO()
+    mofile.write_mo(buffer, catalog)
+    return buffer.getvalue()
+
+
+def _extract() -> bytes:
+    """Re-extract the template in memory, exactly as `pybabel extract` would write it."""
+
+    with MAPPING.open(encoding="utf-8") as stream:
+        method_map, options_map = frontend.parse_mapping_cfg(stream)
+    catalog = Catalog()
+    for filename, lineno, message, comments, context in extract_from_dir(
+        str(SOURCE), method_map=method_map, options_map=options_map
+    ):
+        catalog.add(message, None, [(filename, lineno)], auto_comments=comments, context=context)
+    buffer = io.BytesIO()
+    pofile.write_po(buffer, catalog, no_location=True, omit_header=True)
+    return buffer.getvalue()
+
+
+def _extraction_failures(template: set[str]) -> list[str]:
+    """Fail when a wrapped string never reached the template, or a stale one lingers."""
+
+    regenerated = _extract()
+    if regenerated == TEMPLATE.read_bytes():
+        return []
+    with io.StringIO(regenerated.decode("utf-8")) as stream:
+        fresh = {
+            message.id
+            for message in pofile.read_po(stream)
+            if message.id and isinstance(message.id, str)
+        }
+    failures = [
+        f"template is stale: {message[:60]!r} is wrapped in source but not extracted"
+        for message in sorted(fresh - template)[:5]
+    ]
+    failures += [
+        f"template is stale: {message[:60]!r} is extracted but no longer in source"
+        for message in sorted(template - fresh)[:5]
+    ]
+    if not failures:
+        failures.append("template differs from a fresh extraction but carries the same messages")
+    failures.append("run `make i18n-update`")
     return failures
 
 
@@ -171,6 +244,7 @@ def main() -> int:
     failures.extend(_shipped_locale_failures(shipped))
 
     template = set(_read(TEMPLATE))
+    failures.extend(_extraction_failures(template))
     catalogs = {
         locale: _read(LOCALES / locale / "LC_MESSAGES" / f"{DOMAIN}.po", locale)
         for locale in shipped
@@ -189,7 +263,7 @@ def main() -> int:
             print(f"- {failure}", file=sys.stderr)
         return 1
     print(
-        f"i18n catalogs: {len(template)} messages at parity across "
+        f"i18n catalogs: {len(template)} messages extracted and at parity across "
         f"{', '.join(shipped)}; compiled catalogs match their sources"
     )
     return 0
