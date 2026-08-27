@@ -1,0 +1,578 @@
+msgid ""
+"CEQA Preflight is an advisory technical checker, not legal advice or a "
+"determination of CEQA compliance. Review all manual-review items before "
+"submission."
+msgstr ""
+
+#, python-brace-format
+msgid "Input error: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "Wrote advisory report to {path}"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{source}: exit {exit_code}, {failure} failure(s), {warning} warning(s), "
+"{manual} manual-review item(s), {not_run} check(s) not run"
+msgstr ""
+
+msgid "Batch summary"
+msgstr ""
+
+#, python-brace-format
+msgid "Created manifest template at {path}"
+msgstr ""
+
+#, python-brace-format
+msgid "Created a synthetic {filing_type} package with {count} file(s):"
+msgstr ""
+
+#, python-brace-format
+msgid "Unknown rule identifier: {rule_id}"
+msgstr ""
+
+#, python-brace-format
+msgid "Created pilot templates: {review}, {baseline}"
+msgstr ""
+
+msgid "CEQA Preflight pilot summary"
+msgstr ""
+
+#, python-brace-format
+msgid "Decision: {value}"
+msgstr ""
+
+#, python-brace-format
+msgid "Reviewed findings: {value}"
+msgstr ""
+
+#, python-brace-format
+msgid "Reviewed packages: {value}"
+msgstr ""
+
+#, python-brace-format
+msgid "Actionable precision: {value}"
+msgstr ""
+
+#, python-brace-format
+msgid "High-severity false-negative rate: {value}"
+msgstr ""
+
+#, python-brace-format
+msgid "Median report time: {value}"
+msgstr ""
+
+msgid "not measured"
+msgstr ""
+
+#, python-brace-format
+msgid "{value} seconds"
+msgstr ""
+
+msgid "Every check that applies to this filing type ran."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{count} applicable check(s) did not run. This report makes no statement "
+"about what they cover."
+msgstr ""
+
+msgid "Scope"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{failure} failure(s), {warning} warning(s), {passed} passed check(s), "
+"{manual} manual-review item(s), {not_run} check(s) not run."
+msgstr ""
+
+msgid "Summary"
+msgstr ""
+
+msgid "CEQA Preflight advisory report"
+msgstr ""
+
+msgid "Manual review"
+msgstr ""
+
+msgid "Checks that did not run"
+msgstr ""
+
+msgid "Official source"
+msgstr ""
+
+msgid "Technical reference"
+msgstr ""
+
+msgid "Project advisory rule"
+msgstr ""
+
+msgid "Not CEQA guidance; a general technical reference."
+msgstr ""
+
+msgid ""
+"Not an official source: no official guidance states this threshold. The "
+"link explains the project's reasoning."
+msgstr ""
+
+msgid "Checks that did not run — this checklist does not cover them"
+msgstr ""
+
+#, python-brace-format
+msgid "{rule_id} ({title}) was not run."
+msgstr ""
+
+msgid "CEQA Preflight pre-submission checklist"
+msgstr ""
+
+#, python-brace-format
+msgid "Filing type: {value}"
+msgstr ""
+
+#, python-brace-format
+msgid "Package fingerprint: {value}"
+msgstr ""
+
+#, python-brace-format
+msgid "Generated at: {value}"
+msgstr ""
+
+msgid "Resolve before submission"
+msgstr ""
+
+#, python-brace-format
+msgid "Remediation: {value}"
+msgstr ""
+
+msgid "Manual review sign-off"
+msgstr ""
+
+msgid "Reviewed by: ______________________  Date: ____________"
+msgstr ""
+
+msgid "No manual-review items were generated."
+msgstr ""
+
+msgid ""
+"This check is experimental and runs only with --include-experimental. It "
+"did not run, so this report makes no statement about what it covers."
+msgstr ""
+
+msgid ""
+"This check has been withdrawn from the active rule set and did not run, "
+"so this report makes no statement about what it covers."
+msgstr ""
+
+msgid ""
+"This check did not run because --rules limited the run to other rule "
+"identifiers, so this report makes no statement about what it covers. Re-"
+"run without --rules to include it."
+msgstr ""
+
+msgid ""
+"This check did not run because --exclude-rules named it, so this report "
+"makes no statement about what it covers. Re-run without that exclusion to"
+" include it."
+msgstr ""
+
+#, python-brace-format
+msgid "{title}: internal rule error"
+msgstr ""
+
+msgid "This check could not complete. No package conclusion was made."
+msgstr ""
+
+msgid "Review this item manually and report the rule identifier if it recurs."
+msgstr ""
+
+msgid "No action is needed for this check."
+msgstr ""
+
+msgid "Review this item manually after a complete package inventory is available."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{count} PDF document(s) could not be inspected and were excluded from "
+"this check, which therefore makes no statement about them."
+msgstr ""
+
+msgid "The package inventory is unavailable or incomplete."
+msgstr ""
+
+msgid "The package contains no PDF documents."
+msgstr ""
+
+msgid "Include the required filing form and supporting documents as PDFs."
+msgstr ""
+
+#, python-brace-format
+msgid "The package contains {count} PDF document(s)."
+msgstr ""
+
+msgid "PDF signature facts are unavailable."
+msgstr ""
+
+msgid "This file has a PDF extension but not a PDF signature."
+msgstr ""
+
+msgid "Replace the file with a valid PDF exported from the source document."
+msgstr ""
+
+#, python-brace-format
+msgid "All {count} inventoried PDF file(s) have a PDF signature."
+msgstr ""
+
+msgid "No PDF file was inventoried, so no signature was checked."
+msgstr ""
+
+msgid "PDF inspection facts are unavailable."
+msgstr ""
+
+msgid "A PDF could not be fully inspected within the safe limit."
+msgstr ""
+
+msgid "This PDF is unreadable or encrypted."
+msgstr ""
+
+msgid "Provide an unencrypted, readable PDF."
+msgstr ""
+
+#, python-brace-format
+msgid "All {count} inspected PDF(s) are readable and unencrypted."
+msgstr ""
+
+msgid "No PDF was inspected, so readability was not checked."
+msgstr ""
+
+msgid "Searchable-text coverage facts or threshold are unavailable."
+msgstr ""
+
+msgid ""
+"No searchable text was found on any sampled page; this PDF may be a "
+"scanned image."
+msgstr ""
+
+msgid ""
+"Run optical character recognition (OCR) on the document and verify "
+"keyword searches succeed before submission."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Sampled searchable-text coverage is {coverage}, below the {threshold} "
+"threshold."
+msgstr ""
+
+msgid "Confirm that the PDF is searchable or provide an accessible source PDF."
+msgstr ""
+
+#, python-brace-format
+msgid "All {count} inspected PDF(s) meet the sampled searchable-text threshold."
+msgstr ""
+
+msgid "No PDF was inspected, so searchable text was not sampled."
+msgstr ""
+
+msgid "PDF active-content facts are unavailable."
+msgstr ""
+
+msgid "This PDF contains active actions or embedded files."
+msgstr ""
+
+msgid "Remove unneeded scripts, actions, and embedded files before submission."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"No active PDF actions or embedded files were detected in the {count} "
+"inspected PDF(s)."
+msgstr ""
+
+msgid "No PDF was inspected, so active content was not examined."
+msgstr ""
+
+msgid "PDF form-field facts are unavailable."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"This PDF contains {count} fillable form field(s); submissions are "
+"expected to be flattened and static."
+msgstr ""
+
+msgid ""
+"Flatten the document to a static, fully text-searchable PDF before "
+"submission."
+msgstr ""
+
+#, python-brace-format
+msgid "No fillable form fields were detected in the {count} inspected PDF(s)."
+msgstr ""
+
+msgid "No PDF was inspected, so form fields were not examined."
+msgstr ""
+
+msgid "PDF structure-tree facts are unavailable."
+msgstr ""
+
+msgid ""
+"No screen-reader structure tags were detected. A present structure tree "
+"is not accessibility certification, but its absence suggests the document"
+" is untagged."
+msgstr ""
+
+msgid ""
+"Tag headings, images, and tables for screen-reader compatibility and "
+"confirm accessibility with an assistive-technology review."
+msgstr ""
+
+#, python-brace-format
+msgid "All {count} inspected PDF(s) contain a structure tree for screen readers."
+msgstr ""
+
+msgid "No PDF was inspected, so structure tags were not examined."
+msgstr ""
+
+msgid "File-size facts or the advisory threshold are unavailable."
+msgstr ""
+
+msgid "A file size could not be determined."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"This file is {size} MB, above the {threshold} MB advisory threshold. "
+"Large uploads are slow and may exceed portal limits."
+msgstr ""
+
+msgid ""
+"Consider optimizing the PDF and verify current CEQA Submit upload "
+"guidance; no official size limit is documented."
+msgstr ""
+
+msgid "All files are within the advisory size threshold."
+msgstr ""
+
+msgid "Package inventory facts are unavailable."
+msgstr ""
+
+msgid "No documents in convertible non-PDF formats were detected."
+msgstr ""
+
+msgid ""
+"The package contains document or image files that are not PDFs; CEQA "
+"Submit attachments are expected to be static, text-searchable PDFs."
+msgstr ""
+
+msgid ""
+"Convert these files to static, fully text-searchable PDFs, or remove them"
+" if they are not intended attachments."
+msgstr ""
+
+msgid "Filename facts are unavailable."
+msgstr ""
+
+msgid "All filenames use portable characters and lengths."
+msgstr ""
+
+msgid ""
+"One or more filenames contain unusual characters or are very long, which "
+"can break uploads, links, or downstream processing."
+msgstr ""
+
+msgid ""
+"Rename files using letters, numbers, spaces, hyphens, underscores, and "
+"periods, keeping names reasonably short."
+msgstr ""
+
+msgid "File hash facts are unavailable."
+msgstr ""
+
+msgid "No duplicate file hashes were detected."
+msgstr ""
+
+msgid "Duplicate files were detected in the package."
+msgstr ""
+
+msgid "Remove redundant copies unless each is intentionally required."
+msgstr ""
+
+msgid "Document-category facts are unavailable."
+msgstr ""
+
+msgid "Every inventoried PDF has a declared document category."
+msgstr ""
+
+msgid "One or more PDFs have no declared document category."
+msgstr ""
+
+msgid "Add an explicit category for each PDF in package.yaml."
+msgstr ""
+
+msgid "No manifest was supplied for cross-document consistency checks."
+msgstr ""
+
+msgid "Manifest reference facts are unavailable."
+msgstr ""
+
+msgid "Every manifest document reference exists in the package."
+msgstr ""
+
+msgid "One or more manifest document references do not exist in the package."
+msgstr ""
+
+msgid "Correct the manifest paths or add the referenced files to the package."
+msgstr ""
+
+msgid "PDF filenames meet the basic descriptive-name convention."
+msgstr ""
+
+msgid "One or more PDF filenames may not be descriptive enough for routing."
+msgstr ""
+
+msgid "Rename PDFs to include a clear document type and project-derived token."
+msgstr ""
+
+msgid ""
+"At least one PDF has no declared category, so the primary filing form "
+"cannot be determined conservatively."
+msgstr ""
+
+msgid "Declare document categories and mark exactly one filing form as primary."
+msgstr ""
+
+#, python-brace-format
+msgid "Expected exactly one primary {category} form; found {count}."
+msgstr ""
+
+#, python-brace-format
+msgid "Declare exactly one PDF as the primary {category} form in the manifest."
+msgstr ""
+
+#, python-brace-format
+msgid "Exactly one primary {category} form is declared."
+msgstr ""
+
+msgid ""
+"A single, confidently identified primary form is unavailable for "
+"inspection."
+msgstr ""
+
+msgid "Declare document categories and resolve the primary-form finding first."
+msgstr ""
+
+msgid "The primary form could not be fully inspected within the safe limit."
+msgstr ""
+
+msgid "Review the primary form manually and provide a readable PDF if needed."
+msgstr ""
+
+msgid "The primary filing form is unreadable or encrypted."
+msgstr ""
+
+msgid "Provide an unencrypted, readable primary filing form PDF."
+msgstr ""
+
+msgid "The primary filing form is readable and unencrypted."
+msgstr ""
+
+msgid "The primary form category cannot be established conservatively."
+msgstr ""
+
+msgid "Declare a category and primary flag for the filing form in the manifest."
+msgstr ""
+
+#, python-brace-format
+msgid "The primary form is categorized as {category}."
+msgstr ""
+
+msgid "Confirm applicable CDFW fee handling and any required receipt manually."
+msgstr ""
+
+msgid ""
+"Review the filing requirements and attach or retain supporting records as"
+" applicable."
+msgstr ""
+
+msgid ""
+"Confirm whether mitigation monitoring, findings, overriding "
+"considerations, or final materials apply."
+msgstr ""
+
+msgid "Review the project record and include applicable supporting materials."
+msgstr ""
+
+msgid "Confirm signature and filing timing manually."
+msgstr ""
+
+msgid ""
+"Verify authorization, signature, and filing timing against applicable "
+"requirements."
+msgstr ""
+
+msgid "Confirm exemption choice, citation, and reasoning manually."
+msgstr ""
+
+msgid ""
+"Review the project record and applicable CEQA authority with a qualified "
+"reviewer."
+msgstr ""
+
+msgid "Confirm supporting findings, if applicable, manually."
+msgstr ""
+
+msgid "Filing type"
+msgstr ""
+
+#, python-brace-format
+msgid "Tool version {tool}, ruleset {ruleset}, generated {generated}."
+msgstr ""
+
+#, python-brace-format
+msgid "Package fingerprint {value}."
+msgstr ""
+
+msgid "Automated findings"
+msgstr ""
+
+msgid "Automated technical checks"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Rule"
+msgstr ""
+
+msgid "Finding"
+msgstr ""
+
+msgid "Remediation"
+msgstr ""
+
+#, python-brace-format
+msgid "Document: {value}"
+msgstr ""
+
+msgid "No automated findings were generated."
+msgstr ""
+
+msgid "Items that require human review"
+msgstr ""
+
+msgid "Item"
+msgstr ""
+
+msgid "Applicable checks this report does not cover"
+msgstr ""
+
+msgid "Check"
+msgstr ""
+
+msgid "Why it did not run"
+msgstr ""
+

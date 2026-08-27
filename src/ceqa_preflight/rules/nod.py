@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from ceqa_preflight.i18n import gettext as _
 from ceqa_preflight.rule_catalog import RuleDefinition
 from ceqa_preflight.rule_engine import RuleContext, RuleOutcome
 from ceqa_preflight.rules.filing import (
@@ -28,27 +29,27 @@ def nod_primary_category(context: RuleContext, rule: RuleDefinition) -> Iterable
     return check_primary_category(context, rule, expected_category=_CATEGORY)
 
 
-def nod_cdfw_fee(_: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
+def nod_cdfw_fee(_context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     return manual_confirmation(
-        "Confirm applicable CDFW fee handling and any required receipt manually.",
-        "Review the filing requirements and attach or retain supporting records as applicable.",
+        _("Confirm applicable CDFW fee handling and any required receipt manually."),
+        _("Review the filing requirements and attach or retain supporting records as applicable."),
     )
 
 
-def nod_supporting_materials(_: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
+def nod_supporting_materials(_context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     return manual_confirmation(
-        (
+        _(
             "Confirm whether mitigation monitoring, findings, overriding considerations, "
             "or final materials apply."
         ),
-        "Review the project record and include applicable supporting materials.",
+        _("Review the project record and include applicable supporting materials."),
     )
 
 
-def nod_signature_timing(_: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
+def nod_signature_timing(_context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     return manual_confirmation(
-        "Confirm signature and filing timing manually.",
-        "Verify authorization, signature, and filing timing against applicable requirements.",
+        _("Confirm signature and filing timing manually."),
+        _("Verify authorization, signature, and filing timing against applicable requirements."),
     )
 
 

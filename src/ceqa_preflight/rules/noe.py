@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from ceqa_preflight.i18n import gettext as _
 from ceqa_preflight.rule_catalog import RuleDefinition
 from ceqa_preflight.rule_engine import RuleContext, RuleOutcome
 from ceqa_preflight.rules.filing import (
@@ -28,24 +29,24 @@ def noe_primary_category(context: RuleContext, rule: RuleDefinition) -> Iterable
     return check_primary_category(context, rule, expected_category=_CATEGORY)
 
 
-def noe_exemption(_: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
+def noe_exemption(_context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     return manual_confirmation(
-        "Confirm exemption choice, citation, and reasoning manually.",
-        "Review the project record and applicable CEQA authority with a qualified reviewer.",
+        _("Confirm exemption choice, citation, and reasoning manually."),
+        _("Review the project record and applicable CEQA authority with a qualified reviewer."),
     )
 
 
-def noe_supporting_findings(_: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
+def noe_supporting_findings(_context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     return manual_confirmation(
-        "Confirm supporting findings, if applicable, manually.",
-        "Review the project record and include applicable supporting materials.",
+        _("Confirm supporting findings, if applicable, manually."),
+        _("Review the project record and include applicable supporting materials."),
     )
 
 
-def noe_signature_timing(_: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
+def noe_signature_timing(_context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     return manual_confirmation(
-        "Confirm signature and filing timing manually.",
-        "Verify authorization, signature, and filing timing against applicable requirements.",
+        _("Confirm signature and filing timing manually."),
+        _("Verify authorization, signature, and filing timing against applicable requirements."),
     )
 
 

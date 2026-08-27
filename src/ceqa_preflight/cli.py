@@ -11,6 +11,8 @@ import typer
 from ceqa_preflight import __version__
 from ceqa_preflight.ai.cli import ai_app
 from ceqa_preflight.checker import check_package
+from ceqa_preflight.i18n import LocaleError, resolve, set_locale
+from ceqa_preflight.i18n import gettext as _
 from ceqa_preflight.manifest import ManifestError, load_manifest
 from ceqa_preflight.models import FilingType
 from ceqa_preflight.observability import configure_logging, event
@@ -50,6 +52,7 @@ def _show_version(value: bool) -> None:
 
 @app.callback()
 def main(
+    context: typer.Context,
     version: Annotated[
         bool,
         typer.Option(
@@ -63,12 +66,56 @@ def main(
         str,
         typer.Option("--log-format", help="Operational logs: text (off) or json (stderr)."),
     ] = "text",
+    locale: Annotated[
+        str | None,
+        typer.Option(
+            "--locale",
+            help=(
+                "Language for report prose and messages, as a BCP 47 tag (en, es). "
+                "Omitted means English. Nothing is inferred from the environment."
+            ),
+        ),
+    ] = None,
 ) -> None:
     """Run local, advisory checks without uploading filing packages."""
 
     if log_format not in {"text", "json"}:
         raise typer.BadParameter("must be text or json", param_hint="--log-format")
     configure_logging(log_format)
+    _select_locale(context, locale)
+
+
+SPANISH_REVIEW_PENDING = (
+    "Note: the Spanish catalog is a maintainer draft. A qualified Spanish-language CEQA "
+    "reviewer has not yet approved its terminology or its advisory, non-legal framing "
+    "(docs/I18N.md release gate, item 3). The English wording is authoritative."
+)
+
+
+def _select_locale(context: typer.Context, requested: str | None) -> None:
+    """Put the requested language in force, and say plainly when it could not be met.
+
+    A tag that is not well formed is the caller's typo and is reported as one. A tag that
+    is well formed but has no catalog falls back to English and says so on stderr, because
+    an advisory report silently arriving in the wrong language is a withheld fact, not a
+    convenience.
+    """
+
+    try:
+        catalog, unavailable = resolve(requested)
+    except LocaleError as error:
+        raise typer.BadParameter(str(error), param_hint="--locale") from error
+    previous = set_locale(catalog)
+    # A command that changed the language puts it back when it ends, so one process running
+    # several commands cannot leak a locale from one into the next.
+    context.call_on_close(lambda: set_locale(previous))
+    if unavailable is not None:
+        typer.echo(
+            f"No catalog ships for {unavailable}; reporting in English instead.",
+            err=True,
+        )
+    if catalog != "en":
+        typer.echo(SPANISH_REVIEW_PENDING, err=True)
 
 
 @app.command()
@@ -172,7 +219,7 @@ def check(
                 exclude_rule_ids=exclude_rule_ids,
             )
         except (ManifestError, PackageLoadError, ValueError) as error:
-            typer.echo(f"Input error: {error}", err=True)
+            typer.echo(_("Input error: {error}").format(error=error), err=True)
             raise typer.Exit(code=2) from error
 
         rendered = _RENDERERS[output_format](report)
@@ -185,12 +232,20 @@ def check(
             stem = _report_stem(source, index, len(sources))
             destination = output / f"{stem}.{_REPORT_SUFFIXES[output_format]}"
             destination.write_text(rendered, encoding="utf-8")
-            typer.echo(f"Wrote advisory report to {destination}")
+            typer.echo(_("Wrote advisory report to {path}").format(path=destination))
         counts = summarize_counts(report)
         batch_lines.append(
-            f"{source}: exit {exit_code}, {counts['failure']} failure(s), "
-            f"{counts['warning']} warning(s), {counts['manual']} manual-review item(s), "
-            f"{counts['not_run']} check(s) not run"
+            _(
+                "{source}: exit {exit_code}, {failure} failure(s), {warning} warning(s), "
+                "{manual} manual-review item(s), {not_run} check(s) not run"
+            ).format(
+                source=source,
+                exit_code=exit_code,
+                failure=counts["failure"],
+                warning=counts["warning"],
+                manual=counts["manual"],
+                not_run=counts["not_run"],
+            )
         )
         worst_exit_code = max(worst_exit_code, exit_code)
         event(
@@ -200,7 +255,7 @@ def check(
             not_run=len(report.not_run),
         )
     if len(sources) > 1:
-        typer.echo("Batch summary")
+        typer.echo(_("Batch summary"))
         for line in batch_lines:
             typer.echo(f"  {line}")
     raise typer.Exit(code=worst_exit_code)
@@ -228,9 +283,9 @@ def init(
     try:
         destination = write_manifest_template(directory, filing_type, from_package=from_package)
     except (FileExistsError, ValueError) as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
-    typer.echo(f"Created manifest template at {destination}")
+    typer.echo(_("Created manifest template at {path}").format(path=destination))
 
 
 @app.command()
@@ -252,9 +307,13 @@ def synth(
     try:
         created = write_synthetic_package(directory, filing_type, list(defect or []))
     except (FileExistsError, ValueError) as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
-    typer.echo(f"Created a synthetic {filing_type.value} package with {len(created)} file(s):")
+    typer.echo(
+        _("Created a synthetic {filing_type} package with {count} file(s):").format(
+            filing_type=filing_type.value, count=len(created)
+        )
+    )
     for path in created:
         typer.echo(f"  {path}")
 
@@ -299,7 +358,7 @@ def show_rule(
         if rule.id == normalized_id:
             typer.echo(rule.model_dump_json(indent=2))
             return
-    typer.echo(f"Unknown rule identifier: {rule_id}", err=True)
+    typer.echo(_("Unknown rule identifier: {rule_id}").format(rule_id=rule_id), err=True)
     raise typer.Exit(code=2)
 
 
@@ -314,9 +373,13 @@ def init_pilot(
     try:
         review_path, baseline_path = write_pilot_templates(directory)
     except FileExistsError as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
-    typer.echo(f"Created pilot templates: {review_path.name}, {baseline_path.name}")
+    typer.echo(
+        _("Created pilot templates: {review}, {baseline}").format(
+            review=review_path.name, baseline=baseline_path.name
+        )
+    )
 
 
 @pilot_app.command("summarize")
@@ -343,7 +406,7 @@ def summarize_pilot_data(
     try:
         summary = summarize_pilot(reviews, baseline)
     except PilotDataError as error:
-        typer.echo(f"Input error: {error}", err=True)
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
         raise typer.Exit(code=2) from error
     event("pilot_summarized", reviewed_findings=summary.reviewed_findings)
     if output_format == "json":
@@ -352,14 +415,19 @@ def summarize_pilot_data(
     typer.echo(
         "\n".join(
             (
-                "CEQA Preflight pilot summary",
-                f"Decision: {summary.go_no_go}",
-                f"Reviewed findings: {summary.reviewed_findings}",
-                f"Reviewed packages: {summary.reviewed_packages}",
-                f"Actionable precision: {_format_rate(summary.actionable_precision)}",
-                "High-severity false-negative rate: "
-                f"{_format_rate(summary.high_severity_false_negative_rate)}",
-                f"Median report time: {_format_seconds(summary.median_report_seconds)}",
+                _("CEQA Preflight pilot summary"),
+                _("Decision: {value}").format(value=summary.go_no_go),
+                _("Reviewed findings: {value}").format(value=summary.reviewed_findings),
+                _("Reviewed packages: {value}").format(value=summary.reviewed_packages),
+                _("Actionable precision: {value}").format(
+                    value=_format_rate(summary.actionable_precision)
+                ),
+                _("High-severity false-negative rate: {value}").format(
+                    value=_format_rate(summary.high_severity_false_negative_rate)
+                ),
+                _("Median report time: {value}").format(
+                    value=_format_seconds(summary.median_report_seconds)
+                ),
                 *summary.reasons,
             )
         )
@@ -367,8 +435,8 @@ def summarize_pilot_data(
 
 
 def _format_rate(value: float | None) -> str:
-    return "not measured" if value is None else f"{value:.1%}"
+    return _("not measured") if value is None else f"{value:.1%}"
 
 
 def _format_seconds(value: float | None) -> str:
-    return "not measured" if value is None else f"{value:.1f} seconds"
+    return _("not measured") if value is None else _("{value} seconds").format(value=f"{value:.1f}")
