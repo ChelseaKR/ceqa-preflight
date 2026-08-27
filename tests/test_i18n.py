@@ -573,3 +573,35 @@ def test_gate_fails_when_a_compiled_catalog_differs_only_in_its_header(
     code, stderr = _run_gate(capsys)
     assert code == 1
     assert "does not match its source" in stderr
+
+
+def test_gate_is_green_when_the_template_is_checked_out_with_crlf(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A CRLF working tree is a checkout setting, not catalog drift.
+
+    Reproduces the Windows CI failure this check was hardened against: Babel always writes
+    LF, so a byte comparison against a CRLF checkout reported a stale template on a clean
+    tree. `.gitattributes` pins `.pot` and `.po` to LF; this proves the check does not
+    depend on that pin holding.
+    """
+
+    root = _sandbox(tmp_path, monkeypatch)
+    template = root / "messages.pot"
+    template.write_bytes(template.read_bytes().replace(b"\n", b"\r\n"))
+    code, stderr = _run_gate(capsys)
+    assert code == 0, stderr
+
+
+def test_crlf_tolerance_does_not_hide_a_genuinely_stale_template(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The newline allowance must not become a hole the freshness check falls through."""
+
+    root = _sandbox(tmp_path, monkeypatch)
+    template = root / "messages.pot"
+    text = template.read_text(encoding="utf-8").replace('msgid "Batch summary"\nmsgstr ""\n', "")
+    template.write_bytes(text.replace("\n", "\r\n").encode("utf-8"))
+    code, stderr = _run_gate(capsys)
+    assert code == 1
+    assert "is wrapped in source but not extracted" in stderr

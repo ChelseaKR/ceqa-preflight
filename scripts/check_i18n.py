@@ -210,11 +210,22 @@ def _extract() -> bytes:
     return buffer.getvalue()
 
 
+def _normalize_newlines(data: bytes) -> bytes:
+    """Compare catalog content, not the line endings a checkout happened to use.
+
+    `.gitattributes` pins `.pot` and `.po` to LF so this rarely matters, but a contributor
+    with a CRLF working tree should get a real finding or none, never a phantom one: Babel
+    always writes LF, and a line ending is not something a translator authored.
+    """
+
+    return data.replace(b"\r\n", b"\n")
+
+
 def _extraction_failures(template: set[str]) -> list[str]:
     """Fail when a wrapped string never reached the template, or a stale one lingers."""
 
     regenerated = _extract()
-    if regenerated == TEMPLATE.read_bytes():
+    if _normalize_newlines(regenerated) == _normalize_newlines(TEMPLATE.read_bytes()):
         return []
     with io.StringIO(regenerated.decode("utf-8")) as stream:
         fresh = {

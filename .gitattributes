@@ -1,0 +1,9 @@
+# Gettext catalogs are compared byte for byte by `scripts/check_i18n.py`, which regenerates
+# them and checks the result against what is committed. Babel always writes LF, so a CRLF
+# checkout would make that comparison fail on a clean tree. Pin the line endings rather than
+# weaken the check.
+*.po   text eol=lf
+*.pot  text eol=lf
+
+# Compiled catalogs are binary. Line-ending conversion would corrupt them outright.
+*.mo   binary
