@@ -434,3 +434,48 @@ def test_an_unread_structure_tree_is_not_reported_as_a_missing_one() -> None:
     )
 
     assert statuses["PDF-008"] == {"manual"}
+
+
+def test_an_empty_package_produces_no_passing_check_at_all() -> None:
+    """An empty package is an empty denominator for every rule, not a clean bill of health.
+
+    ``_conclude`` was written so "a pass can never come from an empty denominator", but the
+    six package-level rules did not use it: FILE-001 through FILE-005 and CAT-001 each
+    returned a bare PASS when their population was empty. A directory containing nothing
+    produced six green lines saying filenames were portable, no duplicates were found, and
+    every PDF had a category, none of which had been measured against a single file.
+    """
+
+    statuses = _statuses([])
+
+    passed = sorted(rule_id for rule_id, values in statuses.items() if "pass" in values)
+    assert passed == [], f"these rules passed with nothing to examine: {passed}"
+
+
+def test_a_package_of_only_non_pdf_files_passes_no_pdf_scoped_check() -> None:
+    """PDF-scoped rules must not pass on a package that contains no PDF."""
+
+    # A suffix outside _CONVERTIBLE_SUFFIXES, so FILE-003 has nothing to warn about here.
+    statuses = _statuses(
+        [{"path": "checksums.sig", "is_pdf": False, "sha256": "n" * 64, "size_bytes": 9}]
+    )
+
+    for rule_id in ("FILE-001", "CAT-001"):
+        assert "pass" not in statuses[rule_id], rule_id
+    # File-scoped rules did examine the one real file, so they may still pass, and their
+    # pass message has to say how many files it stands for.
+    for rule_id in ("FILE-003", "FILE-004", "FILE-005"):
+        assert "pass" in statuses[rule_id], rule_id
+
+
+def test_a_file_with_no_checksum_is_disclosed_not_folded_into_the_duplicate_pass() -> None:
+    """FILE-002 can only speak for the files it actually hashed."""
+
+    statuses = _statuses(
+        [
+            {"path": "a.pdf", "is_pdf": True, "sha256": "a" * 64, "size_bytes": 10},
+            {"path": "b.pdf", "is_pdf": True, "sha256": None, "size_bytes": 10},
+        ]
+    )
+
+    assert statuses["FILE-002"] == {"pass", "manual"}
