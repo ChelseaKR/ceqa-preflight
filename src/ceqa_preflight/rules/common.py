@@ -61,6 +61,12 @@ def _examined(document: DocumentFact) -> PdfInspection | None:
     and launch-action flags, the structure-tree flag) sits at its default because nothing
     was read, not because nothing is there. Treating those defaults as observations turns
     "not measured" into "measured clean", so such a document is never examined here.
+
+    This gate covers a whole inspection that did not happen. A partial one, where the file
+    parsed but some signal within it did not, is not visible here: the inspection carries a
+    per-signal flag for each such case (``form_fields_readable``, ``active_content_readable``,
+    and ``structure_tree_present is None``), and the check that consumes that signal is
+    responsible for excluding the document. Every caller below does.
     """
 
     inspection = document.inspection
@@ -273,7 +279,12 @@ def check_active_content(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
         if not document.is_pdf:
             continue
         inspection = _examined(document)
-        if inspection is None:
+        # An object graph that did not resolve reports no JavaScript, no launch action and
+        # no embedded files; those three defaults are the absence of a reading, not the
+        # absence of active content. This is the one rule in the catalog whose purpose is
+        # catching a crafted or corrupt document, and an unresolvable /Root, /Names or
+        # /OpenAction is precisely what such a document looks like (issue #54).
+        if inspection is None or not inspection.active_content_readable:
             excluded += 1
             continue
         examined += 1

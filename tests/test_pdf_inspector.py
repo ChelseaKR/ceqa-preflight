@@ -16,6 +16,7 @@ from pypdf.generic import (
     TextStringObject,
 )
 
+from ceqa_preflight import pdf_inspector
 from ceqa_preflight.limits import PackageLimits
 from ceqa_preflight.models import Confidence
 from ceqa_preflight.pdf_inspector import (
@@ -24,6 +25,7 @@ from ceqa_preflight.pdf_inspector import (
     _inspect_pdf_in_worker,
     _mapping,
     _name_tree_item_count,
+    _Resolution,
     _worker_main,
     inspect_pdf,
     select_sample_pages,
@@ -221,15 +223,53 @@ def test_bounded_pdf_object_helpers_cover_indirect_and_name_trees() -> None:
         def get_object(self) -> dict[str, object]:
             return {"/S": "/Launch"}
 
-    assert _mapping(Indirect()) == {"/S": "/Launch"}
-    assert _mapping(object()) == {}
-    assert _contains_action([{"/Nothing": "here"}, Indirect()], "/Launch")
-    assert _contains_action({}, "/Launch", depth=13) is False
+    resolution = _Resolution()
+    assert _mapping(Indirect(), resolution) == {"/S": "/Launch"}
+    # A direct object and an absent key resolve nothing and fail nothing.
+    assert _mapping(object(), resolution) == {}
+    assert _mapping(None, resolution) == {}
+    assert resolution.complete
+    assert _contains_action([{"/Nothing": "here"}, Indirect()], "/Launch", resolution=resolution)
     assert (
-        _name_tree_item_count({"/Names": ["one", 1], "/Kids": [{"/Names": ["two", 2, "three", 3]}]})
+        _name_tree_item_count(
+            {"/Names": ["one", 1], "/Kids": [{"/Names": ["two", 2, "three", 3]}]},
+            resolution=resolution,
+        )
         == 3
     )
-    assert _name_tree_item_count({}, depth=13) == 0
+    assert resolution.complete, "an ordinary graph must not be reported as unresolvable"
+
+
+def test_a_walk_that_hits_its_depth_bound_reports_that_it_stopped_early() -> None:
+    """A bounded search that ran out of depth has not established absence.
+
+    Both walks stop at depth 12 to avoid following a hostile object graph. Returning False
+    or 0 from that branch is "not found within the bound", and letting it read as "not
+    present" is the same not-measured/measured-clean collapse as issue #54 itself.
+    """
+    exhausted = _Resolution()
+    assert _contains_action({}, "/Launch", resolution=exhausted, depth=13) is False
+    assert not exhausted.complete
+
+    exhausted_tree = _Resolution()
+    assert _name_tree_item_count({}, resolution=exhausted_tree, depth=13) == 0
+    assert not exhausted_tree.complete
+
+
+def test_an_unresolvable_reference_is_distinguished_from_an_absent_key() -> None:
+    """The core of issue #54, at the one function where the two used to become one value."""
+
+    class Dangling:
+        def get_object(self) -> dict[str, object]:
+            raise KeyError("object not found in xref table")
+
+    absent = _Resolution()
+    assert _mapping(None, absent) == {}
+    assert absent.complete, "an absent key is a reading, not a failure to read"
+
+    dangling = _Resolution()
+    assert _mapping(Dangling(), dangling) == {}
+    assert not dangling.complete, "a dangling reference must not read as an absent key"
 
 
 def test_parser_warnings_and_extraction_failures_stay_structured(
@@ -319,6 +359,7 @@ def test_worker_main_sends_success_or_generic_failure(monkeypatch: pytest.Monkey
                 "active_form_field_count": 0,
                 "active_form_field_names": [],
                 "form_fields_readable": True,
+                "active_content_readable": True,
                 "structure_tree_present": None,
                 "embedded_file_count": 0,
                 "javascript_present": False,
@@ -339,3 +380,66 @@ def test_worker_main_sends_success_or_generic_failure(monkeypatch: pytest.Monkey
 
     assert failure.closed is True
     assert failure.sent == [{"error": "PDF inspection worker failed"}]
+
+
+class _UnresolvableReference:
+    """An indirect reference whose target is not in the xref table."""
+
+    def get_object(self) -> object:
+        raise KeyError("object not found in xref table")
+
+
+class _ReaderWithBrokenRoot:
+    """A PdfReader whose /Root cannot be resolved, as with a corrupt xref entry."""
+
+    is_encrypted = False
+
+    def __init__(self, *_: object, **__: object) -> None:
+        self.pages: list[dict[str, object]] = [{}]
+        self.trailer: dict[str, object] = {"/Root": _UnresolvableReference()}
+
+    def get_fields(self) -> dict[str, object]:
+        return {}
+
+
+def test_an_unresolvable_object_graph_is_recorded_not_reported_as_clean(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Issue #54. `{}` for "could not read" and `{}` for "nothing here" must not be one value.
+
+    `_mapping` swallowed the KeyError/TypeError/ValueError pypdf raises for a dangling or
+    corrupt-xref reference and returned the same empty mapping an absent key returns. Every
+    active-content signal then defaulted to "nothing found" while `readable` stayed True and
+    `parser_warnings` stayed empty, so a document whose object graph could not be walked was
+    byte-identical in the report to one that was walked and found harmless.
+    """
+    monkeypatch.setattr(pdf_inspector, "PdfReader", _ReaderWithBrokenRoot)
+    monkeypatch.setattr(pdf_inspector, "extract_pages", lambda *_, **__: iter([]))
+
+    inspection = pdf_inspector._inspect_pdf_in_worker(Path("ignored.pdf"), PackageLimits())
+
+    assert inspection.active_content_readable is False
+    # None, not False: the tree was never read, so nothing is known about it either way.
+    assert inspection.structure_tree_present is None
+    assert inspection.parser_warnings, "an unreadable object graph must say so in the report"
+    assert inspection.extraction_confidence is Confidence.LOW
+
+
+def test_a_resolvable_object_graph_still_reports_a_confident_clean_reading(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The guard must not fire on ordinary documents, or it would be noise rather than a signal."""
+
+    class _ReaderWithCleanRoot(_ReaderWithBrokenRoot):
+        def __init__(self, *_: object, **__: object) -> None:
+            self.pages = [{}]
+            self.trailer = {"/Root": {"/StructTreeRoot": {}}}
+
+    monkeypatch.setattr(pdf_inspector, "PdfReader", _ReaderWithCleanRoot)
+    monkeypatch.setattr(pdf_inspector, "extract_pages", lambda *_, **__: iter([]))
+
+    inspection = pdf_inspector._inspect_pdf_in_worker(Path("ignored.pdf"), PackageLimits())
+
+    assert inspection.active_content_readable is True
+    assert inspection.structure_tree_present is True
+    assert not inspection.parser_warnings

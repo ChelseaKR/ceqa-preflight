@@ -401,3 +401,36 @@ def test_zero_text_coverage_suggests_ocr() -> None:
     assert findings["PDF-003"].status.value == "warning"
     assert "scanned image" in findings["PDF-003"].message
     assert "optical character recognition" in findings["PDF-003"].remediation
+
+
+def test_an_unresolvable_object_graph_does_not_pass_the_active_content_check() -> None:
+    """Issue #54. PDF-006 must not report clean on a graph it could not resolve.
+
+    ``javascript_present=False``, ``launch_action_present=False`` and
+    ``embedded_file_count=0`` are what a document with no active content looks like, and
+    also what a document whose /Root, /Names or /OpenAction never resolved looks like.
+    PDF-006 is the one rule in the catalog whose stated purpose is catching crafted or
+    corrupt content, so it is the one rule that must never confuse those two.
+    """
+
+    statuses = _statuses(
+        [_document("NOE_corrupt_xref.pdf", inspection=_inspection(active_content_readable=False))]
+    )
+
+    assert "pass" not in statuses["PDF-006"]
+    assert statuses["PDF-006"] == {"manual"}
+
+
+def test_an_unread_structure_tree_is_not_reported_as_a_missing_one() -> None:
+    """The other half of issue #54: absence of a reading is not evidence of absence.
+
+    When /Root does not resolve, ``"/StructTreeRoot" in {}`` is False, and PDF-008 used to
+    warn that the document is untagged on the strength of a graph nobody read. The
+    inspector now leaves the flag None, which PDF-008 already treats as unexaminable.
+    """
+
+    statuses = _statuses(
+        [_document("NOE_corrupt_xref.pdf", inspection=_inspection(structure_tree_present=None))]
+    )
+
+    assert statuses["PDF-008"] == {"manual"}
