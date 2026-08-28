@@ -10,6 +10,8 @@ entry and the `uses:` line it refers to from drifting apart.
 import re
 from pathlib import Path
 
+import yaml
+
 _THIS_REPO = "chelseakr/ceqa-preflight"
 _PINNED_USES = re.compile(r"^\s*(?:-\s+)?uses:\s*([^@\s]+)@[0-9a-f]{40}")
 _IGNORED_NAME = re.compile(r"^\s*-\s*dependency-name:\s*[\"']?([^\"'\s]+)[\"']?\s*$")
@@ -68,3 +70,64 @@ def test_dependabot_ignores_every_cross_repo_reusable_workflow_pin() -> None:
         "these Dependabot ignore entries no longer match any pinned reusable workflow "
         f"and are suppressing nothing: {sorted(ignored - referenced)}"
     )
+
+
+def _dependabot_ecosystems(root: Path) -> set[str]:
+    document = yaml.safe_load((root / ".github/dependabot.yml").read_text(encoding="utf-8"))
+    return {str(entry.get("package-ecosystem")) for entry in document.get("updates", [])}
+
+
+def test_python_updates_use_the_ecosystem_that_maintains_the_lockfile() -> None:
+    """A committed `uv.lock` plus `--locked` installs means Dependabot must speak uv.
+
+    `package-ecosystem: pip` edits `pyproject.toml` and does not know `uv.lock` exists.
+    Against workflows that install with `uv sync --locked`, that combination opens pull
+    requests that cannot pass: the lockfile is genuinely stale, `--locked` correctly
+    refuses it, and CI plus Security go red on every platform before a single test runs.
+    PR #59 is the worked example. Dependabot's `uv` ecosystem updates the manifest and
+    the lockfile together, so this asserts the pairing rather than trusting a comment.
+    """
+    root = Path(__file__).parents[1]
+    ecosystems = _dependabot_ecosystems(root)
+
+    assert (root / "uv.lock").is_file(), "this guard assumes a committed uv lockfile"
+    assert "uv" in ecosystems, (
+        "dependabot.yml has no `package-ecosystem: uv` entry, so nothing keeps uv.lock "
+        "current and every Python dependency pull request will fail `uv sync --locked`"
+    )
+    assert "pip" not in ecosystems, (
+        "dependabot.yml still declares `package-ecosystem: pip`. With a committed uv.lock "
+        "that ecosystem bumps pyproject.toml without relocking, which is exactly what made "
+        "PR #59 fail CI and Security on all three platforms"
+    )
+
+
+def test_every_workflow_install_asserts_the_lockfile_is_current() -> None:
+    """`--frozen` would make a drifted lockfile install green. Only `--locked` may be used.
+
+    All three workflows carry a comment saying `--locked`, not `--frozen`, and until now a
+    comment was the whole of the enforcement. `--frozen` installs the lockfile as-is and
+    exits 0 even when pyproject.toml has moved on, so swapping it in is the single easiest
+    way to turn a real dependency-drift failure into a permanently green check that has
+    stopped verifying anything. It is also the most tempting way to "fix" a red Dependabot
+    pull request, which is why this is a test and not prose.
+    """
+    root = Path(__file__).parents[1]
+    installs: list[tuple[str, str]] = []
+    for workflow in sorted((root / ".github/workflows").glob("*.yml")):
+        for line in workflow.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#") or "uv sync" not in stripped:
+                continue
+            installs.append((workflow.name, stripped))
+
+    assert installs, "expected at least one `uv sync` install step to guard"
+    for name, command in installs:
+        assert "--frozen" not in command, (
+            f"{name} installs with --frozen: a drifted lockfile would install and pass "
+            f"silently. Use --locked, which fails instead. Offending step: {command}"
+        )
+        assert "--locked" in command, (
+            f"{name} runs `uv sync` without --locked, so a lockfile that no longer matches "
+            f"pyproject.toml would install and the job would go green. Offending step: {command}"
+        )

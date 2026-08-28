@@ -1,6 +1,22 @@
 version: 2
 updates:
-  - package-ecosystem: pip
+  # `uv`, not `pip`. This project locks with uv and both workflows install with
+  # `uv sync --all-groups --locked`, which fails when `uv.lock` has drifted from
+  # `pyproject.toml`. The `pip` ecosystem edits `pyproject.toml` and does not know
+  # `uv.lock` exists, so every Python dependency pull request Dependabot opened was
+  # born red: PR #59 failed CI and Security on all three matrix platforms with
+  # "The lockfile at `uv.lock` needs to be updated, but `--locked` was provided."
+  # The gate was right; the lockfile really was stale. Only a manual relock could
+  # land such a PR.
+  #
+  # Dependabot's `uv` ecosystem understands `pyproject.toml` and `uv.lock` together
+  # and updates both in one pull request. It is a documented `package-ecosystem`
+  # value and is generally available for version updates (GitHub Changelog,
+  # 2025-03-13) and for security updates (2025-12-16).
+  #
+  # `tests/test_supply_chain.py` fails if this is ever changed back to `pip` while
+  # a committed `uv.lock` is what the workflows install from.
+  - package-ecosystem: uv
     directory: "/"
     schedule: {interval: weekly}
     open-pull-requests-limit: 5
