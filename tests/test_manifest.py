@@ -102,3 +102,49 @@ def test_report_serializes_with_schema_contract() -> None:
 def test_source_citation_rejects_non_http_url() -> None:
     with pytest.raises(ValidationError, match="absolute HTTP"):
         SourceCitation(title="Example", url="file:///tmp/not-a-source")
+
+
+def test_duplicate_document_paths_are_rejected_not_silently_collapsed() -> None:
+    """Issue #55. Two declarations of one path must not resolve to whichever came last.
+
+    The checker keys its declaration lookup by path, so the second block below used to
+    overwrite the first with no diagnostic anywhere. The report then said the package had
+    no primary Notice of Exemption form, contradicting what the manifest's first block
+    plainly said, purely because a contradictory block happened to come later in the file.
+    MAN-001 and CAT-001 passed cleanly throughout, because neither could see the duplicate.
+    """
+    payload = _manifest_payload()
+    payload["documents"] = [
+        {"path": "form.pdf", "category": "Notice of Exemption", "primary": True},
+        {"path": "form.pdf", "category": "Supporting Findings", "primary": False},
+    ]
+
+    with pytest.raises(ValidationError, match="same document path more than once"):
+        PackageManifest.model_validate(payload)
+
+
+def test_duplicate_paths_are_compared_after_normalization(tmp_path: Path) -> None:
+    """Separator style must not be a way to smuggle the same path in twice."""
+    payload = _manifest_payload()
+    payload["documents"] = [
+        {"path": "notices\\form.pdf", "category": "Notice of Exemption", "primary": True},
+        {"path": "notices/form.pdf", "category": "Supporting Findings"},
+    ]
+    manifest_path = tmp_path / "package.yaml"
+    manifest_path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+
+    with pytest.raises(ManifestError, match="same document path more than once"):
+        load_manifest(manifest_path)
+
+
+def test_distinct_document_paths_are_still_accepted() -> None:
+    """The guard must reject a real collision only, not ordinary multi-document manifests."""
+    payload = _manifest_payload()
+    payload["documents"] = [
+        {"path": "form.pdf", "category": "Notice of Exemption", "primary": True},
+        {"path": "findings.pdf", "category": "Supporting Findings"},
+    ]
+
+    manifest = PackageManifest.model_validate(payload)
+
+    assert [entry.path for entry in manifest.documents] == ["form.pdf", "findings.pdf"]
