@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import pytest
 
 from ceqa_preflight.models import FilingType, FindingStatus, SkipReason, SourceCitation
@@ -101,3 +103,29 @@ def test_unknown_and_failing_checks_are_safe() -> None:
     assert result.exit_code == 2
     assert result.findings[0].status is FindingStatus.WARNING
     assert result.findings[0].confidence.value == "low"
+
+
+def test_a_check_that_raises_midway_publishes_none_of_its_outcomes() -> None:
+    """A check that did not finish did not evaluate anything, so it may report nothing.
+
+    A check returns an ``Iterable[RuleOutcome]``, so it is free to be a generator. One that
+    yielded a PASS and then raised used to have that PASS extended onto the report before
+    the exception surfaced, and the run published both "all clear" and the internal-error
+    warning for the same rule. A reader scanning statuses saw the rule pass; the error
+    finding's own message, "No package conclusion was made", was contradicted by the line
+    immediately above it. The engine now materializes a check completely before any of its
+    outcomes reach the report.
+    """
+
+    def yields_a_pass_then_raises(*_: object) -> Iterator[RuleOutcome]:
+        yield _outcome(RuleOutcomeStatus.PASS)
+        raise RuntimeError("boom")
+
+    catalog = RuleCatalog(catalog_version="1.0.0", rules=[_definition("CORE-001", "partial")])
+    engine = RuleEngine(catalog, {"partial": yields_a_pass_then_raises})
+
+    result = engine.run(RuleContext(filing_type=FilingType.NOE))
+
+    assert result.exit_code == 2
+    assert [finding.status for finding in result.findings] == [FindingStatus.WARNING]
+    assert FindingStatus.PASS not in {finding.status for finding in result.findings}
