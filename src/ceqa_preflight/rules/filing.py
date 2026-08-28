@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from ceqa_preflight.models import Confidence
+from ceqa_preflight.models import Confidence, Evidence
 from ceqa_preflight.rule_catalog import RuleDefinition
 from ceqa_preflight.rule_engine import RuleContext, RuleOutcome, RuleOutcomeStatus
 from ceqa_preflight.rules.common import DocumentFact, _documents
@@ -123,9 +123,71 @@ def check_primary_readable(
     ]
 
 
+def _miscategorized_primaries(context: RuleContext, expected_category: str) -> list[DocumentFact]:
+    """Documents declared primary whose declared category is some other, stated category.
+
+    ``_form_candidates`` selects on ``primary and category == expected``, so a document the
+    manifest marks primary while giving it a different category is simply dropped from the
+    candidate list. Nothing downstream can then name it: the primary-form rule reports
+    "found 0" and the category rule reported that it could not establish anything. The
+    contradiction the person actually made is the one thing the report never said.
+    """
+
+    documents, incomplete = _documents(context)
+    if incomplete:
+        return []
+    expected = _category(expected_category)
+    return [
+        document
+        for document in documents
+        if document.is_pdf
+        and document.primary
+        and document.category is not None
+        and _category(document.category) != expected
+    ]
+
+
 def check_primary_category(
     context: RuleContext, _: RuleDefinition, *, expected_category: str
 ) -> Iterable[RuleOutcome]:
+    """Report a primary form whose declared category contradicts the filing being checked.
+
+    Before this had a failure branch the check could only pass or go indeterminate: its
+    candidates were *defined* as the documents whose category already equalled the expected
+    one, so "the primary form is categorized as X" was true by construction and no input
+    could make the rule report otherwise. A check with no reachable failure adds a green
+    line to the report and nothing else.
+
+    The failure below is a statement about the manifest contradicting itself, not about
+    CEQA. No official source is cited for it beyond the one this rule already carries,
+    because none is needed to observe that a document declared as the primary filing form
+    carries a category other than the filing type the run was asked to check.
+    """
+
+    mismatched = _miscategorized_primaries(context, expected_category)
+    if mismatched:
+        return [
+            RuleOutcome(
+                status=RuleOutcomeStatus.FAILURE,
+                message=(
+                    f"{len(mismatched)} document(s) are declared as the primary filing form "
+                    f"but carry a declared category other than {expected_category}, which is "
+                    "the category this run was asked to check."
+                ),
+                document=mismatched[0].path,
+                evidence=Evidence(
+                    details={
+                        "expected_category": expected_category,
+                        "declared": {document.path: document.category for document in mismatched},
+                    }
+                ),
+                remediation=(
+                    f"Correct the manifest so the primary form's category is "
+                    f"{expected_category}, or check this package as the filing type its "
+                    "primary form actually declares."
+                ),
+            )
+        ]
     candidates, uncertain = _form_candidates(context, expected_category)
     if uncertain or len(candidates) != 1:
         return [
