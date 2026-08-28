@@ -6,6 +6,64 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- **Fixed: a check could pass a document it never read.** `_mapping()` in the PDF
+  inspector resolved an unreadable indirect reference and a genuinely absent key
+  to the same empty mapping, so a PDF whose `/Root`, `/Names` or `/OpenAction`
+  graph could not be walked reported no JavaScript, no launch action and no
+  embedded files, with `readable=True` and no parser warning. PDF-006, the one
+  rule whose stated purpose is catching crafted or corrupt content, returned a
+  clean `PASS` on exactly the documents it exists for. Resolution failures are
+  now tracked (including an exhausted traversal depth bound) and surfaced as
+  `active_content_readable`; PDF-006 excludes what it could not read, and
+  `structure_tree_present` is `None` rather than `False` when `/Root` never
+  resolved, so PDF-008 no longer reports a document as untagged on the strength
+  of a graph nobody read.
+  ([#54](https://github.com/ChelseaKR/ceqa-preflight/issues/54))
+
+- **Fixed: a manifest that declared one path twice was silently collapsed.**
+  `PackageManifest` now rejects two document entries sharing a normalized path
+  instead of keeping whichever came last, so a contradiction in the one input
+  this tool treats as authoritative is reported rather than resolved by file
+  order. (JSON Schema cannot express uniqueness on a sub-field, so
+  `schemas/manifest.schema.json` still accepts what the tool rejects.)
+  ([#55](https://github.com/ChelseaKR/ceqa-preflight/issues/55))
+
+- **Fixed: a rule that raised part-way through still published its outcomes.**
+  A check returns an `Iterable`, so a generator could yield a `PASS` and then
+  raise; the engine had already extended the report with that `PASS` and then
+  added its internal-error warning beside it, contradicting that warning's own
+  "No package conclusion was made". A check is now materialized completely
+  before any of its outcomes reach the report.
+
+- **Fixed: seven checks passed on an empty denominator.** `_conclude()` was
+  written so that "a pass can never come from an empty denominator", but
+  FILE-001 through FILE-005, CAT-001 and MAN-001 did not use it. An empty
+  package produced six green lines asserting that filenames were portable, no
+  duplicates were found and every PDF had a category, none of it measured
+  against a single file. Every pass now states the count it stands for, and an
+  empty package produces no passing check at all. FILE-002 additionally
+  discloses files it could not checksum instead of absorbing them into its pass.
+
+- **Fixed: NOE-003 and NOD-003 had no reachable failure.** Their candidates were
+  defined as the documents already carrying the expected category, so "the
+  primary form is categorized as X" was true by construction and no input could
+  make either rule fail. A document the manifest marks primary while declaring a
+  different category was dropped from the candidate list, so the contradiction a
+  person had actually made was the one thing no rule named. Both rules now fail
+  on that mismatch and name the document. This reports the manifest contradicting
+  itself; it asserts no CEQA requirement, and cites nothing beyond the source
+  each rule already carried.
+
+- **Fixed: every Dependabot Python pull request was born failing.**
+  `.github/dependabot.yml` declared `package-ecosystem: pip`, which edits
+  `pyproject.toml` and does not maintain `uv.lock`, while CI, Security and
+  release all install with `uv sync --all-groups --locked`. The Python entry is
+  now `uv`, which updates the manifest and the lockfile together. Two guards
+  were added: one on that pairing, and one asserting no workflow install ever
+  swaps `--locked` for `--frozen`, which was previously enforced only by a
+  comment and is the easiest way to turn a real dependency-drift failure into a
+  permanently green check.
+
 - The corpus now holds the CEQA Guidelines: every section and appendix of
   14 CCR Title 14, Division 6, Chapter 3 (§ 15000 et seq.), retrieved section
   by section from the official online California Code of Regulations that the
