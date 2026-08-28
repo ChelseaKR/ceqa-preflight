@@ -13,6 +13,11 @@ from ceqa_preflight.ai.evals import EvalProvenance, EvalResult, EvalStatus
 
 EVALS = Path(__file__).resolve().parent.parent / "evals"
 RESULT_FILES = sorted(EVALS.glob("*/results/*.json"))
+# A suite is a directory with a runner in it. Deriving the expected set from the runners
+# rather than from the results keeps the guard below from being circular: if it counted
+# only the suites that happen to have results, deleting a suite's results would delete the
+# expectation along with the evidence and the gate would stay green.
+SUITE_DIRECTORIES = {path.parent.name for path in EVALS.glob("*/run.py")}
 
 
 @pytest.mark.parametrize("path", RESULT_FILES, ids=lambda p: f"{p.parent.parent.name}/{p.name}")
@@ -27,8 +32,26 @@ def test_committed_results_validate(path: Path) -> None:
 
 
 def test_every_suite_has_at_least_one_result_file() -> None:
-    suites = {path.parent.parent.name for path in RESULT_FILES}
-    assert {"refusal"} <= suites
+    """Each suite that exists must have committed evidence, and each result a live suite.
+
+    This previously required only ``refusal``. The README states that all three suites were
+    run live and reports their numbers, so emptying ``extraction/results/`` or
+    ``grounding/results/`` removed the evidence for a published claim while leaving this
+    gate green: the parametrized test above simply collected fewer cases, which is not a
+    failure. Both directions are asserted, so a suite cannot lose its evidence and a result
+    file cannot outlive the suite that produced it.
+    """
+    suites_with_results = {path.parent.parent.name for path in RESULT_FILES}
+
+    assert {"refusal", "extraction", "grounding"} <= SUITE_DIRECTORIES, (
+        "a documented eval suite has disappeared: " + str(sorted(SUITE_DIRECTORIES))
+    )
+    assert suites_with_results == SUITE_DIRECTORIES, (
+        "suites with no committed result: "
+        f"{sorted(SUITE_DIRECTORIES - suites_with_results)}; "
+        "results with no suite: "
+        f"{sorted(suites_with_results - SUITE_DIRECTORIES)}"
+    )
 
 
 def test_numbers_without_provenance_are_rejected() -> None:
