@@ -217,8 +217,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "anthropic", marker = "extra == 'ai'", specifier = ">=0.125,<1" },
-    { name = "anthropic", extras = ["bedrock"], marker = "extra == 'ai-bedrock'", specifier = ">=0.125,<1" },
+    { name = "anthropic", marker = "extra == 'ai'", specifier = ">=0.125,<2" },
+    { name = "anthropic", extras = ["bedrock"], marker = "extra == 'ai-bedrock'", specifier = ">=0.125,<2" },
     { name = "jinja2", specifier = ">=3.1.6,<4" },
     { name = "pdfminer-six", specifier = ">=20250506" },
     { name = "pydantic", specifier = ">=2.10,<3" },
@@ -230,7 +230,7 @@ provides-extras = ["ai", "ai-bedrock"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "anthropic", extras = ["bedrock"], specifier = ">=0.125,<1" },
+    { name = "anthropic", extras = ["bedrock"], specifier = ">=0.125,<2" },
     { name = "babel", specifier = ">=2.17" },
     { name = "bandit", extras = ["toml"], specifier = ">=1.8.3" },
     { name = "hypothesis", specifier = ">=6.127" },
