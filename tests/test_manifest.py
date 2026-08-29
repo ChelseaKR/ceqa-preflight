@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import re
+import tomllib
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -102,3 +104,31 @@ def test_report_serializes_with_schema_contract() -> None:
 def test_source_citation_rejects_non_http_url() -> None:
     with pytest.raises(ValidationError, match="absolute HTTP"):
         SourceCitation(title="Example", url="file:///tmp/not-a-source")
+
+
+# CITATION.cff once carried `date-released: "2026-07-18"`, which was the first commit date
+# and not a release: no tag and no GitHub Release have ever been cut, and CHANGELOG.md holds
+# only `## Unreleased`. Citation tooling surfaces that field as a release date, so it stayed
+# omitted. These gates keep the file honest against the two in-repo sources of truth.
+
+_ROOT = Path(__file__).resolve().parent.parent
+_RELEASED_HEADING = re.compile(r"^##\s+\[?\d+\.\d+\.\d+", re.MULTILINE)
+
+
+def _citation() -> dict[str, object]:
+    return yaml.safe_load((_ROOT / "CITATION.cff").read_text(encoding="utf-8"))
+
+
+def test_citation_version_matches_pyproject() -> None:
+    pyproject = tomllib.loads((_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert _citation()["version"] == pyproject["project"]["version"]
+
+
+def test_citation_claims_no_release_date_until_one_is_released() -> None:
+    """`date-released` may return only once CHANGELOG.md records an actual released version."""
+    changelog = (_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    if _RELEASED_HEADING.search(changelog) is None:
+        assert "date-released" not in _citation(), (
+            "CITATION.cff states a release date, but CHANGELOG.md records no released "
+            "version. Add date-released only once a version is actually tagged and released."
+        )
