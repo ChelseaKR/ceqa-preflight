@@ -330,12 +330,12 @@ def _readme_line(marker: str) -> str:
     return lines[0]
 
 
-def _assert_states(paragraph: str, pattern: str, expected: object) -> None:
-    found = re.findall(pattern, paragraph)
-    assert found, f"the README paragraph no longer states the figure matched by {pattern!r}"
+def _assert_states(text: str, pattern: str, expected: object, where: str = "README.md") -> None:
+    found = re.findall(pattern, text)
+    assert found, f"{where} no longer states the figure matched by {pattern!r}"
     for value in found:
         assert value == str(expected), (
-            f"README states {value!r} where the source of truth holds {expected!r} "
+            f"{where} states {value!r} where the source of truth holds {expected!r} "
             f"(pattern {pattern!r})"
         )
 
@@ -427,3 +427,23 @@ def test_readme_conformance_table_restates_the_same_gate_thresholds() -> None:
         r"complexity <= (\d+)",
         pyproject["tool"]["ruff"]["lint"]["mccabe"]["max-complexity"],
     )
+
+
+_I18N_DOC = _ROOT / "docs" / "I18N.md"
+
+
+def test_i18n_doc_message_count_matches_the_catalogue_template() -> None:
+    """`docs/I18N.md` restates the README's message count, a second uncoupled copy."""
+    template = _ROOT / "src" / "ceqa_preflight" / "locales" / "messages.pot"
+    messages = sum(
+        1 for line in template.read_text(encoding="utf-8").splitlines() if line.startswith("msgid ")
+    )
+    lines = [
+        line
+        for line in _I18N_DOC.read_text(encoding="utf-8").splitlines()
+        if "messages, both catalogs at" in line
+    ]
+    assert len(lines) == 1, (
+        f"expected exactly one docs/I18N.md line stating the message count, found {len(lines)}"
+    )
+    _assert_states(lines[0], r"(\d+) messages, both catalogs at", messages, where="docs/I18N.md")

@@ -25,10 +25,13 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     field excluded from the comparison is `generated_at`; the replacement is
     required to fire exactly once on each side, so a report that stopped
     stating its generation time fails rather than widening what is ignored.
-  - `README.md` said the merge gate runs 414 tests. It runs 441. The other five
-    figures in that paragraph and the two restated in the standards-conformance
-    table were correct and are now pinned to the catalogue, the tracked source
-    files, `messages.pot`, and `pyproject.toml`.
+  - `README.md` said the merge gate runs 414 tests. It runs 442. The other five
+    figures in that paragraph, the two restated in the standards-conformance
+    table, and `docs/I18N.md`'s second copy of the message count were correct
+    and are now pinned to the catalogue, the tracked source files,
+    `messages.pot`, and `pyproject.toml`. Each is located by the one paragraph
+    or the one line that states it, asserting exactly one match, so a figure
+    that moved elsewhere cannot keep its gate green.
   - `tests/test_schema_export.py` exported the schemas into `tmp_path`,
     asserted two `title` strings, and discarded the fresh output without
     looking at the committed bytes. `make schemas` is not part of `verify`, so
