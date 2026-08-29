@@ -82,7 +82,22 @@ include = [
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-extend-exclude = ["work"]
+# `work` is a scratch directory. `STANDARDS` is the portfolio standards
+# repository, cloned into the working tree by
+# `STANDARDS/automation/vendor-standards.sh` so it can vendor the documents
+# this project actually ships into `docs/standards/`. It is a separate git
+# repository that happens to sit here; none of it is this project's source,
+# and `ruff check .` was linting its automation scripts and failing the gate
+# on code this repository does not own.
+#
+# Excluded here rather than in `.gitignore` because the claim being made is
+# about what ruff should lint, not about what git should track, and because
+# `core.ignorecase` is true on macOS: a `.gitignore` entry for `STANDARDS/`
+# would also match `docs/standards/`, which is tracked content this project
+# does ship, and would silently stop git from seeing new files added there.
+# `force-exclude` is deliberately not set, so a path passed to ruff
+# explicitly is still linted.
+extend-exclude = ["work", "STANDARDS"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "S", "UP", "SIM", "C90", "RUF"]
