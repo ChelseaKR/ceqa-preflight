@@ -7,6 +7,11 @@ authors:
     given-names: "Chelsea"
 repository-code: "https://github.com/ChelseaKR/ceqa-preflight"
 license: "Apache-2.0"
+# `version` mirrors the in-development version in pyproject.toml (single source of truth).
+# `date-released` is deliberately omitted: no `git tag` and no GitHub Release exist yet for
+# this project, and 0.1.0 is the pre-release development baseline (see README.md and the
+# `## Unreleased` heading in CHANGELOG.md). The date previously here, 2026-07-18, was the
+# first commit date, not a release; citation tooling surfaces `date-released` as a release
+# date. Add it back only once a version is actually tagged.
 version: "0.1.0"
-date-released: "2026-07-18"
 abstract: "A local, source-cited advisory preflight checker for CEQA Submit filing packages."
