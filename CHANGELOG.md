@@ -6,6 +6,20 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- `make verify` no longer fails because of a directory this project does not
+  own. `ruff check .` walks the working tree, and the portfolio standards
+  repository is cloned into it at `STANDARDS/` by
+  `STANDARDS/automation/vendor-standards.sh`, which vendors the documents this
+  project ships into `docs/standards/`. Ruff was linting that clone's own
+  automation scripts and reporting 16 errors in code from another repository,
+  so the headline gate could not be run green by anyone whose working
+  directory contained the folder, while every gate underneath it passed.
+  `STANDARDS` is added to ruff's `extend-exclude`. That states a scope for the
+  linter rather than a claim about what git should track, and it leaves
+  `docs/standards/`, which is tracked content, fully linted. `force-exclude`
+  is deliberately not set, so a path handed to ruff explicitly is still
+  checked. No lint rule, severity, or coverage floor changed.
+
 - Reports can be produced in Spanish. `ceqa-preflight --locale es check …`
   renders console, HTML, and checklist prose, every finding message, and every
   remediation through a gettext catalog; `--locale` is the only input and
