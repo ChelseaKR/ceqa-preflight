@@ -1,7 +1,9 @@
 # CEQA Preflight
 
-CEQA Preflight is an early-stage, local-first command-line tool for checking
-the technical readiness of CEQA Submit filing packages.
+CEQA Preflight is a local-first command-line tool for checking the technical
+readiness of CEQA Submit filing packages. It is pre-alpha, and what is
+early-stage about it is the CEQA rule coverage rather than the engineering
+around it; [Status](#status) states both, with the numbers.
 
 It is designed to help planners, clerks, and consultants catch objective,
 correctable package issues before State Clearinghouse review. It produces
@@ -25,6 +27,21 @@ calibration. NOD- and NOE-specific rules are currently
 **experimental**: they run only with `--include-experimental` while documented
 official-source review, practitioner review, tests, and a permissioned pilot
 are completed.
+
+That is the early-stage part, and it is precise rather than a mood:
+`ceqa-preflight rules list` reports 26 registered rules, of which 14 are active
+and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
+NOE-specific rules. The domain half of the catalog is the unfinished half.
+
+The engineering around it is not at that stage, and saying "early-stage" of the
+whole tool understated it. `make verify` is the merge gate: 414 tests under a
+90% branch-coverage floor, `strict = true` mypy over 37 source files, bandit,
+and an i18n gate holding 158 English and Spanish messages at enforced parity.
+The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
+"no network requests" promise of the default `check` path is enforced rather
+than asserted. None of that makes the tool releasable: no tagged release
+or package publication exists, and the CLI and JSON report schema are still
+unstable. See [Public API and release status](#public-api-and-release-status).
 
 ## Intended initial scope
 
