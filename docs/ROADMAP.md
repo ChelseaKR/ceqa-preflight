@@ -33,9 +33,12 @@
 
 - Complete an accessibility review of console and HTML outputs with recorded
   assistive-technology evidence.
-- Implement the [internationalization release gate](I18N.md): gettext entry
-  point, reviewed English and Spanish catalogs, catalog parity checks, and
-  deterministic CLI locale selection.
+- Complete the [internationalization release gate](I18N.md). The seam,
+  the English and Spanish catalogs, the parity checks, and deterministic CLI
+  locale selection are done ([ADR 0003](adr/0003-explicit-locale-selection-with-no-inference.md));
+  what remains is a qualified Spanish-language reviewer for the CEQA
+  terminology and advisory framing, and the central applicability registry
+  entry.
 - Publish a residual-risk review, SBOM, provenance, and release notes.
 - Exit criteria: all CI/security checks green, release checklist signed,
   no open critical vulnerability, and the release remains advisory-only.
@@ -60,8 +63,10 @@
   recorded runs used Bedrock `claude-sonnet-4-6`); a qualified CEQA reviewer
   and a native Spanish reader have not reviewed the prompts, the refusal
   cases, the Spanish phrasings, or the retained Guidelines text
-  ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)); the `ai`
-  strings await the gettext seam ([#39](https://github.com/ChelseaKR/ceqa-preflight/issues/39)).
+  ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)). The gettext
+  seam now exists, but the `ai` strings are deliberately still outside it:
+  `ai.messages` holds the legal-sufficiency refusal, and its Spanish wording is
+  part of that same qualified review. See [I18N.md](I18N.md).
 
 ## Not planned
 
@@ -86,7 +91,8 @@ by the owning standard.
 | Known-vulnerable dependencies | 0 in `uv.lock` | `make audit` (pip-audit) in CI | AUTO | Maintainer |
 | Secret leaks | 0 | gitleaks in the security workflow | AUTO | Maintainer |
 | SHA-pinned workflow `uses:` | 100% | portfolio conformance tripwire (weekly) plus PR review | REVIEW | Maintainer |
-| EN/ES catalog parity | 100% keys and placeholders before first public tag | [i18n release gate](I18N.md); not yet implemented (pre-release gap) | REVIEW | Maintainer |
+| EN/ES catalog parity | 100% keys and placeholders | `make i18n` in `make verify` (`scripts/check_i18n.py`) | AUTO | Maintainer |
+| Qualified Spanish terminology review | Named reviewer before first public tag | [i18n release gate](I18N.md) item 3; not yet done ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)) | REVIEW | Maintainer |
 | Accessibility review of console/HTML output | Recorded assistive-technology evidence per release | Release checklist; no tagged release yet | REVIEW | Maintainer |
 | Pilot false-positive rate | Measured on synthetic or permissioned packages; aggregate results only | `pilot summarize` evidence kit | REVIEW | Maintainer |
 
