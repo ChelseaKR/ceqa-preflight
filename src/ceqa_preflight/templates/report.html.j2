@@ -5,11 +5,11 @@
 {%- endif -%}
 {%- endmacro -%}
 <!doctype html>
-<html lang="en">
+<html lang="{{ lang }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CEQA Preflight advisory report</title>
+    <title>{{ _("CEQA Preflight advisory report") }}</title>
     <style>
       body { color: #1b1b1b; font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem auto; max-width: 70rem; padding: 0 1rem; }
       table { border-collapse: collapse; width: 100%; }
@@ -31,52 +31,47 @@
   </head>
   <body>
     <header>
-      <h1>CEQA Preflight advisory report</h1>
-      <p><strong>Filing type:</strong> {{ report.filing_type }}</p>
+      <h1>{{ _("CEQA Preflight advisory report") }}</h1>
+      <p><strong>{{ _("Filing type") }}:</strong> {{ report.filing_type }}</p>
       <p>{{ report.disclaimer }}</p>
-      <p><strong>Summary:</strong>
-        {{ counts["failure"] }} failure(s),
-        {{ counts["warning"] }} warning(s),
-        {{ counts["pass"] }} passed check(s),
-        {{ counts["manual"] }} manual-review item(s),
-        {{ counts["not_run"] }} check(s) not run.</p>
+      <p><strong>{{ _("Summary") }}:</strong>
+        {{ _("{failure} failure(s), {warning} warning(s), {passed} passed check(s), {manual} manual-review item(s), {not_run} check(s) not run.").format(failure=counts["failure"], warning=counts["warning"], passed=counts["pass"], manual=counts["manual"], not_run=counts["not_run"]) }}</p>
       {% if report.not_run %}
-      <p class="scope"><strong>Scope:</strong> {{ report.not_run | length }} applicable check(s)
-        did not run. This report makes no statement about what they cover.</p>
+      <p class="scope"><strong>{{ _("Scope") }}:</strong>
+        {{ _("{count} applicable check(s) did not run. This report makes no statement about what they cover.").format(count=report.not_run | length) }}</p>
       {% else %}
-      <p class="scope">Every check that applies to this filing type ran.</p>
+      <p class="scope">{{ _("Every check that applies to this filing type ran.") }}</p>
       {% endif %}
       <p class="metadata">
-        Tool version {{ report.tool_version }}, ruleset {{ report.ruleset_version }},
-        generated {{ report.generated_at.isoformat() }}.<br>
-        Package fingerprint {{ report.input_fingerprint }}.
+        {{ _("Tool version {tool}, ruleset {ruleset}, generated {generated}.").format(tool=report.tool_version, ruleset=report.ruleset_version, generated=report.generated_at.isoformat()) }}<br>
+        {{ _("Package fingerprint {value}.").format(value=report.input_fingerprint) }}
       </p>
     </header>
     <main>
-      <h2>Automated findings</h2>
+      <h2>{{ _("Automated findings") }}</h2>
       {% if report.findings %}
       <table>
-        <caption>Automated technical checks</caption>
-        <thead><tr><th scope="col">Status</th><th scope="col">Rule</th><th scope="col">Finding</th><th scope="col">Remediation</th></tr></thead>
+        <caption>{{ _("Automated technical checks") }}</caption>
+        <thead><tr><th scope="col">{{ _("Status") }}</th><th scope="col">{{ _("Rule") }}</th><th scope="col">{{ _("Finding") }}</th><th scope="col">{{ _("Remediation") }}</th></tr></thead>
         <tbody>
         {% for finding in report.findings %}
           <tr>
             <td class="status {{ finding.status }}">{{ finding.status }}</td>
             <td>{{ finding.rule_id }}{{ cite(finding.source) }}</td>
-            <td>{{ finding.message }}{% if finding.document %}<br><small>Document: {{ finding.document }}</small>{% endif %}</td>
+            <td>{{ finding.message }}{% if finding.document %}<br><small>{{ _("Document: {value}").format(value=finding.document) }}</small>{% endif %}</td>
             <td>{{ finding.remediation }}</td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
       {% else %}
-      <p>No automated findings were generated.</p>
+      <p>{{ _("No automated findings were generated.") }}</p>
       {% endif %}
-      <h2>Manual review</h2>
+      <h2>{{ _("Manual review") }}</h2>
       {% if report.manual_review %}
       <table>
-        <caption>Items that require human review</caption>
-        <thead><tr><th scope="col">Rule</th><th scope="col">Item</th><th scope="col">Remediation</th></tr></thead>
+        <caption>{{ _("Items that require human review") }}</caption>
+        <thead><tr><th scope="col">{{ _("Rule") }}</th><th scope="col">{{ _("Item") }}</th><th scope="col">{{ _("Remediation") }}</th></tr></thead>
         <tbody>
         {% for finding in report.manual_review %}
           <tr><td>{{ finding.rule_id }}{{ cite(finding.source) }}</td><td>{{ finding.message }}</td><td>{{ finding.remediation }}</td></tr>
@@ -84,13 +79,13 @@
         </tbody>
       </table>
       {% else %}
-      <p>No manual-review items were generated.</p>
+      <p>{{ _("No manual-review items were generated.") }}</p>
       {% endif %}
-      <h2>Checks that did not run</h2>
+      <h2>{{ _("Checks that did not run") }}</h2>
       {% if report.not_run %}
       <table>
-        <caption>Applicable checks this report does not cover</caption>
-        <thead><tr><th scope="col">Rule</th><th scope="col">Check</th><th scope="col">Why it did not run</th></tr></thead>
+        <caption>{{ _("Applicable checks this report does not cover") }}</caption>
+        <thead><tr><th scope="col">{{ _("Rule") }}</th><th scope="col">{{ _("Check") }}</th><th scope="col">{{ _("Why it did not run") }}</th></tr></thead>
         <tbody>
         {% for skipped in report.not_run %}
           <tr><td>{{ skipped.rule_id }}{{ cite(skipped.source) }}</td><td>{{ skipped.title }}</td><td>{{ skipped.detail }}</td></tr>
@@ -98,7 +93,7 @@
         </tbody>
       </table>
       {% else %}
-      <p>Every check that applies to this filing type ran.</p>
+      <p>{{ _("Every check that applies to this filing type ran.") }}</p>
       {% endif %}
     </main>
   </body>

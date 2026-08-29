@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from ceqa_preflight import __version__
+from ceqa_preflight.i18n import gettext as _
 from ceqa_preflight.models import (
     FilingType,
     FindingStatus,
@@ -26,10 +27,19 @@ from ceqa_preflight.rule_registry import default_catalog, default_registry
 
 _MAX_INSPECTION_WORKERS = 4
 
-DISCLAIMER = (
-    "CEQA Preflight is an advisory technical checker, not legal advice or a determination "
-    "of CEQA compliance. Review all manual-review items before submission."
-)
+
+def disclaimer() -> str:
+    """The advisory framing every report carries, in the active locale.
+
+    `docs/I18N.md` puts one hard limit on any translation of this sentence: no wording may
+    imply that a finding is a legal determination. It is a function rather than a constant
+    so the sentence follows the run's locale instead of the import order.
+    """
+
+    return _(
+        "CEQA Preflight is an advisory technical checker, not legal advice or a determination "
+        "of CEQA compliance. Review all manual-review items before submission."
+    )
 
 
 def _sha256(path: Path) -> str:
@@ -180,7 +190,7 @@ def check_package(
         findings=findings,
         manual_review=manual_review,
         not_run=not_run,
-        disclaimer=DISCLAIMER,
+        disclaimer=disclaimer(),
     )
     if run.exit_code == 2:
         return report, 2
