@@ -6,6 +6,62 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+- Committed artifacts that stand in for a computation are now regenerated and
+  compared, instead of standing unchecked. `scripts/check_i18n.py` already
+  applied that rule to the gettext catalogs; nothing else did.
+  `tests/test_committed_artifacts_are_current.py` extends it to
+  `schemas/*.json`, `examples/sample-report.html`,
+  `examples/noe-fictional-package/`, three offline corpus invariants,
+  `docs/standards/.standards-manifest.json`, and six README figures. Every
+  comparison regenerates into a temp directory or an in-memory buffer, so no
+  gate can quietly repair the drift it exists to report.
+
+  - `examples/sample-report.html` had drifted, and is regenerated here. Its
+    citation links still read "Source" where `reporting.py` now says "Official
+    source", "Technical reference", and "Project advisory rule", and the whole
+    `source-kind` qualifier note that ships alongside those labels, plus its
+    stylesheet rule, was absent. `FILE-004` and `FILE-005` still pointed at the
+    repository root rather than the 2026-07-27 source-review addendum. The only
+    field excluded from the comparison is `generated_at`; the replacement is
+    required to fire exactly once on each side, so a report that stopped
+    stating its generation time fails rather than widening what is ignored.
+  - `README.md` said the merge gate runs 414 tests. It runs 441. The other five
+    figures in that paragraph and the two restated in the standards-conformance
+    table were correct and are now pinned to the catalogue, the tracked source
+    files, `messages.pot`, and `pyproject.toml`.
+  - `tests/test_schema_export.py` exported the schemas into `tmp_path`,
+    asserted two `title` strings, and discarded the fresh output without
+    looking at the committed bytes. `make schemas` is not part of `verify`, so
+    a field added to `PackageManifest` or `InspectionReport` left the published
+    contract stale with every check green. Both files match today.
+  - `ai/corpus.py` verifies the corpus by walking the manifest, so an orphan
+    `corpus/text/*.txt` or `passages.json` key is never visited, and it checks
+    only that each passage's text is *contained* in its document, which a
+    reordering survives. The manifest, the text directory and the passage keys
+    are now required to name the same documents, each document's text must be
+    exactly the `\n\n`-join of its passages, `cited_by` may not credit a rule
+    the catalogue no longer defines, and the one self-cited document is
+    re-derived from the committed markdown it is built from. All four hold
+    today and need no network.
+
+- `uv run` without `--locked` performed an implicit sync inside the gates.
+  Measured 2026-08-29: with one dependency constraint tightened in
+  `pyproject.toml`, `uv run ruff --version` printed `ruff 0.15.22` and changed
+  `uv.lock`'s sha from `608be564` to `caef380f`, silently. Every Makefile
+  recipe now passes `--locked`, and a new `make lock-check`
+  (`uv lock --check --offline`, which resolves and compares but never writes)
+  runs first in `make verify`. CI was already protected by
+  `uv sync --all-groups --locked`, which is why README.md's claim that CI runs
+  the same `make verify` gate needed this to become true locally too.
+
+- The release workflow's changelog check is anchored to a heading.
+  `grep -Fq "## [${VERSION}]" CHANGELOG.md` searched the whole file, so a bare
+  mention of the string inside the Unreleased body satisfied it and a release
+  could be built from a changelog that had never been cut. It now matches
+  `^##\s+\[?<version>\]?`, the same shape `tests/test_manifest.py` already
+  uses, with the version passed as an argument rather than interpolated into a
+  pattern.
+
 - `make verify` no longer fails because of a directory this project does not
   own. `ruff check .` walks the working tree, and the portfolio standards
   repository is cloned into it at `STANDARDS/` by
