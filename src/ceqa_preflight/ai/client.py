@@ -20,9 +20,26 @@ from ceqa_preflight.models import StrictModel
 PROVIDER_ENV = "CEQA_PREFLIGHT_AI_PROVIDER"
 MODEL_ENV = "CEQA_PREFLIGHT_AI_MODEL"
 DEFAULT_PROVIDER = "anthropic"
+#: Per provider, and deliberately not the same model on both.
+#:
+#: The Anthropic API default is the project's settled choice, `claude-sonnet-5`, which is
+#: what a deployer with an ordinary API key gets and what ADR 0002 records.
+#:
+#: The Bedrock default is `claude-sonnet-4-6` because that is the model this project's
+#: evidence was actually produced on. `anthropic.claude-sonnet-5` returned HTTP 403 ("not
+#: available for this account") on every Bedrock probe on 2026-08-22 — including one taken
+#: after the entitlement API reported the model AUTHORIZED — so entitlement has to be
+#: verified by invoking, never by asking. All three live eval suites in `evals/` ran on
+#: `global.anthropic.claude-sonnet-4-6` for exactly that reason. A default that 403s is a
+#: default that makes the opt-in `ai` commands unusable on the only provider they have ever
+#: been run against, and it contradicts every result file in this repository.
+#:
+#: Do not "fix" these back into agreement. `--model` and CEQA_PREFLIGHT_AI_MODEL override
+#: either one, and evals/README.md records how to re-run the suites against Sonnet 5 on
+#: Bedrock once that account is entitled.
 DEFAULT_MODELS = {
     "anthropic": "claude-sonnet-5",
-    "bedrock": "global.anthropic.claude-sonnet-5",
+    "bedrock": "global.anthropic.claude-sonnet-4-6",
 }
 SUPPORTED_PROVIDERS = tuple(DEFAULT_MODELS)
 

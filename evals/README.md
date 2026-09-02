@@ -21,17 +21,21 @@ exercised by the test suite instead.
 ## Recorded results
 
 All three suites were run live on 2026-08-22 on Amazon Bedrock with
-`global.anthropic.claude-sonnet-4-6`. The code default, `claude-sonnet-5`, was
-not reachable from the account that ran them: `anthropic.claude-sonnet-5`
-returned HTTP 403 ("not available for this account") on Bedrock on every
+`global.anthropic.claude-sonnet-4-6`, which is the Bedrock default in
+`ai/client.py` because it is the model these results were produced on.
+`anthropic.claude-sonnet-5` was not reachable from the account that ran them:
+it returned HTTP 403 ("not available for this account") on Bedrock on every
 probe, including one twenty minutes after the owner reported the model's
 pricing agreement as accepted and its entitlement as `AVAILABLE` with the
 agreement still `PENDING` (probes at 03:36Z, 03:39Z, and 03:56Z on
-2026-08-22); no Anthropic API key was present. There is therefore no recorded
-result for the default model yet; when the agreement clears, re-run the
-three commands below with `--model global.anthropic.claude-sonnet-5` and
-commit the results alongside these. The result files under `*/results/`
-carry the commit each ran at.
+2026-08-22); no Anthropic API key was present. Entitlement here is established
+by invoking, not by asking.
+
+The Anthropic API default stays `claude-sonnet-5`, which is what a deployer
+with an ordinary API key gets, and there is no recorded result for it yet. When
+Sonnet 5 becomes reachable, re-run the three commands below with `--model
+global.anthropic.claude-sonnet-5` and commit the results alongside these. The
+result files under `*/results/` carry the commit each ran at.
 
 | Suite | Result |
 | --- | --- |
