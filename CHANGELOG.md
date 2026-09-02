@@ -64,6 +64,40 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   comment and is the easiest way to turn a real dependency-drift failure into a
   permanently green check.
 
+- `make verify` no longer fails because of a directory this project does not
+  own. `ruff check .` walks the working tree, and the portfolio standards
+  repository is cloned into it at `STANDARDS/` by
+  `STANDARDS/automation/vendor-standards.sh`, which vendors the documents this
+  project ships into `docs/standards/`. Ruff was linting that clone's own
+  automation scripts and reporting 16 errors in code from another repository,
+  so the headline gate could not be run green by anyone whose working
+  directory contained the folder, while every gate underneath it passed.
+  `STANDARDS` is added to ruff's `extend-exclude`. That states a scope for the
+  linter rather than a claim about what git should track, and it leaves
+  `docs/standards/`, which is tracked content, fully linted. `force-exclude`
+  is deliberately not set, so a path handed to ruff explicitly is still
+  checked. No lint rule, severity, or coverage floor changed.
+
+- Reports can be produced in Spanish. `ceqa-preflight --locale es check …`
+  renders console, HTML, and checklist prose, every finding message, and every
+  remediation through a gettext catalog; `--locale` is the only input and
+  nothing is inferred from the environment, so a report stays reproducible from
+  its command line. A well-formed tag with no catalog falls back to English and
+  says on stderr which tag could not be met; a malformed tag is a usage error
+  rather than a silent downgrade. The Spanish catalog is a maintainer draft
+  pending the qualified CEQA terminology review in
+  [#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49), and every
+  non-English run says so. Rule identifiers, finding status values, JSON field
+  names, source citations, and the exit code are the same in every locale.
+  Closes items 1, 2, and 4 of the internationalization release gate
+  ([#39](https://github.com/ChelseaKR/ceqa-preflight/issues/39)); see
+  [ADR 0003](docs/adr/0003-explicit-locale-selection-with-no-inference.md).
+- `make verify` gained an `i18n` gate: extraction freshness, byte-exact catalog
+  compilation, POT/EN/ES key and placeholder parity, BCP 47 validity, no fuzzy
+  or untranslated messages, English-identity, and a check that each compiled
+  catalog still says what its source says. The gate is read-only, and each of
+  its checks has a test in `tests/test_i18n.py` that proves it goes red.
+
 - The corpus now holds the CEQA Guidelines: every section and appendix of
   14 CCR Title 14, Division 6, Chapter 3 (§ 15000 et seq.), retrieved section
   by section from the official online California Code of Regulations that the

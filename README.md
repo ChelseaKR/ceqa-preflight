@@ -1,7 +1,9 @@
 # CEQA Preflight
 
-CEQA Preflight is an early-stage, local-first command-line tool for checking
-the technical readiness of CEQA Submit filing packages.
+CEQA Preflight is a local-first command-line tool for checking the technical
+readiness of CEQA Submit filing packages. It is pre-alpha, and what is
+early-stage about it is the CEQA rule coverage rather than the engineering
+around it; [Status](#status) states both, with the numbers.
 
 It is designed to help planners, clerks, and consultants catch objective,
 correctable package issues before State Clearinghouse review. It produces
@@ -26,6 +28,21 @@ calibration. NOD- and NOE-specific rules are currently
 official-source review, practitioner review, tests, and a permissioned pilot
 are completed.
 
+That is the early-stage part, and it is precise rather than a mood:
+`ceqa-preflight rules list` reports 26 registered rules, of which 14 are active
+and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
+NOE-specific rules. The domain half of the catalog is the unfinished half.
+
+The engineering around it is not at that stage, and saying "early-stage" of the
+whole tool understated it. `make verify` is the merge gate: 414 tests under a
+90% branch-coverage floor, `strict = true` mypy over 37 source files, bandit,
+and an i18n gate holding 158 English and Spanish messages at enforced parity.
+The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
+"no network requests" promise of the default `check` path is enforced rather
+than asserted. None of that makes the tool releasable: no tagged release
+or package publication exists, and the CLI and JSON report schema are still
+unstable. See [Public API and release status](#public-api-and-release-status).
+
 ## Intended initial scope
 
 - Local directory or ZIP input.
@@ -49,6 +66,7 @@ are completed.
     uv run ceqa-preflight check ./my-package --filing-type NOE --include-experimental
     uv run ceqa-preflight check ./pkg-a ./pkg-b --filing-type NOE --format json --output ./reports
     uv run ceqa-preflight check ./my-package --filing-type NOE --format checklist
+    uv run ceqa-preflight --locale es check ./my-package --filing-type NOE
     uv run ceqa-preflight synth ./demo-package --filing-type NOE --defect scanned
     uv run ceqa-preflight rules list --filing-type NOE
     uv run ceqa-preflight rules list --format json
@@ -77,6 +95,32 @@ given, because `--rules` or `--exclude-rules` removed it, or because it has been
 withdrawn — is listed by identifier, with the reason and the way to run it, in
 all four report formats. A report with no failures therefore always says whether
 it covered every applicable check or only some of them.
+
+### Report language
+
+Reports render in English by default and in Spanish with `--locale es`:
+
+    uv run ceqa-preflight --locale es check ./my-package --filing-type NOE
+
+`--locale` is the only thing that selects a language. `LANG`, `LC_ALL`, and
+`LANGUAGE` are not read, and nothing is inferred from a network response or
+from the contents of a filing package, so the same command line produces the
+same report on any machine. A well-formed language tag with no catalog, such as
+`fr`, renders in English and says on stderr which tag could not be met; a
+malformed tag is a usage error rather than a silent downgrade.
+
+Only prose moves. Rule identifiers, finding status values, JSON field names,
+source citations, and the exit code are identical in every locale, so a
+pipeline that gates on the report does not care which language a person reads
+it in.
+
+**The Spanish catalog is a maintainer draft.** A qualified Spanish-language
+CEQA reviewer has not yet approved its terminology or its advisory, non-legal
+framing; that review is
+[issue #49](https://github.com/ChelseaKR/ceqa-preflight/issues/49) and it is
+one of the conditions on a first tagged release. Until it is done the English
+wording is authoritative, and every non-English run says so. See
+[docs/I18N.md](docs/I18N.md).
 
 The `synth` command generates plainly fictional synthetic packages, optionally
 seeded with objective defects (scanned pages, fillable forms, encrypted or
@@ -200,7 +244,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
-| Internationalization | Applies — pre-release gap | [Scope and release gate](docs/I18N.md); current English-only reports must gain reviewed EN/ES catalogs before a public tag |
+| Internationalization | Applies — seam merged, review outstanding | [Scope and release gate](docs/I18N.md); EN and ES catalogs ship at enforced parity (`make i18n`), and the Spanish draft still needs qualified CEQA terminology review before a public tag ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)) |
 | AI Evaluation | Applies | [ADR 0002](docs/adr/0002-ai-at-the-edges.md); the committed [`evals/`](evals/README.md) harnesses (legal-sufficiency refusal, real-filing extraction vs. CEQAnet metadata, citation grounding) with provenance-stamped results; a test rejects any result file without provenance |
 | Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), and the [definition of done](DEFINITION_OF_DONE.md) |
 | Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |

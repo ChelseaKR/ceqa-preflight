@@ -8,6 +8,7 @@ from pathlib import PurePosixPath
 
 from pydantic import Field, ValidationError
 
+from ceqa_preflight.i18n import gettext as _
 from ceqa_preflight.models import Confidence, Evidence, StrictModel
 from ceqa_preflight.pdf_inspector import PdfInspection
 from ceqa_preflight.rule_catalog import RuleDefinition
@@ -37,7 +38,8 @@ def _documents(context: RuleContext) -> tuple[list[DocumentFact], bool]:
         return [], True
 
 
-_NO_ACTION_NEEDED = "No action is needed for this check."
+def _no_action_needed() -> str:
+    return _("No action is needed for this check.")
 
 
 def _indeterminate(message: str) -> list[RuleOutcome]:
@@ -45,7 +47,7 @@ def _indeterminate(message: str) -> list[RuleOutcome]:
         RuleOutcome(
             status=RuleOutcomeStatus.INDETERMINATE,
             message=message,
-            remediation=(
+            remediation=_(
                 "Review this item manually after a complete package inventory is available."
             ),
             confidence=Confidence.LOW,
@@ -98,14 +100,16 @@ def _conclude(
             RuleOutcome(
                 status=RuleOutcomeStatus.PASS,
                 message=pass_message,
-                remediation=_NO_ACTION_NEEDED,
+                remediation=_no_action_needed(),
             )
         )
     if excluded:
         outcomes.extend(
             _indeterminate(
-                f"{excluded} PDF document(s) could not be inspected and were excluded from "
-                "this check, which therefore makes no statement about them."
+                _(
+                    "{count} PDF document(s) could not be inspected and were excluded from "
+                    "this check, which therefore makes no statement about them."
+                ).format(count=excluded)
             )
         )
     elif not examined and not findings:
@@ -114,32 +118,32 @@ def _conclude(
     return outcomes
 
 
-def check_pdf_present(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_pdf_present(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("The package inventory is unavailable or incomplete.")
+        return _indeterminate(_("The package inventory is unavailable or incomplete."))
     pdf_count = sum(document.is_pdf for document in documents)
     if pdf_count == 0:
         return [
             RuleOutcome(
                 status=RuleOutcomeStatus.FAILURE,
-                message="The package contains no PDF documents.",
-                remediation="Include the required filing form and supporting documents as PDFs.",
+                message=_("The package contains no PDF documents."),
+                remediation=_("Include the required filing form and supporting documents as PDFs."),
             )
         ]
     return [
         RuleOutcome(
             status=RuleOutcomeStatus.PASS,
-            message=f"The package contains {pdf_count} PDF document(s).",
-            remediation="No action is needed for this check.",
+            message=_("The package contains {count} PDF document(s).").format(count=pdf_count),
+            remediation=_no_action_needed(),
         )
     ]
 
 
-def check_pdf_signature(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_pdf_signature(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("PDF signature facts are unavailable.")
+        return _indeterminate(_("PDF signature facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
     excluded = 0
@@ -154,9 +158,9 @@ def check_pdf_signature(context: RuleContext, _: RuleDefinition) -> Iterable[Rul
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.FAILURE,
-                    message="This file has a PDF extension but not a PDF signature.",
+                    message=_("This file has a PDF extension but not a PDF signature."),
                     document=document.path,
-                    remediation=(
+                    remediation=_(
                         "Replace the file with a valid PDF exported from the source document."
                     ),
                 )
@@ -165,15 +169,17 @@ def check_pdf_signature(context: RuleContext, _: RuleDefinition) -> Iterable[Rul
         outcomes,
         examined=examined,
         excluded=excluded,
-        pass_message=f"All {examined} inventoried PDF file(s) have a PDF signature.",
-        nothing_examined_message="No PDF file was inventoried, so no signature was checked.",
+        pass_message=_("All {count} inventoried PDF file(s) have a PDF signature.").format(
+            count=examined
+        ),
+        nothing_examined_message=_("No PDF file was inventoried, so no signature was checked."),
     )
 
 
-def check_pdf_readable(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_pdf_readable(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("PDF inspection facts are unavailable.")
+        return _indeterminate(_("PDF inspection facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
     for document in documents:
@@ -182,7 +188,7 @@ def check_pdf_readable(context: RuleContext, _: RuleDefinition) -> Iterable[Rule
         inspection = document.inspection
         if inspection is None or inspection.timed_out:
             outcomes.extend(
-                _indeterminate("A PDF could not be fully inspected within the safe limit.")
+                _indeterminate(_("A PDF could not be fully inspected within the safe limit."))
             )
             continue
         # An inspection that ran to completion and reported the document unreadable is a
@@ -192,9 +198,9 @@ def check_pdf_readable(context: RuleContext, _: RuleDefinition) -> Iterable[Rule
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.FAILURE,
-                    message="This PDF is unreadable or encrypted.",
+                    message=_("This PDF is unreadable or encrypted."),
                     document=document.path,
-                    remediation="Provide an unencrypted, readable PDF.",
+                    remediation=_("Provide an unencrypted, readable PDF."),
                     confidence=inspection.extraction_confidence,
                 )
             )
@@ -202,8 +208,10 @@ def check_pdf_readable(context: RuleContext, _: RuleDefinition) -> Iterable[Rule
         outcomes,
         examined=examined,
         excluded=0,  # documents that could not be inspected are already reported above
-        pass_message=f"All {examined} inspected PDF(s) are readable and unencrypted.",
-        nothing_examined_message="No PDF was inspected, so readability was not checked.",
+        pass_message=_("All {count} inspected PDF(s) are readable and unencrypted.").format(
+            count=examined
+        ),
+        nothing_examined_message=_("No PDF was inspected, so readability was not checked."),
     )
 
 
@@ -211,7 +219,7 @@ def check_text_coverage(context: RuleContext, rule: RuleDefinition) -> Iterable[
     documents, incomplete = _documents(context)
     threshold = float(rule.parameters.get("minimum_coverage", 0.8))
     if incomplete or not 0 <= threshold <= 1:
-        return _indeterminate("Searchable-text coverage facts or threshold are unavailable.")
+        return _indeterminate(_("Searchable-text coverage facts or threshold are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
     excluded = 0
@@ -225,20 +233,22 @@ def check_text_coverage(context: RuleContext, rule: RuleDefinition) -> Iterable[
         examined += 1
         if inspection.text_coverage < threshold:
             if inspection.text_coverage == 0:
-                message = (
+                message = _(
                     "No searchable text was found on any sampled page; this PDF may be a "
                     "scanned image."
                 )
-                remediation = (
+                remediation = _(
                     "Run optical character recognition (OCR) on the document and verify "
                     "keyword searches succeed before submission."
                 )
             else:
-                message = (
-                    f"Sampled searchable-text coverage is {inspection.text_coverage:.0%}, "
-                    f"below the {threshold:.0%} threshold."
-                )
-                remediation = (
+                # The percent formatting stays outside the catalog: a translator supplies
+                # words, never a Python format spec.
+                message = _(
+                    "Sampled searchable-text coverage is {coverage}, below the "
+                    "{threshold} threshold."
+                ).format(coverage=f"{inspection.text_coverage:.0%}", threshold=f"{threshold:.0%}")
+                remediation = _(
                     "Confirm that the PDF is searchable or provide an accessible source PDF."
                 )
             outcomes.append(
@@ -261,17 +271,17 @@ def check_text_coverage(context: RuleContext, rule: RuleDefinition) -> Iterable[
         outcomes,
         examined=examined,
         excluded=excluded,
-        pass_message=(
-            f"All {examined} inspected PDF(s) meet the sampled searchable-text threshold."
-        ),
-        nothing_examined_message="No PDF was inspected, so searchable text was not sampled.",
+        pass_message=_(
+            "All {count} inspected PDF(s) meet the sampled searchable-text threshold."
+        ).format(count=examined),
+        nothing_examined_message=_("No PDF was inspected, so searchable text was not sampled."),
     )
 
 
-def check_active_content(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_active_content(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("PDF active-content facts are unavailable.")
+        return _indeterminate(_("PDF active-content facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
     excluded = 0
@@ -294,7 +304,7 @@ def check_active_content(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.WARNING,
-                    message="This PDF contains active actions or embedded files.",
+                    message=_("This PDF contains active actions or embedded files."),
                     document=document.path,
                     evidence=Evidence(
                         details={
@@ -303,7 +313,7 @@ def check_active_content(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
                             "launch_action_present": inspection.launch_action_present,
                         }
                     ),
-                    remediation=(
+                    remediation=_(
                         "Remove unneeded scripts, actions, and embedded files before submission."
                     ),
                     confidence=inspection.extraction_confidence,
@@ -313,20 +323,19 @@ def check_active_content(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
         outcomes,
         examined=examined,
         excluded=excluded,
-        pass_message=(
-            f"No active PDF actions or embedded files were detected in the {examined} "
-            "inspected PDF(s)."
-        ),
-        nothing_examined_message="No PDF was inspected, so active content was not examined.",
+        pass_message=_(
+            "No active PDF actions or embedded files were detected in the {count} inspected PDF(s)."
+        ).format(count=examined),
+        nothing_examined_message=_("No PDF was inspected, so active content was not examined."),
     )
 
 
-def check_flattened_forms(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_flattened_forms(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     """Flag fillable form fields, which official guidance asks filers to flatten."""
 
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("PDF form-field facts are unavailable.")
+        return _indeterminate(_("PDF form-field facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
     excluded = 0
@@ -344,15 +353,15 @@ def check_flattened_forms(context: RuleContext, _: RuleDefinition) -> Iterable[R
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.WARNING,
-                    message=(
-                        f"This PDF contains {inspection.active_form_field_count} fillable "
-                        "form field(s); submissions are expected to be flattened and static."
-                    ),
+                    message=_(
+                        "This PDF contains {count} fillable form field(s); submissions are "
+                        "expected to be flattened and static."
+                    ).format(count=inspection.active_form_field_count),
                     document=document.path,
                     evidence=Evidence(
                         details={"form_field_count": inspection.active_form_field_count}
                     ),
-                    remediation=(
+                    remediation=_(
                         "Flatten the document to a static, fully text-searchable PDF "
                         "before submission."
                     ),
@@ -363,17 +372,19 @@ def check_flattened_forms(context: RuleContext, _: RuleDefinition) -> Iterable[R
         outcomes,
         examined=examined,
         excluded=excluded,
-        pass_message=(f"No fillable form fields were detected in the {examined} inspected PDF(s)."),
-        nothing_examined_message="No PDF was inspected, so form fields were not examined.",
+        pass_message=_(
+            "No fillable form fields were detected in the {count} inspected PDF(s)."
+        ).format(count=examined),
+        nothing_examined_message=_("No PDF was inspected, so form fields were not examined."),
     )
 
 
-def check_structure_tags(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_structure_tags(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     """Report a missing structure tree without claiming accessibility certification."""
 
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("PDF structure-tree facts are unavailable.")
+        return _indeterminate(_("PDF structure-tree facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
     excluded = 0
@@ -389,13 +400,13 @@ def check_structure_tags(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.WARNING,
-                    message=(
+                    message=_(
                         "No screen-reader structure tags were detected. A present structure "
                         "tree is not accessibility certification, but its absence suggests "
                         "the document is untagged."
                     ),
                     document=document.path,
-                    remediation=(
+                    remediation=_(
                         "Tag headings, images, and tables for screen-reader compatibility "
                         "and confirm accessibility with an assistive-technology review."
                     ),
@@ -406,10 +417,10 @@ def check_structure_tags(context: RuleContext, _: RuleDefinition) -> Iterable[Ru
         outcomes,
         examined=examined,
         excluded=excluded,
-        pass_message=(
-            f"All {examined} inspected PDF(s) contain a structure tree for screen readers."
-        ),
-        nothing_examined_message="No PDF was inspected, so structure tags were not examined.",
+        pass_message=_(
+            "All {count} inspected PDF(s) contain a structure tree for screen readers."
+        ).format(count=examined),
+        nothing_examined_message=_("No PDF was inspected, so structure tags were not examined."),
     )
 
 
@@ -422,23 +433,25 @@ def check_file_size(context: RuleContext, rule: RuleDefinition) -> Iterable[Rule
     except (TypeError, ValueError):
         maximum_megabytes = -1
     if incomplete or maximum_megabytes <= 0:
-        return _indeterminate("File-size facts or the advisory threshold are unavailable.")
+        return _indeterminate(_("File-size facts or the advisory threshold are unavailable."))
     threshold_bytes = maximum_megabytes * 1024 * 1024
     outcomes: list[RuleOutcome] = []
     examined = 0
     for document in documents:
         if document.size_bytes is None:
-            outcomes.extend(_indeterminate("A file size could not be determined."))
+            outcomes.extend(_indeterminate(_("A file size could not be determined.")))
             continue
         examined += 1
         if document.size_bytes > threshold_bytes:
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.WARNING,
-                    message=(
-                        f"This file is {document.size_bytes / (1024 * 1024):.0f} MB, above "
-                        f"the {maximum_megabytes:.0f} MB advisory threshold. Large uploads "
-                        "are slow and may exceed portal limits."
+                    message=_(
+                        "This file is {size} MB, above the {threshold} MB advisory "
+                        "threshold. Large uploads are slow and may exceed portal limits."
+                    ).format(
+                        size=f"{document.size_bytes / (1024 * 1024):.0f}",
+                        threshold=f"{maximum_megabytes:.0f}",
                     ),
                     document=document.path,
                     evidence=Evidence(
@@ -447,7 +460,7 @@ def check_file_size(context: RuleContext, rule: RuleDefinition) -> Iterable[Rule
                             "advisory_threshold_megabytes": maximum_megabytes,
                         }
                     ),
-                    remediation=(
+                    remediation=_(
                         "Consider optimizing the PDF and verify current CEQA Submit upload "
                         "guidance; no official size limit is documented."
                     ),
@@ -458,10 +471,10 @@ def check_file_size(context: RuleContext, rule: RuleDefinition) -> Iterable[Rule
         outcomes,
         examined=examined,
         excluded=0,  # a file whose size could not be read is already reported above
-        pass_message=(
-            f"All {examined} inventoried file(s) are within the advisory size threshold."
-        ),
-        nothing_examined_message="No file size was read, so no size was checked.",
+        pass_message=_(
+            "All {count} inventoried file(s) are within the advisory size threshold."
+        ).format(count=examined),
+        nothing_examined_message=_("No file size was read, so no size was checked."),
     )
 
 
@@ -486,12 +499,12 @@ _CONVERTIBLE_SUFFIXES = {
 }
 
 
-def check_non_pdf_documents(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_non_pdf_documents(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     """Flag common document formats that should be converted to static PDFs."""
 
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("Package inventory facts are unavailable.")
+        return _indeterminate(_("Package inventory facts are unavailable."))
     convertible = [
         document.path
         for document in documents
@@ -501,12 +514,12 @@ def check_non_pdf_documents(context: RuleContext, _: RuleDefinition) -> Iterable
         [
             RuleOutcome(
                 status=RuleOutcomeStatus.WARNING,
-                message=(
+                message=_(
                     "The package contains document or image files that are not PDFs; CEQA "
                     "Submit attachments are expected to be static, text-searchable PDFs."
                 ),
                 evidence=Evidence(details={"non_pdf_documents": convertible}),
-                remediation=(
+                remediation=_(
                     "Convert these files to static, fully text-searchable PDFs, or remove "
                     "them if they are not intended attachments."
                 ),
@@ -520,10 +533,12 @@ def check_non_pdf_documents(context: RuleContext, _: RuleDefinition) -> Iterable
         outcomes,
         examined=len(documents),
         excluded=0,
-        pass_message=(
-            f"None of the {len(documents)} inventoried file(s) are in a convertible non-PDF format."
+        pass_message=_(
+            "None of the {count} inventoried file(s) are in a convertible non-PDF format."
+        ).format(count=len(documents)),
+        nothing_examined_message=_(
+            "No file was inventoried, so document formats were not examined."
         ),
-        nothing_examined_message="No file was inventoried, so document formats were not examined.",
     )
 
 
@@ -533,12 +548,14 @@ _PORTABLE_FILENAME_CHARACTERS = frozenset(
 _MAX_FILENAME_LENGTH = 150
 
 
-def check_filename_portability(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_filename_portability(
+    context: RuleContext, _rule: RuleDefinition
+) -> Iterable[RuleOutcome]:
     """Flag filename characters and lengths that commonly break uploads and links."""
 
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("Filename facts are unavailable.")
+        return _indeterminate(_("Filename facts are unavailable."))
     flagged: list[str] = []
     for document in documents:
         name = PurePosixPath(document.path).name
@@ -549,12 +566,12 @@ def check_filename_portability(context: RuleContext, _: RuleDefinition) -> Itera
         [
             RuleOutcome(
                 status=RuleOutcomeStatus.WARNING,
-                message=(
+                message=_(
                     "One or more filenames contain unusual characters or are very long, "
                     "which can break uploads, links, or downstream processing."
                 ),
                 evidence=Evidence(details={"filenames": flagged}),
-                remediation=(
+                remediation=_(
                     "Rename files using letters, numbers, spaces, hyphens, underscores, and "
                     "periods, keeping names reasonably short."
                 ),
@@ -568,17 +585,17 @@ def check_filename_portability(context: RuleContext, _: RuleDefinition) -> Itera
         outcomes,
         examined=len(documents),
         excluded=0,
-        pass_message=(
-            f"All {len(documents)} inventoried filename(s) use portable characters and lengths."
-        ),
-        nothing_examined_message="No file was inventoried, so no filename was checked.",
+        pass_message=_(
+            "All {count} inventoried filename(s) use portable characters and lengths."
+        ).format(count=len(documents)),
+        nothing_examined_message=_("No file was inventoried, so no filename was checked."),
     )
 
 
-def check_duplicate_hashes(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_duplicate_hashes(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("File hash facts are unavailable.")
+        return _indeterminate(_("File hash facts are unavailable."))
     groups: defaultdict[str, list[str]] = defaultdict(list)
     unhashed = 0
     for document in documents:
@@ -591,9 +608,9 @@ def check_duplicate_hashes(context: RuleContext, _: RuleDefinition) -> Iterable[
         [
             RuleOutcome(
                 status=RuleOutcomeStatus.WARNING,
-                message="Duplicate files were detected in the package.",
+                message=_("Duplicate files were detected in the package."),
                 evidence=Evidence(details={"duplicate_groups": duplicates}),
-                remediation="Remove redundant copies unless each is intentionally required.",
+                remediation=_("Remove redundant copies unless each is intentionally required."),
             )
         ]
         if duplicates
@@ -604,38 +621,42 @@ def check_duplicate_hashes(context: RuleContext, _: RuleDefinition) -> Iterable[
         outcomes,
         excluded=0,  # a file with no checksum is disclosed below, in its own words
         examined=examined,
-        pass_message=(
-            f"No duplicate file hashes were detected among {examined} checksummed file(s)."
+        pass_message=_(
+            "No duplicate file hashes were detected among {count} checksummed file(s)."
+        ).format(count=examined),
+        nothing_examined_message=_(
+            "No file checksum was available, so duplicates were not checked."
         ),
-        nothing_examined_message="No file checksum was available, so duplicates were not checked.",
     )
     if unhashed and examined:
         # The pass above stands for the checksummed files only. When nothing was hashed at
         # all, `_conclude` has already said so and this would only repeat it.
         result.extend(
             _indeterminate(
-                f"{unhashed} file(s) have no checksum and were excluded from this check, "
-                "which therefore makes no statement about whether they are duplicates."
+                _(
+                    "{count} file(s) have no checksum and were excluded from this check, "
+                    "which therefore makes no statement about whether they are duplicates."
+                ).format(count=unhashed)
             )
         )
     return result
 
 
-def check_document_categories(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_document_categories(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     """Warn where an actual PDF lacks the explicit category needed for comparisons."""
 
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("Document-category facts are unavailable.")
+        return _indeterminate(_("Document-category facts are unavailable."))
     pdf_count = sum(document.is_pdf for document in documents)
     missing = [document.path for document in documents if document.is_pdf and not document.category]
     outcomes = (
         [
             RuleOutcome(
                 status=RuleOutcomeStatus.WARNING,
-                message="One or more PDFs have no declared document category.",
+                message=_("One or more PDFs have no declared document category."),
                 evidence=Evidence(details={"uncategorized_documents": missing}),
-                remediation="Add an explicit category for each PDF in package.yaml.",
+                remediation=_("Add an explicit category for each PDF in package.yaml."),
                 confidence=Confidence.MEDIUM,
             )
         ]
@@ -646,33 +667,35 @@ def check_document_categories(context: RuleContext, _: RuleDefinition) -> Iterab
         outcomes,
         examined=pdf_count,
         excluded=0,
-        pass_message=f"All {pdf_count} inventoried PDF(s) have a declared document category.",
-        nothing_examined_message="No PDF was inventoried, so no document category was checked.",
+        pass_message=_("All {count} inventoried PDF(s) have a declared document category.").format(
+            count=pdf_count
+        ),
+        nothing_examined_message=_("No PDF was inventoried, so no document category was checked."),
     )
 
 
-def check_manifest_references(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_manifest_references(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
     """Ensure explicit manifest entries refer to real package files."""
 
     declared_paths = context.facts.get("declared_paths")
     documents, incomplete = _documents(context)
     if declared_paths is None:
-        return _indeterminate("No manifest was supplied for cross-document consistency checks.")
+        return _indeterminate(_("No manifest was supplied for cross-document consistency checks."))
     if (
         incomplete
         or not isinstance(declared_paths, list)
         or not all(isinstance(path, str) for path in declared_paths)
     ):
-        return _indeterminate("Manifest reference facts are unavailable.")
+        return _indeterminate(_("Manifest reference facts are unavailable."))
     actual_paths = {document.path for document in documents}
     missing = sorted(set(declared_paths) - actual_paths)
     outcomes = (
         [
             RuleOutcome(
                 status=RuleOutcomeStatus.FAILURE,
-                message="One or more manifest document references do not exist in the package.",
+                message=_("One or more manifest document references do not exist in the package."),
                 evidence=Evidence(details={"missing_paths": missing}),
-                remediation=(
+                remediation=_(
                     "Correct the manifest paths or add the referenced files to the package."
                 ),
             )
@@ -684,21 +707,23 @@ def check_manifest_references(context: RuleContext, _: RuleDefinition) -> Iterab
         outcomes,
         examined=len(declared_paths),
         excluded=0,
-        pass_message=(
-            f"All {len(declared_paths)} manifest document reference(s) exist in the package."
+        pass_message=_("All {count} manifest document reference(s) exist in the package.").format(
+            count=len(declared_paths)
         ),
-        nothing_examined_message=(
+        nothing_examined_message=_(
             "The manifest declared no documents, so no reference was checked."
         ),
     )
 
 
-def check_descriptive_filenames(context: RuleContext, _: RuleDefinition) -> Iterable[RuleOutcome]:
+def check_descriptive_filenames(
+    context: RuleContext, _rule: RuleDefinition
+) -> Iterable[RuleOutcome]:
     """Flag plainly non-descriptive PDF names without trying to infer legal content."""
 
     documents, incomplete = _documents(context)
     if incomplete:
-        return _indeterminate("Filename facts are unavailable.")
+        return _indeterminate(_("Filename facts are unavailable."))
     weak_names: list[str] = []
     examined = 0
     for document in documents:
@@ -713,9 +738,9 @@ def check_descriptive_filenames(context: RuleContext, _: RuleDefinition) -> Iter
         [
             RuleOutcome(
                 status=RuleOutcomeStatus.WARNING,
-                message="One or more PDF filenames may not be descriptive enough for routing.",
+                message=_("One or more PDF filenames may not be descriptive enough for routing."),
                 evidence=Evidence(details={"filenames": weak_names}),
-                remediation=(
+                remediation=_(
                     "Rename PDFs to include a clear document type and project-derived token."
                 ),
                 confidence=Confidence.MEDIUM,
@@ -728,11 +753,10 @@ def check_descriptive_filenames(context: RuleContext, _: RuleDefinition) -> Iter
         outcomes,
         examined=examined,
         excluded=0,
-        pass_message=(
-            f"All {examined} inventoried PDF filename(s) meet the basic descriptive-name "
-            "convention."
-        ),
-        nothing_examined_message="No PDF was inventoried, so no filename was checked.",
+        pass_message=_(
+            "All {count} inventoried PDF filename(s) meet the basic descriptive-name convention."
+        ).format(count=examined),
+        nothing_examined_message=_("No PDF was inventoried, so no filename was checked."),
     )
 
 

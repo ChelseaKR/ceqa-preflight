@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from ceqa_preflight.i18n import gettext as _
 from ceqa_preflight.models import Confidence, Evidence
 from ceqa_preflight.rule_catalog import RuleDefinition
 from ceqa_preflight.rule_engine import RuleContext, RuleOutcome, RuleOutcomeStatus
-from ceqa_preflight.rules.common import DocumentFact, _documents
+from ceqa_preflight.rules.common import DocumentFact, _documents, _no_action_needed
 
 
 def _category(value: str | None) -> str | None:
@@ -31,18 +32,18 @@ def _form_candidates(
 
 
 def check_primary_form(
-    context: RuleContext, _: RuleDefinition, *, expected_category: str
+    context: RuleContext, _rule: RuleDefinition, *, expected_category: str
 ) -> Iterable[RuleOutcome]:
     candidates, uncertain = _form_candidates(context, expected_category)
     if uncertain:
         return [
             RuleOutcome(
                 status=RuleOutcomeStatus.INDETERMINATE,
-                message=(
+                message=_(
                     "At least one PDF has no declared category, so the primary filing form "
                     "cannot be determined conservatively."
                 ),
-                remediation=(
+                remediation=_(
                     "Declare document categories and mark exactly one filing form as primary."
                 ),
                 confidence=Confidence.LOW,
@@ -52,38 +53,38 @@ def check_primary_form(
         return [
             RuleOutcome(
                 status=RuleOutcomeStatus.FAILURE,
-                message=(
-                    f"Expected exactly one primary {expected_category} form; found "
-                    f"{len(candidates)}."
+                message=_("Expected exactly one primary {category} form; found {count}.").format(
+                    category=expected_category, count=len(candidates)
                 ),
-                remediation=(
-                    f"Declare exactly one PDF as the primary {expected_category} form in "
-                    "the manifest."
-                ),
+                remediation=_(
+                    "Declare exactly one PDF as the primary {category} form in the manifest."
+                ).format(category=expected_category),
             )
         ]
     return [
         RuleOutcome(
             status=RuleOutcomeStatus.PASS,
-            message=f"Exactly one primary {expected_category} form is declared.",
+            message=_("Exactly one primary {category} form is declared.").format(
+                category=expected_category
+            ),
             document=candidates[0].path,
-            remediation="No action is needed for this check.",
+            remediation=_no_action_needed(),
         )
     ]
 
 
 def check_primary_readable(
-    context: RuleContext, _: RuleDefinition, *, expected_category: str
+    context: RuleContext, _rule: RuleDefinition, *, expected_category: str
 ) -> Iterable[RuleOutcome]:
     candidates, uncertain = _form_candidates(context, expected_category)
     if uncertain or len(candidates) != 1:
         return [
             RuleOutcome(
                 status=RuleOutcomeStatus.INDETERMINATE,
-                message=(
+                message=_(
                     "A single, confidently identified primary form is unavailable for inspection."
                 ),
-                remediation=(
+                remediation=_(
                     "Declare document categories and resolve the primary-form finding first."
                 ),
                 confidence=Confidence.LOW,
@@ -94,9 +95,9 @@ def check_primary_readable(
         return [
             RuleOutcome(
                 status=RuleOutcomeStatus.INDETERMINATE,
-                message="The primary form could not be fully inspected within the safe limit.",
+                message=_("The primary form could not be fully inspected within the safe limit."),
                 document=form.path,
-                remediation=(
+                remediation=_(
                     "Review the primary form manually and provide a readable PDF if needed."
                 ),
                 confidence=Confidence.LOW,
@@ -106,18 +107,18 @@ def check_primary_readable(
         return [
             RuleOutcome(
                 status=RuleOutcomeStatus.FAILURE,
-                message="The primary filing form is unreadable or encrypted.",
+                message=_("The primary filing form is unreadable or encrypted."),
                 document=form.path,
-                remediation="Provide an unencrypted, readable primary filing form PDF.",
+                remediation=_("Provide an unencrypted, readable primary filing form PDF."),
                 confidence=form.inspection.extraction_confidence,
             )
         ]
     return [
         RuleOutcome(
             status=RuleOutcomeStatus.PASS,
-            message="The primary filing form is readable and unencrypted.",
+            message=_("The primary filing form is readable and unencrypted."),
             document=form.path,
-            remediation="No action is needed for this check.",
+            remediation=_no_action_needed(),
             confidence=form.inspection.extraction_confidence,
         )
     ]
@@ -148,7 +149,7 @@ def _miscategorized_primaries(context: RuleContext, expected_category: str) -> l
 
 
 def check_primary_category(
-    context: RuleContext, _: RuleDefinition, *, expected_category: str
+    context: RuleContext, _rule: RuleDefinition, *, expected_category: str
 ) -> Iterable[RuleOutcome]:
     """Report a primary form whose declared category contradicts the filing being checked.
 
@@ -169,11 +170,11 @@ def check_primary_category(
         return [
             RuleOutcome(
                 status=RuleOutcomeStatus.FAILURE,
-                message=(
-                    f"{len(mismatched)} document(s) are declared as the primary filing form "
-                    f"but carry a declared category other than {expected_category}, which is "
-                    "the category this run was asked to check."
-                ),
+                message=_(
+                    "{count} document(s) are declared as the primary filing form but carry a "
+                    "declared category other than {category}, which is the category this run "
+                    "was asked to check."
+                ).format(count=len(mismatched), category=expected_category),
                 document=mismatched[0].path,
                 evidence=Evidence(
                     details={
@@ -181,11 +182,10 @@ def check_primary_category(
                         "declared": {document.path: document.category for document in mismatched},
                     }
                 ),
-                remediation=(
-                    f"Correct the manifest so the primary form's category is "
-                    f"{expected_category}, or check this package as the filing type its "
-                    "primary form actually declares."
-                ),
+                remediation=_(
+                    "Correct the manifest so the primary form's category is {category}, or "
+                    "check this package as the filing type its primary form actually declares."
+                ).format(category=expected_category),
             )
         ]
     candidates, uncertain = _form_candidates(context, expected_category)
@@ -193,8 +193,8 @@ def check_primary_category(
         return [
             RuleOutcome(
                 status=RuleOutcomeStatus.INDETERMINATE,
-                message="The primary form category cannot be established conservatively.",
-                remediation=(
+                message=_("The primary form category cannot be established conservatively."),
+                remediation=_(
                     "Declare a category and primary flag for the filing form in the manifest."
                 ),
                 confidence=Confidence.LOW,
@@ -203,9 +203,11 @@ def check_primary_category(
     return [
         RuleOutcome(
             status=RuleOutcomeStatus.PASS,
-            message=f"The primary form is categorized as {expected_category}.",
+            message=_("The primary form is categorized as {category}.").format(
+                category=expected_category
+            ),
             document=candidates[0].path,
-            remediation="No action is needed for this check.",
+            remediation=_no_action_needed(),
         )
     ]
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -143,6 +144,31 @@ def test_encrypted_and_corrupt_pdfs_are_structured_results(tmp_path: Path) -> No
     assert corrupt.readable is False
     assert corrupt.extraction_confidence is Confidence.LOW
     assert "could not be parsed" in corrupt.parser_warnings[0]
+
+
+def test_pypdf_logging_based_repair_warnings_lower_confidence(tmp_path: Path) -> None:
+    """A document pypdf had to repair must not read as cleanly as one with no problems.
+
+    Under ``strict=False`` (used here so a non-compliant PDF still gets inspected instead of
+    being rejected outright), pypdf reports the recoverable problems it worked around — such as
+    a corrupted xref table it had to rebuild by scanning — through Python's ``logging`` module
+    via its own ``logger_warning`` helper, not ``warnings.warn``. A capture that only listens
+    for ``warnings.warn`` never sees this, so a repaired document would score identically to a
+    clean one: HIGH confidence and no parser warning.
+    """
+
+    document = _write_pdf(tmp_path / "repaired.pdf", text="This document needed a repair.")
+    corrupted = re.sub(
+        rb"startxref\r?\n\d+\r?\n", b"startxref\n999999\n", document.read_bytes(), count=1
+    )
+    assert corrupted != document.read_bytes()  # the substitution must actually have applied
+    document.write_bytes(corrupted)
+
+    result = _inspect_pdf_in_worker(document, PackageLimits())
+
+    assert result.readable is True
+    assert result.extraction_confidence is Confidence.MEDIUM
+    assert any("parser reported warnings" in warning for warning in result.parser_warnings)
 
 
 def test_detects_form_fields_structure_and_active_content(tmp_path: Path) -> None:

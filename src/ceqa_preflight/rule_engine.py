@@ -8,6 +8,7 @@ from typing import Any
 
 from pydantic import Field
 
+from ceqa_preflight.i18n import gettext as _
 from ceqa_preflight.models import (
     Confidence,
     Evidence,
@@ -116,25 +117,34 @@ def _lifecycle_skip_reason(rule: RuleDefinition, include_experimental: bool) -> 
     return SkipReason.WITHDRAWN
 
 
-_SKIP_DETAILS = {
-    SkipReason.EXPERIMENTAL_NOT_INCLUDED: (
-        "This check is experimental and runs only with --include-experimental. It did not "
-        "run, so this report makes no statement about what it covers."
-    ),
-    SkipReason.WITHDRAWN: (
-        "This check has been withdrawn from the active rule set and did not run, so this "
-        "report makes no statement about what it covers."
-    ),
-    SkipReason.NOT_SELECTED: (
-        "This check did not run because --rules limited the run to other rule identifiers, "
-        "so this report makes no statement about what it covers. Re-run without --rules to "
-        "include it."
-    ),
-    SkipReason.EXCLUDED_BY_REQUEST: (
-        "This check did not run because --exclude-rules named it, so this report makes no "
-        "statement about what it covers. Re-run without that exclusion to include it."
-    ),
-}
+def _skip_detail(reason: SkipReason) -> str:
+    """Say why one applicable check did not run, in the active locale.
+
+    Built per call rather than held in a module constant so the sentence follows the
+    locale the run was given; a dictionary evaluated at import time would freeze whichever
+    language happened to be active when the module was first loaded.
+    """
+
+    details = {
+        SkipReason.EXPERIMENTAL_NOT_INCLUDED: _(
+            "This check is experimental and runs only with --include-experimental. It did not "
+            "run, so this report makes no statement about what it covers."
+        ),
+        SkipReason.WITHDRAWN: _(
+            "This check has been withdrawn from the active rule set and did not run, so this "
+            "report makes no statement about what it covers."
+        ),
+        SkipReason.NOT_SELECTED: _(
+            "This check did not run because --rules limited the run to other rule identifiers, "
+            "so this report makes no statement about what it covers. Re-run without --rules to "
+            "include it."
+        ),
+        SkipReason.EXCLUDED_BY_REQUEST: _(
+            "This check did not run because --exclude-rules named it, so this report makes no "
+            "statement about what it covers. Re-run without that exclusion to include it."
+        ),
+    }
+    return details[reason]
 
 
 def skipped_check(rule: RuleDefinition, reason: SkipReason) -> SkippedCheck:
@@ -145,7 +155,7 @@ def skipped_check(rule: RuleDefinition, reason: SkipReason) -> SkippedCheck:
         rule_version=rule.version,
         title=rule.title,
         reason=reason,
-        detail=_SKIP_DETAILS[reason],
+        detail=_skip_detail(reason),
         source=rule.source,
     )
 
@@ -177,9 +187,9 @@ def _internal_error_finding(rule: RuleDefinition) -> Finding:
         rule_id=rule.id,
         rule_version=rule.version,
         status=FindingStatus.WARNING,
-        title=f"{rule.title}: internal rule error",
-        message="This check could not complete. No package conclusion was made.",
-        remediation="Review this item manually and report the rule identifier if it recurs.",
+        title=_("{title}: internal rule error").format(title=rule.title),
+        message=_("This check could not complete. No package conclusion was made."),
+        remediation=_("Review this item manually and report the rule identifier if it recurs."),
         source=rule.source,
         confidence=Confidence.LOW,
     )
