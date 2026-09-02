@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import types
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -171,3 +173,36 @@ def test_default_cli_path_never_imports_the_provider_sdk() -> None:
         [sys.executable, "-c", code], capture_output=True, text=True, check=False
     )
     assert completed.returncode == 0, completed.stderr
+
+
+def test_the_bedrock_default_is_a_model_this_project_has_actually_invoked() -> None:
+    """The two provider defaults differ on purpose; this pins the reason.
+
+    `anthropic.claude-sonnet-5` returns HTTP 403 on Bedrock for the account every recorded
+    run in `evals/` was produced on, including on a probe taken after the entitlement API
+    reported it AUTHORIZED. A Bedrock default of Sonnet 5 therefore makes `ceqa-preflight
+    ai` unusable out of the box on the only provider this project has live evidence for,
+    while every result file under `evals/*/results/` names Sonnet 4.6.
+
+    The Anthropic API default stays `claude-sonnet-5`, which is ADR 0002's settled choice
+    and what a deployer with an ordinary API key gets. Asserted here so that "make the two
+    defaults match" is a change someone has to argue for rather than tidy up.
+    """
+
+    assert DEFAULT_MODELS["anthropic"] == "claude-sonnet-5"
+    assert DEFAULT_MODELS["bedrock"] == "global.anthropic.claude-sonnet-4-6"
+
+    results = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in (Path(__file__).resolve().parent.parent / "evals").glob("*/results/*.json")
+    ]
+    # A suite that did not run records `provenance: null` and a `reason_not_run`, which is
+    # not evidence of anything having been invoked.
+    recorded = {
+        result["provenance"]["model"] for result in results if result.get("provenance") is not None
+    }
+    assert recorded, "no recorded live eval run; this check would be vacuous"
+    assert DEFAULT_MODELS["bedrock"] in recorded, (
+        f"the Bedrock default {DEFAULT_MODELS['bedrock']!r} has no recorded live run; "
+        f"the suites in evals/ were run on {sorted(recorded)}"
+    )

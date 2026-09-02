@@ -78,8 +78,11 @@ command group that is never invoked by `check`, `init`, `synth`, `rules`, or
 Consequential choices:
 
 - **Provider and model.** The public `anthropic` SDK; `claude-sonnet-5` is the
-  configurable default. Amazon Bedrock is supported through the same SDK for
-  environments that have it. The credential comes only from the environment.
+  configurable default there. Amazon Bedrock is supported through the same SDK
+  for environments that have it, and defaults to `claude-sonnet-4-6`, the model
+  every recorded eval run was produced on — Sonnet 5 answers 403 on the account
+  this project has. The two defaults differ deliberately; either is overridden
+  by `--model`. The credential comes only from the environment.
   No key is written to any file, and the tool never logs document text.
 - **Lazy import, no new default dependency.** The SDK is an optional extra
   (`ceqa-preflight[ai]`) imported only inside the `ai` commands. The default
