@@ -63,6 +63,12 @@ def _examined(document: DocumentFact) -> PdfInspection | None:
     and launch-action flags, the structure-tree flag) sits at its default because nothing
     was read, not because nothing is there. Treating those defaults as observations turns
     "not measured" into "measured clean", so such a document is never examined here.
+
+    This gate covers a whole inspection that did not happen. A partial one, where the file
+    parsed but some signal within it did not, is not visible here: the inspection carries a
+    per-signal flag for each such case (``form_fields_readable``, ``active_content_readable``,
+    and ``structure_tree_present is None``), and the check that consumes that signal is
+    responsible for excluding the document. Every caller below does.
     """
 
     inspection = document.inspection
@@ -283,7 +289,12 @@ def check_active_content(context: RuleContext, _rule: RuleDefinition) -> Iterabl
         if not document.is_pdf:
             continue
         inspection = _examined(document)
-        if inspection is None:
+        # An object graph that did not resolve reports no JavaScript, no launch action and
+        # no embedded files; those three defaults are the absence of a reading, not the
+        # absence of active content. This is the one rule in the catalog whose purpose is
+        # catching a crafted or corrupt document, and an unresolvable /Root, /Names or
+        # /OpenAction is precisely what such a document looks like (issue #54).
+        if inspection is None or not inspection.active_content_readable:
             excluded += 1
             continue
         examined += 1
@@ -425,10 +436,13 @@ def check_file_size(context: RuleContext, rule: RuleDefinition) -> Iterable[Rule
         return _indeterminate(_("File-size facts or the advisory threshold are unavailable."))
     threshold_bytes = maximum_megabytes * 1024 * 1024
     outcomes: list[RuleOutcome] = []
+    examined = 0
     for document in documents:
         if document.size_bytes is None:
             outcomes.extend(_indeterminate(_("A file size could not be determined.")))
-        elif document.size_bytes > threshold_bytes:
+            continue
+        examined += 1
+        if document.size_bytes > threshold_bytes:
             outcomes.append(
                 RuleOutcome(
                     status=RuleOutcomeStatus.WARNING,
@@ -453,13 +467,15 @@ def check_file_size(context: RuleContext, rule: RuleDefinition) -> Iterable[Rule
                     confidence=Confidence.MEDIUM,
                 )
             )
-    return outcomes or [
-        RuleOutcome(
-            status=RuleOutcomeStatus.PASS,
-            message=_("All files are within the advisory size threshold."),
-            remediation=_no_action_needed(),
-        )
-    ]
+    return _conclude(
+        outcomes,
+        examined=examined,
+        excluded=0,  # a file whose size could not be read is already reported above
+        pass_message=_(
+            "All {count} inventoried file(s) are within the advisory size threshold."
+        ).format(count=examined),
+        nothing_examined_message=_("No file size was read, so no size was checked."),
+    )
 
 
 _CONVERTIBLE_SUFFIXES = {
@@ -494,29 +510,36 @@ def check_non_pdf_documents(context: RuleContext, _rule: RuleDefinition) -> Iter
         for document in documents
         if PurePosixPath(document.path).suffix.casefold() in _CONVERTIBLE_SUFFIXES
     ]
-    if not convertible:
-        return [
+    outcomes = (
+        [
             RuleOutcome(
-                status=RuleOutcomeStatus.PASS,
-                message=_("No documents in convertible non-PDF formats were detected."),
-                remediation=_no_action_needed(),
+                status=RuleOutcomeStatus.WARNING,
+                message=_(
+                    "The package contains document or image files that are not PDFs; CEQA "
+                    "Submit attachments are expected to be static, text-searchable PDFs."
+                ),
+                evidence=Evidence(details={"non_pdf_documents": convertible}),
+                remediation=_(
+                    "Convert these files to static, fully text-searchable PDFs, or remove "
+                    "them if they are not intended attachments."
+                ),
+                confidence=Confidence.MEDIUM,
             )
         ]
-    return [
-        RuleOutcome(
-            status=RuleOutcomeStatus.WARNING,
-            message=_(
-                "The package contains document or image files that are not PDFs; CEQA "
-                "Submit attachments are expected to be static, text-searchable PDFs."
-            ),
-            evidence=Evidence(details={"non_pdf_documents": convertible}),
-            remediation=_(
-                "Convert these files to static, fully text-searchable PDFs, or remove "
-                "them if they are not intended attachments."
-            ),
-            confidence=Confidence.MEDIUM,
-        )
-    ]
+        if convertible
+        else []
+    )
+    return _conclude(
+        outcomes,
+        examined=len(documents),
+        excluded=0,
+        pass_message=_(
+            "None of the {count} inventoried file(s) are in a convertible non-PDF format."
+        ).format(count=len(documents)),
+        nothing_examined_message=_(
+            "No file was inventoried, so document formats were not examined."
+        ),
+    )
 
 
 _PORTABLE_FILENAME_CHARACTERS = frozenset(
@@ -539,29 +562,34 @@ def check_filename_portability(
         unusual = set(name) - _PORTABLE_FILENAME_CHARACTERS
         if unusual or len(name) > _MAX_FILENAME_LENGTH:
             flagged.append(document.path)
-    if not flagged:
-        return [
+    outcomes = (
+        [
             RuleOutcome(
-                status=RuleOutcomeStatus.PASS,
-                message=_("All filenames use portable characters and lengths."),
-                remediation=_no_action_needed(),
+                status=RuleOutcomeStatus.WARNING,
+                message=_(
+                    "One or more filenames contain unusual characters or are very long, "
+                    "which can break uploads, links, or downstream processing."
+                ),
+                evidence=Evidence(details={"filenames": flagged}),
+                remediation=_(
+                    "Rename files using letters, numbers, spaces, hyphens, underscores, and "
+                    "periods, keeping names reasonably short."
+                ),
+                confidence=Confidence.MEDIUM,
             )
         ]
-    return [
-        RuleOutcome(
-            status=RuleOutcomeStatus.WARNING,
-            message=_(
-                "One or more filenames contain unusual characters or are very long, "
-                "which can break uploads, links, or downstream processing."
-            ),
-            evidence=Evidence(details={"filenames": flagged}),
-            remediation=_(
-                "Rename files using letters, numbers, spaces, hyphens, underscores, and "
-                "periods, keeping names reasonably short."
-            ),
-            confidence=Confidence.MEDIUM,
-        )
-    ]
+        if flagged
+        else []
+    )
+    return _conclude(
+        outcomes,
+        examined=len(documents),
+        excluded=0,
+        pass_message=_(
+            "All {count} inventoried filename(s) use portable characters and lengths."
+        ).format(count=len(documents)),
+        nothing_examined_message=_("No file was inventoried, so no filename was checked."),
+    )
 
 
 def check_duplicate_hashes(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -569,26 +597,49 @@ def check_duplicate_hashes(context: RuleContext, _rule: RuleDefinition) -> Itera
     if incomplete:
         return _indeterminate(_("File hash facts are unavailable."))
     groups: defaultdict[str, list[str]] = defaultdict(list)
+    unhashed = 0
     for document in documents:
         if document.sha256:
             groups[document.sha256].append(document.path)
+        else:
+            unhashed += 1
     duplicates = [paths for paths in groups.values() if len(paths) > 1]
-    if not duplicates:
-        return [
+    outcomes = (
+        [
             RuleOutcome(
-                status=RuleOutcomeStatus.PASS,
-                message=_("No duplicate file hashes were detected."),
-                remediation=_no_action_needed(),
+                status=RuleOutcomeStatus.WARNING,
+                message=_("Duplicate files were detected in the package."),
+                evidence=Evidence(details={"duplicate_groups": duplicates}),
+                remediation=_("Remove redundant copies unless each is intentionally required."),
             )
         ]
-    return [
-        RuleOutcome(
-            status=RuleOutcomeStatus.WARNING,
-            message=_("Duplicate files were detected in the package."),
-            evidence=Evidence(details={"duplicate_groups": duplicates}),
-            remediation=_("Remove redundant copies unless each is intentionally required."),
+        if duplicates
+        else []
+    )
+    examined = sum(len(paths) for paths in groups.values())
+    result = _conclude(
+        outcomes,
+        excluded=0,  # a file with no checksum is disclosed below, in its own words
+        examined=examined,
+        pass_message=_(
+            "No duplicate file hashes were detected among {count} checksummed file(s)."
+        ).format(count=examined),
+        nothing_examined_message=_(
+            "No file checksum was available, so duplicates were not checked."
+        ),
+    )
+    if unhashed and examined:
+        # The pass above stands for the checksummed files only. When nothing was hashed at
+        # all, `_conclude` has already said so and this would only repeat it.
+        result.extend(
+            _indeterminate(
+                _(
+                    "{count} file(s) have no checksum and were excluded from this check, "
+                    "which therefore makes no statement about whether they are duplicates."
+                ).format(count=unhashed)
+            )
         )
-    ]
+    return result
 
 
 def check_document_categories(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -597,24 +648,30 @@ def check_document_categories(context: RuleContext, _rule: RuleDefinition) -> It
     documents, incomplete = _documents(context)
     if incomplete:
         return _indeterminate(_("Document-category facts are unavailable."))
+    pdf_count = sum(document.is_pdf for document in documents)
     missing = [document.path for document in documents if document.is_pdf and not document.category]
-    if not missing:
-        return [
+    outcomes = (
+        [
             RuleOutcome(
-                status=RuleOutcomeStatus.PASS,
-                message=_("Every inventoried PDF has a declared document category."),
-                remediation=_no_action_needed(),
+                status=RuleOutcomeStatus.WARNING,
+                message=_("One or more PDFs have no declared document category."),
+                evidence=Evidence(details={"uncategorized_documents": missing}),
+                remediation=_("Add an explicit category for each PDF in package.yaml."),
+                confidence=Confidence.MEDIUM,
             )
         ]
-    return [
-        RuleOutcome(
-            status=RuleOutcomeStatus.WARNING,
-            message=_("One or more PDFs have no declared document category."),
-            evidence=Evidence(details={"uncategorized_documents": missing}),
-            remediation=_("Add an explicit category for each PDF in package.yaml."),
-            confidence=Confidence.MEDIUM,
-        )
-    ]
+        if missing
+        else []
+    )
+    return _conclude(
+        outcomes,
+        examined=pdf_count,
+        excluded=0,
+        pass_message=_("All {count} inventoried PDF(s) have a declared document category.").format(
+            count=pdf_count
+        ),
+        nothing_examined_message=_("No PDF was inventoried, so no document category was checked."),
+    )
 
 
 def check_manifest_references(context: RuleContext, _rule: RuleDefinition) -> Iterable[RuleOutcome]:
@@ -632,22 +689,31 @@ def check_manifest_references(context: RuleContext, _rule: RuleDefinition) -> It
         return _indeterminate(_("Manifest reference facts are unavailable."))
     actual_paths = {document.path for document in documents}
     missing = sorted(set(declared_paths) - actual_paths)
-    if not missing:
-        return [
+    outcomes = (
+        [
             RuleOutcome(
-                status=RuleOutcomeStatus.PASS,
-                message=_("Every manifest document reference exists in the package."),
-                remediation=_no_action_needed(),
+                status=RuleOutcomeStatus.FAILURE,
+                message=_("One or more manifest document references do not exist in the package."),
+                evidence=Evidence(details={"missing_paths": missing}),
+                remediation=_(
+                    "Correct the manifest paths or add the referenced files to the package."
+                ),
             )
         ]
-    return [
-        RuleOutcome(
-            status=RuleOutcomeStatus.FAILURE,
-            message=_("One or more manifest document references do not exist in the package."),
-            evidence=Evidence(details={"missing_paths": missing}),
-            remediation=_("Correct the manifest paths or add the referenced files to the package."),
-        )
-    ]
+        if missing
+        else []
+    )
+    return _conclude(
+        outcomes,
+        examined=len(declared_paths),
+        excluded=0,
+        pass_message=_("All {count} manifest document reference(s) exist in the package.").format(
+            count=len(declared_paths)
+        ),
+        nothing_examined_message=_(
+            "The manifest declared no documents, so no reference was checked."
+        ),
+    )
 
 
 def check_descriptive_filenames(
@@ -659,32 +725,39 @@ def check_descriptive_filenames(
     if incomplete:
         return _indeterminate(_("Filename facts are unavailable."))
     weak_names: list[str] = []
+    examined = 0
     for document in documents:
         if not document.is_pdf:
             continue
+        examined += 1
         stem = PurePosixPath(document.path).stem.casefold()
         alpha_numeric = "".join(character for character in stem if character.isalnum())
         if len(alpha_numeric) < 8 or "replacewith" in alpha_numeric:
             weak_names.append(document.path)
-    if not weak_names:
-        return [
+    outcomes = (
+        [
             RuleOutcome(
-                status=RuleOutcomeStatus.PASS,
-                message=_("PDF filenames meet the basic descriptive-name convention."),
-                remediation=_no_action_needed(),
+                status=RuleOutcomeStatus.WARNING,
+                message=_("One or more PDF filenames may not be descriptive enough for routing."),
+                evidence=Evidence(details={"filenames": weak_names}),
+                remediation=_(
+                    "Rename PDFs to include a clear document type and project-derived token."
+                ),
+                confidence=Confidence.MEDIUM,
             )
         ]
-    return [
-        RuleOutcome(
-            status=RuleOutcomeStatus.WARNING,
-            message=_("One or more PDF filenames may not be descriptive enough for routing."),
-            evidence=Evidence(details={"filenames": weak_names}),
-            remediation=_(
-                "Rename PDFs to include a clear document type and project-derived token."
-            ),
-            confidence=Confidence.MEDIUM,
-        )
-    ]
+        if weak_names
+        else []
+    )
+    return _conclude(
+        outcomes,
+        examined=examined,
+        excluded=0,
+        pass_message=_(
+            "All {count} inventoried PDF filename(s) meet the basic descriptive-name convention."
+        ).format(count=examined),
+        nothing_examined_message=_("No PDF was inventoried, so no filename was checked."),
+    )
 
 
 COMMON_RULES = {

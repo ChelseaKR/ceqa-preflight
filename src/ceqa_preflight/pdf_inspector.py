@@ -39,6 +39,12 @@ class PdfInspection(StrictModel):
     # unreadable AcroForm and a document with no form fields are both a count of zero,
     # and "not measured" reads as "measured clean".
     form_fields_readable: bool = True
+    # False when part of the object graph the active-content signals walk (/Root, /Names,
+    # /OpenAction, a page's /AA) could not be resolved. Same reason as the flag above: an
+    # unresolvable reference and a document with no JavaScript, no launch action and no
+    # embedded files both arrive here as False/False/0, so without this flag "not measured"
+    # reads as "measured clean" for the one rule whose job is catching active content.
+    active_content_readable: bool = True
     structure_tree_present: bool | None = None
     embedded_file_count: int = 0
     javascript_present: bool = False
@@ -63,13 +69,41 @@ def select_sample_pages(page_count: int) -> list[int]:
     return sorted(anchors)
 
 
-def _mapping(value: Any) -> Mapping[str, Any]:
-    """Resolve a pypdf object to a mapping, conservatively."""
+class _Resolution:
+    """Whether every indirect reference a walk needed actually resolved.
+
+    An empty mapping is what a genuinely absent key yields *and* what an unresolvable
+    reference used to yield. Collapsing the two makes "this graph could not be read"
+    indistinguishable from "there is nothing here", which is how a corrupt PDF earned a
+    clean PDF-006 pass. Walks record their failures here instead.
+    """
+
+    __slots__ = ("complete",)
+
+    def __init__(self) -> None:
+        self.complete = True
+
+    def failed(self) -> None:
+        self.complete = False
+
+
+def _mapping(value: Any, resolution: _Resolution | None = None) -> Mapping[str, Any]:
+    """Resolve a pypdf object to a mapping, conservatively.
+
+    A direct object (or ``None`` for an absent key) has no ``get_object``; that
+    ``AttributeError`` is the ordinary path and resolves nothing. The other three are how
+    pypdf reports a dangling, circular, or corrupt-xref indirect reference, and they mean
+    the graph was not read rather than found empty.
+    """
 
     try:
         resolved = value.get_object()
-    except (AttributeError, KeyError, TypeError, ValueError):
+    except AttributeError:
         resolved = value
+    except (KeyError, TypeError, ValueError):
+        if resolution is not None:
+            resolution.failed()
+        return {}
     return resolved if isinstance(resolved, Mapping) else {}
 
 
@@ -77,34 +111,53 @@ def _name(value: Any) -> str:
     return str(value)
 
 
-def _contains_action(value: Any, target: str, *, depth: int = 0) -> bool:
-    """Bounded search for a PDF action subtype without following arbitrary graphs."""
+def _contains_action(value: Any, target: str, *, resolution: _Resolution, depth: int = 0) -> bool:
+    """Bounded search for a PDF action subtype without following arbitrary graphs.
+
+    Reaching the depth bound is recorded as a failure to resolve: the search stopped
+    before it had seen the whole graph, so a ``False`` from that branch is "not found
+    within the bound", not "not present".
+    """
 
     if depth > 12:
+        resolution.failed()
         return False
-    mapping = _mapping(value)
+    mapping = _mapping(value, resolution)
     if mapping:
         if _name(mapping.get("/S", "")) == target:
             return True
-        return any(_contains_action(child, target, depth=depth + 1) for child in mapping.values())
+        return any(
+            _contains_action(child, target, resolution=resolution, depth=depth + 1)
+            for child in mapping.values()
+        )
     if isinstance(value, (list, tuple)):
-        return any(_contains_action(child, target, depth=depth + 1) for child in value)
+        return any(
+            _contains_action(child, target, resolution=resolution, depth=depth + 1)
+            for child in value
+        )
     return False
 
 
-def _name_tree_item_count(value: Any, *, depth: int = 0) -> int:
-    """Count name-tree values while bounding traversal of hostile object graphs."""
+def _name_tree_item_count(value: Any, *, resolution: _Resolution, depth: int = 0) -> int:
+    """Count name-tree values while bounding traversal of hostile object graphs.
+
+    As above, an exhausted depth bound means the count is a floor rather than a total.
+    """
 
     if depth > 12:
+        resolution.failed()
         return 0
-    mapping = _mapping(value)
+    mapping = _mapping(value, resolution)
     if not mapping:
         return 0
     names = mapping.get("/Names", [])
     direct_count = len(names) // 2 if isinstance(names, (list, tuple)) else 0
     children = mapping.get("/Kids", [])
     child_count = (
-        sum(_name_tree_item_count(child, depth=depth + 1) for child in children)
+        sum(
+            _name_tree_item_count(child, resolution=resolution, depth=depth + 1)
+            for child in children
+        )
         if isinstance(children, (list, tuple))
         else 0
     )
@@ -155,19 +208,23 @@ def _capture_pypdf_log_warnings() -> Iterator[_LogEmittedHandler]:
         logger.propagate = previous_propagate
 
 
-def _active_content_signals(reader: PdfReader, root: Mapping[str, Any]) -> tuple[bool, bool]:
-    names = _mapping(root.get("/Names"))
+def _active_content_signals(
+    reader: PdfReader, root: Mapping[str, Any], resolution: _Resolution
+) -> tuple[bool, bool]:
+    names = _mapping(root.get("/Names"), resolution)
     javascript_present = names.get("/JavaScript") is not None or _contains_action(
-        root.get("/OpenAction"), "/JavaScript"
+        root.get("/OpenAction"), "/JavaScript", resolution=resolution
     )
-    launch_action_present = _contains_action(root.get("/OpenAction"), "/Launch")
+    launch_action_present = _contains_action(
+        root.get("/OpenAction"), "/Launch", resolution=resolution
+    )
     for page in reader.pages:
-        page_mapping = _mapping(page)
+        page_mapping = _mapping(page, resolution)
         javascript_present = javascript_present or _contains_action(
-            page_mapping.get("/AA"), "/JavaScript"
+            page_mapping.get("/AA"), "/JavaScript", resolution=resolution
         )
         launch_action_present = launch_action_present or _contains_action(
-            page_mapping.get("/AA"), "/Launch"
+            page_mapping.get("/AA"), "/Launch", resolution=resolution
         )
     return javascript_present, launch_action_present
 
@@ -262,12 +319,21 @@ def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
         if captured or log_warnings.emitted:
             parser_warnings.append(_warning_label("PDF parser reported warnings"))
 
-    root = _mapping(reader.trailer.get("/Root"))
-    names = _mapping(root.get("/Names"))
-    javascript_present, launch_action_present = _active_content_signals(reader, root)
+    resolution = _Resolution()
+    root = _mapping(reader.trailer.get("/Root"), resolution)
+    # Snapshot before the deeper walks: /StructTreeRoot is read off /Root alone, so it stays
+    # a measurement whenever /Root itself resolved, even if some page's /AA did not.
+    root_readable = resolution.complete
+    names = _mapping(root.get("/Names"), resolution)
+    javascript_present, launch_action_present = _active_content_signals(reader, root, resolution)
+    embedded_file_count = _name_tree_item_count(names.get("/EmbeddedFiles"), resolution=resolution)
     field_names, form_fields_readable = _field_names(reader, parser_warnings)
     sampled_pages = select_sample_pages(page_count)
     extracted_characters = _extract_sample_characters(path, sampled_pages, parser_warnings)
+    if not resolution.complete:
+        parser_warnings.append(
+            _warning_label("Parts of the PDF object graph could not be resolved")
+        )
 
     searchable_pages = sum(value >= 25 for value in extracted_characters.values())
     text_coverage = searchable_pages / len(sampled_pages) if sampled_pages else None
@@ -283,8 +349,12 @@ def _inspect_pdf_in_worker(path: Path, limits: PackageLimits) -> PdfInspection:
         active_form_field_count=len(field_names),
         active_form_field_names=field_names,
         form_fields_readable=form_fields_readable,
-        structure_tree_present="/StructTreeRoot" in root,
-        embedded_file_count=_name_tree_item_count(names.get("/EmbeddedFiles")),
+        active_content_readable=resolution.complete,
+        # Not False when /Root never resolved: an absent structure tree and an unreadable
+        # one are different facts, and only None keeps PDF-008 from asserting the document
+        # is untagged on the strength of a graph it could not read.
+        structure_tree_present="/StructTreeRoot" in root if root_readable else None,
+        embedded_file_count=embedded_file_count,
         javascript_present=javascript_present,
         launch_action_present=launch_action_present,
         parser_warnings=parser_warnings,

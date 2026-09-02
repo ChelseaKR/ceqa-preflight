@@ -88,11 +88,22 @@ class RuleEngine:
                 not_run.append(skipped_check(rule, reason))
                 continue
             try:
-                outcomes = self._registry[rule.check](context, rule)
-                findings.extend(_finding_from_outcome(rule, outcome) for outcome in outcomes)
+                # Materialize the whole check before anything reaches the report. A check
+                # returns an Iterable, so it may be a generator that yields a PASS and then
+                # raises; extending the report as outcomes arrive kept those partial
+                # outcomes and published a rule's "all clear" beside its own internal-error
+                # warning. A check that did not finish did not evaluate anything, so it
+                # contributes nothing but the error, and the error's message ("No package
+                # conclusion was made") is true rather than contradicted two lines above it.
+                produced = [
+                    _finding_from_outcome(rule, outcome)
+                    for outcome in self._registry[rule.check](context, rule)
+                ]
             except Exception:
                 findings.append(_internal_error_finding(rule))
                 exit_code = 2
+            else:
+                findings.extend(produced)
         return RuleRun(findings=findings, not_run=not_run, exit_code=exit_code)
 
 

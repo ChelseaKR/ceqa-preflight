@@ -59,12 +59,20 @@ schemas:
 i18n:
 	uv run --locked python scripts/check_i18n.py
 
-# Authoring step, never part of `verify`. Run it after wrapping or rewording a string, then
-# `pybabel update -i $(I18N_LOCALES)/messages.pot -d $(I18N_LOCALES) --omit-header` to carry
-# a new message into each catalog for translation. See docs/I18N.md.
+# Authoring step, never part of `verify`. Run it after wrapping or rewording a string: it
+# re-extracts the template, carries the change into every catalog, and recompiles. New
+# messages arrive untranslated outside `en`, so `make i18n` stays red until a person
+# translates them. See docs/I18N.md.
+#
+# The middle step is scripts/update_catalogs.py rather than `pybabel update`, which cannot
+# be run safely here: with `--omit-header` it deletes the header entry outright, and
+# without it the header survives but POT-Creation-Date is rewritten from the wall clock.
+# Either way it destroys the pin that lets `make i18n` compare the compiled catalogs byte
+# for byte. The script's own docstring records the measurement.
 i18n-update:
 	uv run --locked pybabel extract -F babel.cfg --no-location --omit-header \
 		-o $(I18N_LOCALES)/messages.pot src
+	uv run --locked python scripts/update_catalogs.py
 	uv run --locked pybabel compile -d $(I18N_LOCALES) --statistics
 
 # Maintainer-only: checks that rule source citation URLs still resolve. Not part of `verify` —

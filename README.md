@@ -34,9 +34,9 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 445 tests under a
+whole tool understated it. `make verify` is the merge gate: 470 tests under a
 90% branch-coverage floor, `strict = true` mypy over 37 source files, bandit,
-and an i18n gate holding 158 English and Spanish messages at enforced parity.
+and an i18n gate holding 168 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
 than asserted. None of that makes the tool releasable: no tagged release

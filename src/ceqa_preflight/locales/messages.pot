@@ -354,13 +354,14 @@ msgid ""
 "guidance; no official size limit is documented."
 msgstr ""
 
-msgid "All files are within the advisory size threshold."
+#, python-brace-format
+msgid "All {count} inventoried file(s) are within the advisory size threshold."
+msgstr ""
+
+msgid "No file size was read, so no size was checked."
 msgstr ""
 
 msgid "Package inventory facts are unavailable."
-msgstr ""
-
-msgid "No documents in convertible non-PDF formats were detected."
 msgstr ""
 
 msgid ""
@@ -373,10 +374,16 @@ msgid ""
 " if they are not intended attachments."
 msgstr ""
 
-msgid "Filename facts are unavailable."
+#, python-brace-format
+msgid ""
+"None of the {count} inventoried file(s) are in a convertible non-PDF "
+"format."
 msgstr ""
 
-msgid "All filenames use portable characters and lengths."
+msgid "No file was inventoried, so document formats were not examined."
+msgstr ""
+
+msgid "Filename facts are unavailable."
 msgstr ""
 
 msgid ""
@@ -389,10 +396,14 @@ msgid ""
 "periods, keeping names reasonably short."
 msgstr ""
 
-msgid "File hash facts are unavailable."
+#, python-brace-format
+msgid "All {count} inventoried filename(s) use portable characters and lengths."
 msgstr ""
 
-msgid "No duplicate file hashes were detected."
+msgid "No file was inventoried, so no filename was checked."
+msgstr ""
+
+msgid "File hash facts are unavailable."
 msgstr ""
 
 msgid "Duplicate files were detected in the package."
@@ -401,10 +412,20 @@ msgstr ""
 msgid "Remove redundant copies unless each is intentionally required."
 msgstr ""
 
-msgid "Document-category facts are unavailable."
+#, python-brace-format
+msgid "No duplicate file hashes were detected among {count} checksummed file(s)."
 msgstr ""
 
-msgid "Every inventoried PDF has a declared document category."
+msgid "No file checksum was available, so duplicates were not checked."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{count} file(s) have no checksum and were excluded from this check, which"
+" therefore makes no statement about whether they are duplicates."
+msgstr ""
+
+msgid "Document-category facts are unavailable."
 msgstr ""
 
 msgid "One or more PDFs have no declared document category."
@@ -413,13 +434,17 @@ msgstr ""
 msgid "Add an explicit category for each PDF in package.yaml."
 msgstr ""
 
+#, python-brace-format
+msgid "All {count} inventoried PDF(s) have a declared document category."
+msgstr ""
+
+msgid "No PDF was inventoried, so no document category was checked."
+msgstr ""
+
 msgid "No manifest was supplied for cross-document consistency checks."
 msgstr ""
 
 msgid "Manifest reference facts are unavailable."
-msgstr ""
-
-msgid "Every manifest document reference exists in the package."
 msgstr ""
 
 msgid "One or more manifest document references do not exist in the package."
@@ -428,13 +453,26 @@ msgstr ""
 msgid "Correct the manifest paths or add the referenced files to the package."
 msgstr ""
 
-msgid "PDF filenames meet the basic descriptive-name convention."
+#, python-brace-format
+msgid "All {count} manifest document reference(s) exist in the package."
+msgstr ""
+
+msgid "The manifest declared no documents, so no reference was checked."
 msgstr ""
 
 msgid "One or more PDF filenames may not be descriptive enough for routing."
 msgstr ""
 
 msgid "Rename PDFs to include a clear document type and project-derived token."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"All {count} inventoried PDF filename(s) meet the basic descriptive-name "
+"convention."
+msgstr ""
+
+msgid "No PDF was inventoried, so no filename was checked."
 msgstr ""
 
 msgid ""
@@ -478,6 +516,19 @@ msgid "Provide an unencrypted, readable primary filing form PDF."
 msgstr ""
 
 msgid "The primary filing form is readable and unencrypted."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{count} document(s) are declared as the primary filing form but carry a "
+"declared category other than {category}, which is the category this run "
+"was asked to check."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Correct the manifest so the primary form's category is {category}, or "
+"check this package as the filing type its primary form actually declares."
 msgstr ""
 
 msgid "The primary form category cannot be established conservatively."

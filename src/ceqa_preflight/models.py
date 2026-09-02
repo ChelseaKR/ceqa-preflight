@@ -8,7 +8,7 @@ from pathlib import PurePosixPath, PureWindowsPath
 from typing import Any
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class StrictModel(BaseModel):
@@ -183,6 +183,36 @@ class PackageManifest(StrictModel):
         if not separator or major != "1":
             raise ValueError("unsupported manifest schema major; expected 1.x")
         return value
+
+    @model_validator(mode="after")
+    def reject_duplicate_document_paths(self) -> PackageManifest:
+        """Refuse two declarations of one path instead of keeping whichever came last.
+
+        The checker builds its declaration lookup as a dict keyed by path, so a manifest
+        that declared the same file twice with conflicting ``category`` or ``primary``
+        values silently kept only the last entry. Every downstream rule then read the
+        surviving declaration as if it were the only one the person wrote, and the report
+        contradicted the manifest with no diagnostic pointing at the cause: MAN-001 and
+        CAT-001, whose whole purpose is catching manifest inconsistency, both passed
+        cleanly because neither could see that a duplicate existed at all (issue #55).
+
+        Rejecting at load time fails closed, and matches how strictly the rest of this
+        model already treats manifest input. Paths are compared after normalization, so
+        ``a\\b.pdf`` and ``a/b.pdf`` are the one declaration they resolve to.
+        """
+
+        seen: set[str] = set()
+        duplicates: list[str] = []
+        for entry in self.documents:
+            if entry.path in seen and entry.path not in duplicates:
+                duplicates.append(entry.path)
+            seen.add(entry.path)
+        if duplicates:
+            raise ValueError(
+                "manifest declares the same document path more than once, so the "
+                "conflicting declarations cannot be resolved: " + ", ".join(duplicates)
+            )
+        return self
 
 
 class InspectionReport(StrictModel):

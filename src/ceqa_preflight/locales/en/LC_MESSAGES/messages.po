@@ -396,14 +396,8 @@ msgstr ""
 "Consider optimizing the PDF and verify current CEQA Submit upload guidance; no "
 "official size limit is documented."
 
-msgid "All files are within the advisory size threshold."
-msgstr "All files are within the advisory size threshold."
-
 msgid "Package inventory facts are unavailable."
 msgstr "Package inventory facts are unavailable."
-
-msgid "No documents in convertible non-PDF formats were detected."
-msgstr "No documents in convertible non-PDF formats were detected."
 
 msgid ""
 "The package contains document or image files that are not PDFs; CEQA Submit "
@@ -422,9 +416,6 @@ msgstr ""
 msgid "Filename facts are unavailable."
 msgstr "Filename facts are unavailable."
 
-msgid "All filenames use portable characters and lengths."
-msgstr "All filenames use portable characters and lengths."
-
 msgid ""
 "One or more filenames contain unusual characters or are very long, which can break "
 "uploads, links, or downstream processing."
@@ -442,9 +433,6 @@ msgstr ""
 msgid "File hash facts are unavailable."
 msgstr "File hash facts are unavailable."
 
-msgid "No duplicate file hashes were detected."
-msgstr "No duplicate file hashes were detected."
-
 msgid "Duplicate files were detected in the package."
 msgstr "Duplicate files were detected in the package."
 
@@ -453,9 +441,6 @@ msgstr "Remove redundant copies unless each is intentionally required."
 
 msgid "Document-category facts are unavailable."
 msgstr "Document-category facts are unavailable."
-
-msgid "Every inventoried PDF has a declared document category."
-msgstr "Every inventoried PDF has a declared document category."
 
 msgid "One or more PDFs have no declared document category."
 msgstr "One or more PDFs have no declared document category."
@@ -469,17 +454,11 @@ msgstr "No manifest was supplied for cross-document consistency checks."
 msgid "Manifest reference facts are unavailable."
 msgstr "Manifest reference facts are unavailable."
 
-msgid "Every manifest document reference exists in the package."
-msgstr "Every manifest document reference exists in the package."
-
 msgid "One or more manifest document references do not exist in the package."
 msgstr "One or more manifest document references do not exist in the package."
 
 msgid "Correct the manifest paths or add the referenced files to the package."
 msgstr "Correct the manifest paths or add the referenced files to the package."
-
-msgid "PDF filenames meet the basic descriptive-name convention."
-msgstr "PDF filenames meet the basic descriptive-name convention."
 
 msgid "One or more PDF filenames may not be descriptive enough for routing."
 msgstr "One or more PDF filenames may not be descriptive enough for routing."
@@ -622,3 +601,77 @@ msgstr "Check"
 msgid "Why it did not run"
 msgstr "Why it did not run"
 
+#, python-brace-format
+msgid "All {count} inventoried file(s) are within the advisory size threshold."
+msgstr "All {count} inventoried file(s) are within the advisory size threshold."
+
+msgid "No file size was read, so no size was checked."
+msgstr "No file size was read, so no size was checked."
+
+#, python-brace-format
+msgid "None of the {count} inventoried file(s) are in a convertible non-PDF format."
+msgstr "None of the {count} inventoried file(s) are in a convertible non-PDF format."
+
+msgid "No file was inventoried, so document formats were not examined."
+msgstr "No file was inventoried, so document formats were not examined."
+
+#, python-brace-format
+msgid "All {count} inventoried filename(s) use portable characters and lengths."
+msgstr "All {count} inventoried filename(s) use portable characters and lengths."
+
+msgid "No file was inventoried, so no filename was checked."
+msgstr "No file was inventoried, so no filename was checked."
+
+#, python-brace-format
+msgid "No duplicate file hashes were detected among {count} checksummed file(s)."
+msgstr "No duplicate file hashes were detected among {count} checksummed file(s)."
+
+msgid "No file checksum was available, so duplicates were not checked."
+msgstr "No file checksum was available, so duplicates were not checked."
+
+#, python-brace-format
+msgid ""
+"{count} file(s) have no checksum and were excluded from this check, which therefore "
+"makes no statement about whether they are duplicates."
+msgstr ""
+"{count} file(s) have no checksum and were excluded from this check, which therefore "
+"makes no statement about whether they are duplicates."
+
+#, python-brace-format
+msgid "All {count} inventoried PDF(s) have a declared document category."
+msgstr "All {count} inventoried PDF(s) have a declared document category."
+
+msgid "No PDF was inventoried, so no document category was checked."
+msgstr "No PDF was inventoried, so no document category was checked."
+
+#, python-brace-format
+msgid "All {count} manifest document reference(s) exist in the package."
+msgstr "All {count} manifest document reference(s) exist in the package."
+
+msgid "The manifest declared no documents, so no reference was checked."
+msgstr "The manifest declared no documents, so no reference was checked."
+
+#, python-brace-format
+msgid ""
+"All {count} inventoried PDF filename(s) meet the basic descriptive-name convention."
+msgstr ""
+"All {count} inventoried PDF filename(s) meet the basic descriptive-name convention."
+
+msgid "No PDF was inventoried, so no filename was checked."
+msgstr "No PDF was inventoried, so no filename was checked."
+
+#, python-brace-format
+msgid ""
+"{count} document(s) are declared as the primary filing form but carry a declared "
+"category other than {category}, which is the category this run was asked to check."
+msgstr ""
+"{count} document(s) are declared as the primary filing form but carry a declared "
+"category other than {category}, which is the category this run was asked to check."
+
+#, python-brace-format
+msgid ""
+"Correct the manifest so the primary form's category is {category}, or check this "
+"package as the filing type its primary form actually declares."
+msgstr ""
+"Correct the manifest so the primary form's category is {category}, or check this "
+"package as the filing type its primary form actually declares."

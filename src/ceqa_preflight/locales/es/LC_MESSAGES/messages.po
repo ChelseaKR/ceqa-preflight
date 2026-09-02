@@ -419,14 +419,8 @@ msgstr ""
 "Considere optimizar el PDF y consulte la guía vigente de carga de CEQA Submit; no hay"
 " documentado ningún límite oficial de tamaño."
 
-msgid "All files are within the advisory size threshold."
-msgstr "Todos los archivos están dentro del umbral orientativo de tamaño."
-
 msgid "Package inventory facts are unavailable."
 msgstr "No hay datos del inventario del paquete."
-
-msgid "No documents in convertible non-PDF formats were detected."
-msgstr "No se detectaron documentos en formatos convertibles distintos de PDF."
 
 msgid ""
 "The package contains document or image files that are not PDFs; CEQA Submit "
@@ -445,9 +439,6 @@ msgstr ""
 msgid "Filename facts are unavailable."
 msgstr "No hay datos sobre los nombres de archivo."
 
-msgid "All filenames use portable characters and lengths."
-msgstr "Todos los nombres de archivo usan caracteres y longitudes portables."
-
 msgid ""
 "One or more filenames contain unusual characters or are very long, which can break "
 "uploads, links, or downstream processing."
@@ -465,9 +456,6 @@ msgstr ""
 msgid "File hash facts are unavailable."
 msgstr "No hay datos de resúmenes criptográficos de archivo."
 
-msgid "No duplicate file hashes were detected."
-msgstr "No se detectaron resúmenes criptográficos de archivo duplicados."
-
 msgid "Duplicate files were detected in the package."
 msgstr "Se detectaron archivos duplicados en el paquete."
 
@@ -476,9 +464,6 @@ msgstr "Elimine las copias redundantes salvo que cada una sea intencionadamente 
 
 msgid "Document-category facts are unavailable."
 msgstr "No hay datos de categoría de documento."
-
-msgid "Every inventoried PDF has a declared document category."
-msgstr "Todos los PDF inventariados tienen una categoría de documento declarada."
 
 msgid "One or more PDFs have no declared document category."
 msgstr "Uno o más PDF no tienen categoría de documento declarada."
@@ -494,17 +479,11 @@ msgstr ""
 msgid "Manifest reference facts are unavailable."
 msgstr "No hay datos sobre las referencias del manifiesto."
 
-msgid "Every manifest document reference exists in the package."
-msgstr "Todas las referencias a documentos del manifiesto existen en el paquete."
-
 msgid "One or more manifest document references do not exist in the package."
 msgstr "Una o más referencias a documentos del manifiesto no existen en el paquete."
 
 msgid "Correct the manifest paths or add the referenced files to the package."
 msgstr "Corrija las rutas del manifiesto o añada al paquete los archivos referenciados."
-
-msgid "PDF filenames meet the basic descriptive-name convention."
-msgstr "Los nombres de archivo PDF cumplen la convención básica de nombre descriptivo."
 
 msgid "One or more PDF filenames may not be descriptive enough for routing."
 msgstr ""
@@ -669,3 +648,97 @@ msgstr "Comprobación"
 msgid "Why it did not run"
 msgstr "Por qué no se ejecutó"
 
+#, python-brace-format
+msgid "All {count} inventoried file(s) are within the advisory size threshold."
+msgstr ""
+"Los {count} archivo(s) inventariados están dentro del umbral orientativo de tamaño."
+
+msgid "No file size was read, so no size was checked."
+msgstr "No se leyó ningún tamaño de archivo, por lo que no se comprobó ningún tamaño."
+
+#, python-brace-format
+msgid "None of the {count} inventoried file(s) are in a convertible non-PDF format."
+msgstr ""
+"Ninguno de los {count} archivo(s) inventariados está en un formato no PDF "
+"convertible."
+
+msgid "No file was inventoried, so document formats were not examined."
+msgstr ""
+"No se inventarió ningún archivo, por lo que no se examinaron los formatos de "
+"documento."
+
+#, python-brace-format
+msgid "All {count} inventoried filename(s) use portable characters and lengths."
+msgstr ""
+"Los {count} nombre(s) de archivo inventariados usan caracteres y longitudes "
+"portables."
+
+msgid "No file was inventoried, so no filename was checked."
+msgstr ""
+"No se inventarió ningún archivo, por lo que no se comprobó ningún nombre de archivo."
+
+#, python-brace-format
+msgid "No duplicate file hashes were detected among {count} checksummed file(s)."
+msgstr ""
+"No se detectaron resúmenes criptográficos de archivo duplicados entre {count} "
+"archivo(s) con suma de verificación."
+
+msgid "No file checksum was available, so duplicates were not checked."
+msgstr ""
+"No había ninguna suma de verificación de archivo disponible, por lo que no se "
+"comprobaron los duplicados."
+
+#, python-brace-format
+msgid ""
+"{count} file(s) have no checksum and were excluded from this check, which therefore "
+"makes no statement about whether they are duplicates."
+msgstr ""
+"{count} archivo(s) no tienen suma de verificación y quedaron excluidos de esta "
+"comprobación, que por tanto no afirma nada sobre si son duplicados."
+
+#, python-brace-format
+msgid "All {count} inventoried PDF(s) have a declared document category."
+msgstr "Los {count} PDF inventariados tienen una categoría de documento declarada."
+
+msgid "No PDF was inventoried, so no document category was checked."
+msgstr ""
+"No se inventarió ningún PDF, por lo que no se comprobó ninguna categoría de "
+"documento."
+
+#, python-brace-format
+msgid "All {count} manifest document reference(s) exist in the package."
+msgstr "Las {count} referencia(s) a documentos del manifiesto existen en el paquete."
+
+msgid "The manifest declared no documents, so no reference was checked."
+msgstr ""
+"El manifiesto no declaró ningún documento, por lo que no se comprobó ninguna "
+"referencia."
+
+#, python-brace-format
+msgid ""
+"All {count} inventoried PDF filename(s) meet the basic descriptive-name convention."
+msgstr ""
+"Los {count} nombre(s) de archivo PDF inventariados cumplen la convención básica de "
+"nombre descriptivo."
+
+msgid "No PDF was inventoried, so no filename was checked."
+msgstr ""
+"No se inventarió ningún PDF, por lo que no se comprobó ningún nombre de archivo."
+
+#, python-brace-format
+msgid ""
+"{count} document(s) are declared as the primary filing form but carry a declared "
+"category other than {category}, which is the category this run was asked to check."
+msgstr ""
+"{count} documento(s) se declaran como formulario de presentación principal pero "
+"llevan una categoría declarada distinta de {category}, que es la categoría que se "
+"pidió comprobar en esta ejecución."
+
+#, python-brace-format
+msgid ""
+"Correct the manifest so the primary form's category is {category}, or check this "
+"package as the filing type its primary form actually declares."
+msgstr ""
+"Corrija el manifiesto para que la categoría del formulario principal sea {category}, "
+"o compruebe este paquete como el tipo de presentación que su formulario principal "
+"declara realmente."

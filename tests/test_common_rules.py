@@ -401,3 +401,81 @@ def test_zero_text_coverage_suggests_ocr() -> None:
     assert findings["PDF-003"].status.value == "warning"
     assert "scanned image" in findings["PDF-003"].message
     assert "optical character recognition" in findings["PDF-003"].remediation
+
+
+def test_an_unresolvable_object_graph_does_not_pass_the_active_content_check() -> None:
+    """Issue #54. PDF-006 must not report clean on a graph it could not resolve.
+
+    ``javascript_present=False``, ``launch_action_present=False`` and
+    ``embedded_file_count=0`` are what a document with no active content looks like, and
+    also what a document whose /Root, /Names or /OpenAction never resolved looks like.
+    PDF-006 is the one rule in the catalog whose stated purpose is catching crafted or
+    corrupt content, so it is the one rule that must never confuse those two.
+    """
+
+    statuses = _statuses(
+        [_document("NOE_corrupt_xref.pdf", inspection=_inspection(active_content_readable=False))]
+    )
+
+    assert "pass" not in statuses["PDF-006"]
+    assert statuses["PDF-006"] == {"manual"}
+
+
+def test_an_unread_structure_tree_is_not_reported_as_a_missing_one() -> None:
+    """The other half of issue #54: absence of a reading is not evidence of absence.
+
+    When /Root does not resolve, ``"/StructTreeRoot" in {}`` is False, and PDF-008 used to
+    warn that the document is untagged on the strength of a graph nobody read. The
+    inspector now leaves the flag None, which PDF-008 already treats as unexaminable.
+    """
+
+    statuses = _statuses(
+        [_document("NOE_corrupt_xref.pdf", inspection=_inspection(structure_tree_present=None))]
+    )
+
+    assert statuses["PDF-008"] == {"manual"}
+
+
+def test_an_empty_package_produces_no_passing_check_at_all() -> None:
+    """An empty package is an empty denominator for every rule, not a clean bill of health.
+
+    ``_conclude`` was written so "a pass can never come from an empty denominator", but the
+    six package-level rules did not use it: FILE-001 through FILE-005 and CAT-001 each
+    returned a bare PASS when their population was empty. A directory containing nothing
+    produced six green lines saying filenames were portable, no duplicates were found, and
+    every PDF had a category, none of which had been measured against a single file.
+    """
+
+    statuses = _statuses([])
+
+    passed = sorted(rule_id for rule_id, values in statuses.items() if "pass" in values)
+    assert passed == [], f"these rules passed with nothing to examine: {passed}"
+
+
+def test_a_package_of_only_non_pdf_files_passes_no_pdf_scoped_check() -> None:
+    """PDF-scoped rules must not pass on a package that contains no PDF."""
+
+    # A suffix outside _CONVERTIBLE_SUFFIXES, so FILE-003 has nothing to warn about here.
+    statuses = _statuses(
+        [{"path": "checksums.sig", "is_pdf": False, "sha256": "n" * 64, "size_bytes": 9}]
+    )
+
+    for rule_id in ("FILE-001", "CAT-001"):
+        assert "pass" not in statuses[rule_id], rule_id
+    # File-scoped rules did examine the one real file, so they may still pass, and their
+    # pass message has to say how many files it stands for.
+    for rule_id in ("FILE-003", "FILE-004", "FILE-005"):
+        assert "pass" in statuses[rule_id], rule_id
+
+
+def test_a_file_with_no_checksum_is_disclosed_not_folded_into_the_duplicate_pass() -> None:
+    """FILE-002 can only speak for the files it actually hashed."""
+
+    statuses = _statuses(
+        [
+            {"path": "a.pdf", "is_pdf": True, "sha256": "a" * 64, "size_bytes": 10},
+            {"path": "b.pdf", "is_pdf": True, "sha256": None, "size_bytes": 10},
+        ]
+    )
+
+    assert statuses["FILE-002"] == {"pass", "manual"}
