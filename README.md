@@ -139,9 +139,11 @@ only part of the tool that talks to a model provider, and nothing else invokes
 it. Install the extra (`pip install 'ceqa-preflight[ai]'`, or `[ai-bedrock]`
 for Amazon Bedrock), put the credential in the environment
 (`ANTHROPIC_API_KEY`, or the AWS credential chain plus `AWS_REGION`), and opt
-in per command. The default model is `claude-sonnet-5`; `--provider`,
-`--model`, `CEQA_PREFLIGHT_AI_PROVIDER`, and `CEQA_PREFLIGHT_AI_MODEL` change
-it. Every `ai` command states the data flow before it runs: the text it sends
+in per command. The default model is `claude-sonnet-5` on the Anthropic API and
+`claude-sonnet-4-6` on Bedrock, which is the model every recorded eval run was
+produced on because Sonnet 5 answers 403 on the account this project has;
+`--provider`, `--model`, `CEQA_PREFLIGHT_AI_PROVIDER`, and
+`CEQA_PREFLIGHT_AI_MODEL` change either. Every `ai` command states the data flow before it runs: the text it sends
 leaves the machine for the duration of the request, and the provider's terms
 apply to it. It never writes that text to a log.
 
