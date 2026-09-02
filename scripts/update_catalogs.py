@@ -109,7 +109,14 @@ def update(catalog: Path, wanted: list[str], locale: str) -> tuple[list[str], li
         entry += quote("msgid", message)
         entry += quote("msgstr", message if locale == SOURCE_LOCALE else "")
         entries.append("\n".join(entry))
-    catalog.write_text("\n\n".join(block.strip("\n") for block in entries) + "\n", encoding="utf-8")
+    # newline="\n" and not the default, which translates to os.linesep. Babel always writes
+    # LF and .gitattributes pins these files to it, so a Windows run of `make i18n-update`
+    # would otherwise rewrite every catalog to CRLF and report it as a change to every line.
+    catalog.write_text(
+        "\n\n".join(block.strip("\n") for block in entries) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     return added, removed
 
 
