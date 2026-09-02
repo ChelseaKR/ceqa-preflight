@@ -6,6 +6,12 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## [0.1.0] - 2026-09-01
+
+First tagged release. Everything below is the whole history of the project to
+this point: `0.1.0` was the in-development baseline from the first commit and
+was never published anywhere, so nothing here supersedes a released version.
+
 - **Fixed: a check could pass a document it never read.** `_mapping()` in the PDF
   inspector resolved an unreadable indirect reference and a genuinely absent key
   to the same empty mapping, so a PDF whose `/Root`, `/Names` or `/OpenAction`
