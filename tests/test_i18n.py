@@ -35,6 +35,7 @@ if SCRIPTS not in sys.path:  # pragma: no cover - import bookkeeping
     sys.path.insert(0, SCRIPTS)
 
 import check_i18n  # type: ignore[import-not-found]  # noqa: E402
+import update_catalogs  # type: ignore[import-not-found]  # noqa: E402
 
 runner = CliRunner()
 
@@ -605,3 +606,100 @@ def test_crlf_tolerance_does_not_hide_a_genuinely_stale_template(
     code, stderr = _run_gate(capsys)
     assert code == 1
     assert "is wrapped in source but not extracted" in stderr
+
+
+# --------------------------------------------------------------------------------------
+# The authoring loop
+# --------------------------------------------------------------------------------------
+
+_NEW_MESSAGE = "A message wrapped in source that no catalog has seen yet."
+
+
+def _header(catalog: Path) -> str:
+    """The comment block and header entry, up to the first real message."""
+
+    return catalog.read_text(encoding="utf-8").split("\n\nmsgid ", 1)[0]
+
+
+def test_update_catalogs_changes_nothing_when_no_message_changed(tmp_path: Path) -> None:
+    """The property `pybabel update` cannot hold, in either of the forms it offers.
+
+    With `--omit-header` it deletes the header entry; without it, `POT-Creation-Date` is
+    rewritten from the wall clock and every entry is rewrapped. This file pins that date
+    precisely so the gate above can compare the compiled catalogs byte for byte, so the
+    authoring step `docs/I18N.md` used to prescribe corrupted, every time it ran, the pin
+    the gate depends on. Measured: substituting `pybabel update` for the script here fails
+    this test, the one below it, and the refusal case at the end.
+    """
+
+    copied = tmp_path / "locales"
+    shutil.copytree(LOCALES, copied)
+    before = {path: path.read_bytes() for path in sorted(copied.rglob("*.po"))}
+    assert before, "no catalog was copied; this check would be vacuous"
+
+    assert update_catalogs.main(copied) == 0
+    assert {path: path.read_bytes() for path in sorted(copied.rglob("*.po"))} == before
+
+
+def test_update_catalogs_carries_a_new_message_in_untranslated(tmp_path: Path) -> None:
+    """A new message must reach `es` empty, so the gate reports it rather than shipping it.
+
+    English is filled with its own `msgid`, which is the identity the gate already
+    enforces; anything else would put unreviewed English in front of a Spanish reader
+    under the appearance of a translation.
+    """
+
+    copied = tmp_path / "locales"
+    shutil.copytree(LOCALES, copied)
+    template = copied / "messages.pot"
+    headers = {locale: _header(_po(copied, locale)) for locale in ("en", "es")}
+    template.write_text(
+        template.read_text(encoding="utf-8") + f'\nmsgid "{_NEW_MESSAGE}"\nmsgstr ""\n',
+        encoding="utf-8",
+    )
+
+    assert update_catalogs.main(copied) == 0
+
+    for locale, expected in (("en", _NEW_MESSAGE), ("es", "")):
+        catalog = _po(copied, locale)
+        _, index = update_catalogs.parse(catalog)
+        assert _NEW_MESSAGE in index, f"{locale} did not receive the new message"
+        block = catalog.read_text(encoding="utf-8").split("\n\n")[index[_NEW_MESSAGE]]
+        lines = [line for line in block.split("\n") if line.strip()]
+        stop = next(i for i, line in enumerate(lines) if line.startswith("msgstr "))
+        assert update_catalogs.unquote(lines[stop:]) == expected
+        assert _header(catalog) == headers[locale], f"{locale}'s header did not survive"
+
+
+def test_update_catalogs_removes_a_message_source_no_longer_wraps(tmp_path: Path) -> None:
+    """The other direction: an entry the template dropped must not linger in a catalog."""
+
+    copied = tmp_path / "locales"
+    shutil.copytree(LOCALES, copied)
+    template = copied / "messages.pot"
+    _, index = update_catalogs.parse(template)
+    doomed = next(message for message in index if message)
+    blocks = template.read_text(encoding="utf-8").split("\n\n")
+    del blocks[index[doomed]]
+    template.write_text("\n\n".join(blocks), encoding="utf-8")
+
+    assert update_catalogs.main(copied) == 0
+
+    for locale in ("en", "es"):
+        assert doomed not in update_catalogs.parse(_po(copied, locale))[1]
+
+
+def test_update_catalogs_refuses_to_empty_every_catalog(tmp_path: Path) -> None:
+    """An extraction that produced nothing is a broken run, not an instruction to delete.
+
+    Without this the script would faithfully strip every message out of both catalogs the
+    first time `pybabel extract` failed to find the source tree.
+    """
+
+    copied = tmp_path / "locales"
+    shutil.copytree(LOCALES, copied)
+    before = {path: path.read_bytes() for path in sorted(copied.rglob("*.po"))}
+    (copied / "messages.pot").write_text("", encoding="utf-8")
+
+    assert update_catalogs.main(copied) == 1
+    assert {path: path.read_bytes() for path in sorted(copied.rglob("*.po"))} == before
