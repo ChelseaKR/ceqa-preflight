@@ -16,5 +16,5 @@ license: "Apache-2.0"
 # version. If the tag is cut on a different day, this date and the CHANGELOG heading move
 # together.
 version: "0.1.0"
-date-released: "2026-09-01"
+date-released: "2026-09-02"
 abstract: "A local, source-cited advisory preflight checker for CEQA Submit filing packages."

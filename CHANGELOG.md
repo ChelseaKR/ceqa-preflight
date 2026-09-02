@@ -6,7 +6,7 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
-## [0.1.0] - 2026-09-01
+## [0.1.0] - 2026-09-02
 
 First tagged release. Everything below is the whole history of the project to
 this point: `0.1.0` was the in-development baseline from the first commit and
