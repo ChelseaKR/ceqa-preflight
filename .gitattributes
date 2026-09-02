@@ -7,3 +7,20 @@
 
 # Compiled catalogs are binary. Line-ending conversion would corrupt them outright.
 *.mo   binary
+
+# The same rule, for every other artifact a gate regenerates and compares byte for byte
+# (tests/test_committed_artifacts_are_current.py). Git's own text/binary heuristic is not
+# enough here: `ceqa-preflight synth` writes small uncompressed PDFs that contain no NUL
+# byte, so Git classifies them as text, and a CRLF checkout rewrote 109 of the 1478 bytes
+# of Fictional_Example_Project_fillable_form.pdf. Measured 2026-08-29 on the windows-latest
+# job and reproduced locally with `git -c core.autocrlf=true clone`: the comparison saw a
+# 1587-byte "committed" file against 1478 freshly synthesised bytes.
+*.pdf  binary
+
+# The example package is hashed into the report's input fingerprint, which the committed
+# sample report states as a number, so converting the manifest changes that number too.
+examples/noe-fictional-package/package.yaml  text eol=lf
+examples/sample-report.html                  text eol=lf
+
+# Byte-compared against `make schemas` output.
+schemas/*.json  text eol=lf

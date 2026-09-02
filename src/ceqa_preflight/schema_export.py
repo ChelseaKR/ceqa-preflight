@@ -18,9 +18,14 @@ def export_schemas(destination: Path) -> None:
     }
     for filename, schema in artifacts.items():
         path = destination / filename
+        # newline="\n" rather than the default: the default translates to os.linesep, so a
+        # Windows run of `make schemas` would write CRLF and the published contract would
+        # differ from a POSIX one byte for byte. .gitattributes pins the checkout to LF;
+        # this pins the producer to the same thing, on every platform.
         path.write_text(
             json.dumps(schema, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
+            newline="\n",
         )
 
 
