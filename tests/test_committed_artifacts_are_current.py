@@ -40,6 +40,7 @@ import sys
 import tomllib
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from ceqa_preflight.ai.corpus import Corpus, default_corpus_dir
@@ -447,3 +448,73 @@ def test_i18n_doc_message_count_matches_the_catalogue_template() -> None:
         f"expected exactly one docs/I18N.md line stating the message count, found {len(lines)}"
     )
     _assert_states(lines[0], r"(\d+) messages, both catalogs at", messages, where="docs/I18N.md")
+
+
+# --------------------------------------------------------------------------------------
+# Line endings
+# --------------------------------------------------------------------------------------
+
+
+def _byte_compared_artifacts() -> list[Path]:
+    """Every artifact this module compares as bytes rather than as decoded text.
+
+    A byte comparison is only meaningful if the committed file reaches the working tree
+    unchanged. Git's text/binary heuristic looks for a NUL byte in the first 8000, and the
+    synthetic PDFs have none, so Git calls them text and converts them on a CRLF checkout.
+    """
+    return [
+        *sorted(path for path in _SCHEMAS.iterdir() if path.is_file()),
+        *sorted(path for path in _PACKAGE.iterdir() if path.is_file()),
+        _EXAMPLES / "sample-report.html",
+    ]
+
+
+def test_byte_compared_artifacts_are_checked_out_unconverted() -> None:
+    """The Windows leg of the merge gate is where this bites, and it did.
+
+    Measured 2026-08-29: `Fictional_Example_Project_fillable_form.pdf` arrived on the
+    windows-latest runner as 1587 bytes against the 1478 a fresh `synth` writes, exactly its
+    109 line endings, and the sample report's stated input fingerprint moved with it because
+    the package it hashes had been converted too. `.gitattributes` now pins these paths;
+    this is the assertion that keeps them pinned.
+    """
+    artifacts = _byte_compared_artifacts()
+    assert artifacts, "no artifact was collected; this check would be vacuous"
+    converted = [
+        path.relative_to(_ROOT).as_posix() for path in artifacts if b"\r\n" in path.read_bytes()
+    ]
+    assert not converted, (
+        f"{converted} reached the working tree with CRLF line endings, so the byte "
+        "comparisons above are running against files no producer ever wrote. Add the path "
+        "to .gitattributes as `binary` or `text eol=lf` and re-check it out."
+    )
+
+
+def test_the_producers_of_those_artifacts_ask_for_lf_explicitly(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """`Path.write_text()` translates to `os.linesep` unless told otherwise.
+
+    Asserted on the call and not on the bytes it produces, so that it fails on every
+    platform. On POSIX the default and `newline="\\n"` write identical output, so an output
+    check here would pass no matter what the producer asked for and would only ever bite on
+    the Windows job — which is how this went unnoticed until the artifact gates arrived.
+    """
+    calls: list[tuple[str, object]] = []
+    original = Path.write_text
+
+    def recording(self: Path, data: str, *args: object, **kwargs: object) -> int:
+        calls.append((self.name, kwargs.get("newline")))
+        return original(self, data, *args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(Path, "write_text", recording)
+    export_schemas(tmp_path / "schemas")
+    result = _runner.invoke(app, ["synth", str(tmp_path / "package"), *_SYNTH_ARGS])
+    assert result.exit_code == 0, result.output
+
+    assert calls, "no committed-artifact producer wrote a text file; this check is vacuous"
+    platform_dependent = sorted({name for name, newline in calls if newline != "\n"})
+    assert not platform_dependent, (
+        f"{platform_dependent} were written with the platform's line ending. Pass "
+        'newline="\\n" so the artifact is the same bytes on every platform.'
+    )

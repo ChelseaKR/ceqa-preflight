@@ -200,9 +200,13 @@ def _write_manifest(
         }
     )
     manifest_path = directory / "package.yaml"
+    # newline="\n" rather than the default: `synth` output is byte-reproducible by design,
+    # and it is hashed into the report's input fingerprint, so it must not vary with
+    # os.linesep.
     manifest_path.write_text(
         yaml.safe_dump(manifest.model_dump(mode="json"), sort_keys=False, allow_unicode=True),
         encoding="utf-8",
+        newline="\n",
     )
     return manifest_path
 
