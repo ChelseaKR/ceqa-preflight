@@ -39,9 +39,10 @@ whole tool understated it. `make verify` is the merge gate: 470 tests under a
 and an i18n gate holding 168 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
-than asserted. None of that makes the tool releasable: no tagged release
-or package publication exists, and the CLI and JSON report schema are still
-unstable. See [Public API and release status](#public-api-and-release-status).
+than asserted. None of that makes the tool production-ready:
+`v0.1.0` is a first tagged release of pre-alpha software, nothing is published
+to a package registry, and the CLI and JSON report schema are still unstable.
+See [Public API and release status](#public-api-and-release-status).
 
 ## Intended initial scope
 
@@ -73,10 +74,17 @@ unstable. See [Public API and release status](#public-api-and-release-status).
     uv run ceqa-preflight pilot init ./pilot-evidence
     uv run ceqa-preflight pilot summarize --reviews ./pilot-evidence/finding-review.csv --baseline ./pilot-evidence/manual-baseline.csv
 
-Without a local checkout, run the CLI directly from a clone with
-[uv](https://docs.astral.sh/uv/): `uvx --from /path/to/ceqa-preflight
-ceqa-preflight --help`, or install it with `pipx install
-/path/to/ceqa-preflight`. No package registry release exists yet.
+Without a local checkout, run the CLI straight from the tagged release with
+[uv](https://docs.astral.sh/uv/), or install it with `pipx`:
+
+    uvx --from git+https://github.com/ChelseaKR/ceqa-preflight@v0.1.0 ceqa-preflight --help
+    pipx install git+https://github.com/ChelseaKR/ceqa-preflight@v0.1.0
+
+The release attaches a built wheel and sdist, with a CycloneDX SBOM and build
+provenance, to the GitHub Release; those install directly too. There is no
+package-registry publication, so plain `uvx ceqa-preflight` will not find it.
+From a clone, `uvx --from /path/to/ceqa-preflight ceqa-preflight --help` still
+works.
 
 The `check` command reads one or more directories or ZIP packages locally,
 never uploads or alters their contents, and can emit console, JSON,
@@ -224,11 +232,14 @@ The project also documents its [pilot protocol](docs/pilot-protocol.md),
 
 ## Public API and release status
 
-The command-line interface and JSON report schema are **not yet stable**. No
-GitHub Release or package publication has been made; version `0.1.0` is the
-pre-release development baseline, not a promise of production readiness.
-Breaking changes may occur before the first tagged release. See
-[CHANGELOG.md](CHANGELOG.md) and [docs/ROADMAP.md](docs/ROADMAP.md).
+The command-line interface and JSON report schema are **not yet stable**.
+`v0.1.0` is the first tagged release: the pre-release development baseline
+given a version number, not a promise of production readiness. Under the 0ver
+intent of the
+[Release & Versioning standard](docs/standards/RELEASE-AND-VERSIONING-STANDARD.md)
+(§2, REL-05), a `MINOR` bump before `1.0.0` may break. No package-registry
+publication has been made. See [CHANGELOG.md](CHANGELOG.md) and
+[docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Standards conformance
 
@@ -242,7 +253,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with a 90% branch-coverage floor, and complexity <= 10), `uv.lock`, and `.python-version` |
 | Security & Supply-Chain | Applies | [Security policy](SECURITY.md); bandit, pip-audit, gitleaks, and CodeQL in CI; SHA-pinned actions and a committed lockfile |
 | CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
-| Release & Versioning | Applies — pre-release gap | The signed-tag release workflow is committed; the first public tag and its release evidence are still pending |
+| Release & Versioning | Applies | `v0.1.0`, cut by the committed signed-tag `release.yml`: authorized against `.github/allowed_signers`, `make verify` re-run at the tagged commit, CycloneDX SBOM and SLSA build provenance attached to the GitHub Release. No package-registry publication |
 | Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
