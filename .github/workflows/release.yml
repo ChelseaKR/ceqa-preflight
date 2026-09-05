@@ -26,6 +26,7 @@ jobs:
   build-and-attest:
     needs: authorize
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       attestations: write
@@ -80,6 +81,7 @@ jobs:
   publish-release:
     needs: [authorize, build-and-attest]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
