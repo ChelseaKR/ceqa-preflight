@@ -501,14 +501,43 @@ def _sarif_notification(skipped: SkippedCheck) -> dict[str, object]:
     }
 
 
+def _sarif_error_notification(finding: Finding) -> dict[str, object]:
+    """A rule whose check threw, as an error-level SARIF notification.
+
+    SARIF puts "the tool could not analyse this" in `toolExecutionNotifications`,
+    not in `results`, which is where a *finding* goes. This one is both: the
+    warning stays in `results` so nothing disappears, and the notification is
+    what makes `executionSuccessful: false` diagnosable rather than bare.
+    """
+
+    return {
+        "descriptor": {"id": finding.rule_id},
+        "associatedRule": {"id": finding.rule_id},
+        "level": "error",
+        "message": {"text": finding.message},
+        "properties": {
+            "reason": "internal_rule_error",
+            "ruleVersion": finding.rule_version,
+        },
+    }
+
+
 def render_sarif(report: InspectionReport) -> str:
-    """Render a report as SARIF 2.1.0 for code scanning."""
+    """Render a report as SARIF 2.1.0 for code scanning.
+
+    `executionSuccessful` is read off the report rather than asserted. A check
+    that threw evaluated nothing, which is the same thing `not_run` records and
+    the same reason both are disclosed here: a run that could not complete every
+    rule must not be indistinguishable from one that did.
+    """
 
     scored = list(report.findings) + list(report.manual_review)
+    incomplete = [finding for finding in scored if not finding.check_completed]
     rules: dict[str, dict[str, object]] = {}
     for finding in scored:
         rules.setdefault(finding.rule_id, _sarif_rule(finding))
     notifications = [_sarif_notification(skipped) for skipped in report.not_run]
+    notifications.extend(_sarif_error_notification(finding) for finding in incomplete)
     document = {
         "$schema": SARIF_SCHEMA,
         "version": SARIF_VERSION,
@@ -524,12 +553,16 @@ def render_sarif(report: InspectionReport) -> str:
                         "notifications": [
                             {"id": skipped.rule_id, "shortDescription": {"text": skipped.title}}
                             for skipped in report.not_run
+                        ]
+                        + [
+                            {"id": finding.rule_id, "shortDescription": {"text": finding.title}}
+                            for finding in incomplete
                         ],
                     }
                 },
                 "invocations": [
                     {
-                        "executionSuccessful": True,
+                        "executionSuccessful": not incomplete,
                         "toolExecutionNotifications": notifications,
                     }
                 ],
@@ -561,27 +594,41 @@ def render_junit(report: InspectionReport) -> str:
     or a warning onto it would report a check that ran as one that did not.
     A warning and a manual-review item are passing test cases carrying their
     text in ``<system-out>``; only a failure is a ``<failure>``.
+
+    ``<error>`` is reserved, symmetrically, for a check that threw. JUnit already
+    separates "the assertion did not hold" from "the test could not run", and a
+    check the engine had to raise its own finding for is the second: it concluded
+    nothing about the package. Rendered as a ``<system-out>`` warning it would be
+    a *passing* test case, and the suite's ``errors`` count -- the one attribute
+    that exists to carry exactly this -- would stay at the literal zero it used
+    to be, on a run the tool itself exits 2 for.
     """
 
+    scored = list(report.findings) + list(report.manual_review)
     suite = ElementTree.Element(
         "testsuite",
         {
             "name": "ceqa-preflight",
-            "tests": str(len(report.findings) + len(report.manual_review) + len(report.not_run)),
+            "tests": str(len(scored) + len(report.not_run)),
             "failures": str(sum(1 for f in report.findings if f.status is FindingStatus.FAILURE)),
-            "errors": "0",
+            "errors": str(sum(1 for f in scored if not f.check_completed)),
             "skipped": str(len(report.not_run)),
             "timestamp": report.generated_at.isoformat(),
         },
     )
     classname = f"ceqa-preflight.{report.filing_type.value}"
-    for finding in list(report.findings) + list(report.manual_review):
+    for finding in scored:
         case = ElementTree.SubElement(
             suite,
             "testcase",
             {"name": f"{finding.rule_id}: {finding.title}", "classname": classname},
         )
-        if finding.status is FindingStatus.FAILURE:
+        if not finding.check_completed:
+            error = ElementTree.SubElement(
+                case, "error", {"message": finding.message, "type": "internal_rule_error"}
+            )
+            error.text = f"{_junit_text(finding)}\n{finding.remediation}"
+        elif finding.status is FindingStatus.FAILURE:
             failure = ElementTree.SubElement(
                 case, "failure", {"message": finding.message, "type": finding.status.value}
             )

@@ -96,7 +96,7 @@ def test_report_serializes_with_schema_contract() -> None:
 
     serialized = report.model_dump(mode="json")
 
-    assert serialized["report_schema_version"] == "1.1"
+    assert serialized["report_schema_version"] == "1.2"
     assert serialized["filing_type"] == "NOE"
     assert serialized["not_run"] == []
 

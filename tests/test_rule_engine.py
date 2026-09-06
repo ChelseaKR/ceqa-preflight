@@ -129,3 +129,31 @@ def test_a_check_that_raises_midway_publishes_none_of_its_outcomes() -> None:
     assert result.exit_code == 2
     assert [finding.status for finding in result.findings] == [FindingStatus.WARNING]
     assert FindingStatus.PASS not in {finding.status for finding in result.findings}
+
+
+def test_the_internal_error_finding_records_that_the_check_did_not_complete() -> None:
+    """The machine-readable half of "No package conclusion was made".
+
+    Every other finding is a conclusion a check reached. This one is the engine reporting
+    that a check reached none, and until it carried a field saying so, the only place that
+    fact existed was inside a localized English sentence. The two CI formats count elements
+    rather than reading sentences, so both rendered it as a rule that ran and was content.
+    """
+
+    catalog = RuleCatalog(catalog_version="1.0.0", rules=[_definition("CORE-002", "broken")])
+    engine = RuleEngine(catalog, {"broken": lambda *_: (_ for _ in ()).throw(RuntimeError("boom"))})
+
+    result = engine.run(RuleContext(filing_type=FilingType.NOE))
+
+    assert result.findings[0].check_completed is False
+
+
+def test_a_finding_a_check_actually_reached_records_that_it_completed() -> None:
+    """The default, asserted so the flag cannot come to mean nothing by being always False."""
+
+    catalog = RuleCatalog(catalog_version="1.0.0", rules=[_definition("CORE-001", "fine")])
+    engine = RuleEngine(catalog, {"fine": lambda *_: [_outcome(RuleOutcomeStatus.PASS)]})
+
+    result = engine.run(RuleContext(filing_type=FilingType.NOE))
+
+    assert result.findings[0].check_completed is True

@@ -19,6 +19,24 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Fixed: the two CI formats reported a check that crashed as one that passed.**
+  A rule whose check raises contributes a single warning finding — "This check
+  could not complete. No package conclusion was made." — and the run exits `2`.
+  The prose formats print that sentence. The machine-readable formats count
+  elements instead of reading them, and both counted this one wrong: JUnit gave
+  the case no child element, which is a *passing* test case, and reported
+  `errors="0"` from a hard-coded literal that no input could move; SARIF reported
+  `executionSuccessful: true` the same way. A CI job summary on a run the tool
+  itself exits `2` for read `0 failures, 0 errors, all tests passed`.
+  `<error>` is now reserved for a check that could not complete, exactly as
+  `<skipped>` is reserved for one that never started, and `executionSuccessful`
+  is read off the report, with an error-level `toolExecutionNotification` naming
+  the rule so the `false` is diagnosable. The warning stays in `results` and in
+  the JUnit case list; nothing is moved out of sight. `Finding` gains
+  `check_completed` (default `true`) to carry the fact outside a localized
+  sentence, so `report_schema_version` moves to `1.2` — additive, and a 1.1
+  reader is unaffected.
+
 - **Fixed: a check could pass a document it never read.** `_mapping()` in the PDF
   inspector resolved an unreadable indirect reference and a genuinely absent key
   to the same empty mapping, so a PDF whose `/Root`, `/Names` or `/OpenAction`
