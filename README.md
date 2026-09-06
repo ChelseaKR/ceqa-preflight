@@ -34,7 +34,7 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 519 tests under a
+whole tool understated it. `make verify` is the merge gate: 522 tests under a
 90% branch-coverage floor, `strict = true` mypy over 38 source files, bandit,
 and an i18n gate holding 210 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the

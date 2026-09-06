@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -11,6 +12,18 @@ for folder in ("evals", "evals/extraction", "scripts"):
     if candidate not in sys.path:
         sys.path.insert(0, candidate)
 
+
+def _load(name: str, relative: str):
+    """Load a runner by path. Every suite names its module ``run``, so importing the
+    grounding runner by name would return whichever ``run`` is first on ``sys.path``."""
+
+    spec = importlib.util.spec_from_file_location(name, ROOT / relative)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 import fetch_ceqanet_sample as fetcher  # type: ignore[import-not-found]  # noqa: E402
 from run import (  # type: ignore[import-not-found]  # noqa: E402
     aggregate,
@@ -19,11 +32,16 @@ from run import (  # type: ignore[import-not-found]  # noqa: E402
     values_match,
 )
 
+from ceqa_preflight.ai.explain import ExplainMode, FindingExplanation  # noqa: E402
 from ceqa_preflight.ai.extraction import (  # noqa: E402
     DocumentExtraction,
     ExtractedField,
     FieldStatus,
 )
+from ceqa_preflight.ai.grounding import Citation, Claim  # noqa: E402
+from ceqa_preflight.models import FindingStatus  # noqa: E402
+
+grounding_run = _load("grounding_run", "evals/grounding/run.py")
 
 _PAGE = """
 <h2>Attachments</h2>
@@ -165,3 +183,68 @@ def test_aggregate_reports_the_defect_separately() -> None:
     assert metrics["exact_or_normalized_match_rate_when_filled"] == 0.5
     assert metrics["filled_gold_absent"] == 1
     assert metrics["per_field"]["county"] == {"match": 1}
+
+
+def _explained(claims: list[Claim], withheld: list[object] | None = None) -> FindingExplanation:
+    return FindingExplanation(
+        rule_id="common.scanned-pdf",
+        rule_version="1.0",
+        status=FindingStatus.FAILURE,
+        title="A scanned PDF",
+        message="This document has no text layer.",
+        claims=claims,
+        withheld=withheld or [],
+    )
+
+
+def _cited(text: str) -> Claim:
+    return Claim(text=text, citations=[Citation(passage_id="p1", quote="q", verified=True)])
+
+
+def test_a_determination_that_reaches_display_is_counted_not_assumed() -> None:
+    """The count must come off the shown claims, so a verifier regression moves it.
+
+    This figure was a hardcoded ``0`` annotated "by construction". Nothing measured it,
+    so a claim reaching display with determination language -- the exact failure the
+    number exists to rule out -- left it reading zero.
+    """
+
+    leaked = _cited("Your filing complies with CEQA and will be accepted.")
+    row = grounding_run.row_for("synthetic-noe", ExplainMode.EXPLAIN, _explained([leaked]))
+
+    assert row["determinations_shown"] == 1, (
+        "a determination reached display and the row did not count it"
+    )
+    assert row["determination_phrases_shown"], "a nonzero count must name the phrase"
+
+    metrics = grounding_run.summarize([row])
+    assert metrics["determinations_reaching_display"] == 1
+    assert metrics["determination_phrases_reaching_display"]
+
+
+def test_clean_claims_reaching_display_count_zero() -> None:
+    row = grounding_run.row_for(
+        "synthetic-noe",
+        ExplainMode.EXPLAIN,
+        _explained([_cited("The form has no text layer, so a reviewer cannot search it.")]),
+    )
+    assert row["determinations_shown"] == 0
+    assert row["determination_phrases_shown"] == []
+    assert grounding_run.summarize([row])["determinations_reaching_display"] == 0
+    assert grounding_run.summarize([row])["determination_phrases_reaching_display"] == []
+
+
+def test_summarize_still_reports_what_the_verifier_withheld() -> None:
+    """The withheld count and the reached-display count are different measurements."""
+
+    from ceqa_preflight.ai.grounding import WithheldClaim
+
+    item = _explained(
+        [_cited("The signature field is empty.")],
+        [WithheldClaim(reason="determination language: 'complies with ceqa'", citation_count=1)],
+    )
+    metrics = grounding_run.summarize([grounding_run.row_for("r", ExplainMode.EXPLAIN, item)])
+    assert metrics["withheld_determination"] == 1
+    assert metrics["determinations_reaching_display"] == 0
+    assert metrics["claims_produced"] == 2
+    assert metrics["claims_shown"] == 1

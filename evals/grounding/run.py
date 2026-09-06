@@ -14,7 +14,13 @@ run. The metric is what the verifier did with what the model produced:
 - ``withheld_uncited``: a claim with no citation at all;
 - ``withheld_determination``: a claim that upgraded the finding into a determination
   ("your filing complies", "will be accepted"); this is the number that must be zero
-  after verification and is reported before it so the verifier's work is visible.
+  after verification and is reported before it so the verifier's work is visible;
+- ``determinations_reaching_display``: the same check re-run over the claims that were
+  actually shown. This is the figure that proves the tool never issues a determination,
+  so it is read out of the displayed claims rather than inferred from the verifier's
+  contract. It was previously published as a literal ``0`` annotated "by construction",
+  which is the code under test asserting its own result: no regression that let a
+  determination through could ever have moved it.
 
     uv run python evals/grounding/run.py --live [--provider bedrock --model ...] [--out FILE]
 """
@@ -40,7 +46,13 @@ from ceqa_preflight import __version__  # noqa: E402
 from ceqa_preflight.ai.client import ModelClient, build_client  # noqa: E402
 from ceqa_preflight.ai.corpus import Corpus  # noqa: E402
 from ceqa_preflight.ai.evals import EvalProvenance, EvalResult, EvalStatus  # noqa: E402
-from ceqa_preflight.ai.explain import PROMPT_VERSIONS, ExplainMode, explain_report  # noqa: E402
+from ceqa_preflight.ai.explain import (  # noqa: E402
+    PROMPT_VERSIONS,
+    ExplainMode,
+    FindingExplanation,
+    explain_report,
+)
+from ceqa_preflight.ai.guard import determination_language  # noqa: E402
 from ceqa_preflight.checker import check_package  # noqa: E402
 from ceqa_preflight.models import FilingType, InspectionReport  # noqa: E402
 from ceqa_preflight.rule_registry import default_catalog  # noqa: E402
@@ -89,43 +101,46 @@ def reports(work: Path) -> list[tuple[str, InspectionReport]]:
     return built
 
 
-def run_live(client: ModelClient, corpus: Corpus) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    catalog = default_catalog()
-    rows: list[dict[str, Any]] = []
-    with tempfile.TemporaryDirectory(prefix="ceqa-preflight-grounding-") as directory:
-        for name, report in reports(Path(directory)):
-            for mode in ExplainMode:
-                explained = explain_report(client, corpus, report, catalog, mode=mode)
-                for item in explained.items:
-                    reasons = [withheld.reason for withheld in item.withheld]
-                    rows.append(
-                        {
-                            "report": name,
-                            "mode": mode.value,
-                            "rule_id": item.rule_id,
-                            "status": item.status.value,
-                            "source_kind": item.source_kind.value if item.source_kind else None,
-                            "claims_produced": len(item.claims) + len(item.withheld),
-                            "claims_shown": len(item.claims),
-                            "withheld_citation": sum("did not verify" in r for r in reasons),
-                            "withheld_uncited": sum(r == "no citation" for r in reasons),
-                            "withheld_determination": sum(
-                                r.startswith("determination language") for r in reasons
-                            ),
-                            "determination_phrases": [
-                                r.split(": ", 1)[1]
-                                for r in reasons
-                                if r.startswith("determination")
-                            ],
-                            "model_error": item.model_error,
-                            "note": item.note,
-                        }
-                    )
-                    print(
-                        f"{name} {mode.value} {item.rule_id}: shown={len(item.claims)} "
-                        f"withheld={len(item.withheld)} error={item.model_error is not None}",
-                        file=sys.stderr,
-                    )
+def row_for(name: str, mode: ExplainMode, item: FindingExplanation) -> dict[str, Any]:
+    """One eval row for one explained finding.
+
+    ``determinations_shown`` scans the claims the reader actually sees with the same
+    predicate the verifier uses to withhold them. The verifier is supposed to withhold
+    every one, so the expected value is zero -- but expecting a number is not measuring
+    it, and only a row built from the output can notice a claim that reached display
+    without passing ``verify_claims``.
+    """
+
+    reasons = [withheld.reason for withheld in item.withheld]
+    shown_determinations = [
+        phrase
+        for phrase in (determination_language(claim.text) for claim in item.claims)
+        if phrase is not None
+    ]
+    return {
+        "report": name,
+        "mode": mode.value,
+        "rule_id": item.rule_id,
+        "status": item.status.value,
+        "source_kind": item.source_kind.value if item.source_kind else None,
+        "claims_produced": len(item.claims) + len(item.withheld),
+        "claims_shown": len(item.claims),
+        "withheld_citation": sum("did not verify" in r for r in reasons),
+        "withheld_uncited": sum(r == "no citation" for r in reasons),
+        "withheld_determination": sum(r.startswith("determination language") for r in reasons),
+        "determination_phrases": [
+            r.split(": ", 1)[1] for r in reasons if r.startswith("determination")
+        ],
+        "determinations_shown": len(shown_determinations),
+        "determination_phrases_shown": shown_determinations,
+        "model_error": item.model_error,
+        "note": item.note,
+    }
+
+
+def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Aggregate the per-finding rows. Every published figure is derived here."""
+
     totals = {
         key: sum(row[key] for row in rows)
         for key in (
@@ -137,7 +152,7 @@ def run_live(client: ModelClient, corpus: Corpus) -> tuple[dict[str, Any], list[
         )
     }
     produced = totals["claims_produced"]
-    metrics = {
+    return {
         "findings_covered": len(rows),
         "reports": len({row["report"] for row in rows}),
         "model_errors": sum(row["model_error"] is not None for row in rows),
@@ -145,12 +160,31 @@ def run_live(client: ModelClient, corpus: Corpus) -> tuple[dict[str, Any], list[
         "verified_share_of_produced": round(totals["claims_shown"] / produced, 3)
         if produced
         else None,
-        "determinations_reaching_display": 0,  # by construction; the verifier withholds them
+        "determinations_reaching_display": sum(row["determinations_shown"] for row in rows),
+        "determination_phrases_reaching_display": sorted(
+            {phrase for row in rows for phrase in row["determination_phrases_shown"]}
+        ),
         "findings_with_nothing_shown": sum(
             row["claims_shown"] == 0 and row["model_error"] is None for row in rows
         ),
     }
-    return metrics, rows
+
+
+def run_live(client: ModelClient, corpus: Corpus) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    catalog = default_catalog()
+    rows: list[dict[str, Any]] = []
+    with tempfile.TemporaryDirectory(prefix="ceqa-preflight-grounding-") as directory:
+        for name, report in reports(Path(directory)):
+            for mode in ExplainMode:
+                explained = explain_report(client, corpus, report, catalog, mode=mode)
+                for item in explained.items:
+                    rows.append(row_for(name, mode, item))
+                    print(
+                        f"{name} {mode.value} {item.rule_id}: shown={len(item.claims)} "
+                        f"withheld={len(item.withheld)} error={item.model_error is not None}",
+                        file=sys.stderr,
+                    )
+    return summarize(rows), rows
 
 
 def main(argv: list[str] | None = None) -> int:
