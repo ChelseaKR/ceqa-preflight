@@ -742,3 +742,210 @@ msgstr ""
 "Corrija el manifiesto para que la categoría del formulario principal sea {category}, "
 "o compruebe este paquete como el tipo de presentación que su formulario principal "
 "declara realmente."
+
+#, python-brace-format
+msgid "Wrote comparison to {path}"
+msgstr "Se escribió la comparación en {path}"
+
+msgid ""
+"This comparison describes what two advisory technical reports say. It is "
+"not legal advice, and a finding that no longer appears has not been "
+"determined compliant."
+msgstr ""
+"Esta comparación describe lo que dicen dos informes técnicos orientativos. "
+"No constituye asesoramiento legal, y un hallazgo que ya no aparece no ha "
+"sido declarado conforme."
+
+#, python-brace-format
+msgid ""
+"report schema {declared} is not one this tool can compare; it understands "
+"{supported}.x"
+msgstr ""
+"el esquema de informe {declared} no es uno que esta herramienta pueda "
+"comparar; entiende {supported}.x"
+
+#, python-brace-format
+msgid "that file is not a check report this tool can read: {error}"
+msgstr ""
+"ese archivo no es un informe de verificación que esta herramienta pueda "
+"leer: {error}"
+
+msgid "NEW"
+msgstr "NUEVO"
+
+msgid "GONE"
+msgstr "YA NO APARECE"
+
+msgid "CHANGED"
+msgstr "CAMBIÓ"
+
+msgid "SAME"
+msgstr "IGUAL"
+
+msgid "NOT COMPARABLE"
+msgstr "NO COMPARABLE"
+
+msgid "still did not run"
+msgstr "sigue sin ejecutarse"
+
+msgid "did not run in either report, for a different reason"
+msgstr ""
+"no se ejecutó en ninguno de los dos informes, por un motivo distinto"
+
+msgid "did not run before; it ran this time"
+msgstr "antes no se ejecutó; esta vez sí"
+
+msgid "ran before; it did not run this time"
+msgstr "antes se ejecutó; esta vez no"
+
+msgid ""
+"did not run in one report and is absent from the other, so these reports "
+"cannot be compared on it"
+msgstr ""
+"no se ejecutó en un informe y está ausente del otro, de modo que estos "
+"informes no se pueden comparar en ese punto"
+
+msgid "status"
+msgstr "estado"
+
+msgid "message"
+msgstr "mensaje"
+
+msgid "page"
+msgstr "página"
+
+msgid "remediation"
+msgstr "corrección"
+
+msgid "confidence"
+msgstr "confianza"
+
+msgid "rule version"
+msgstr "versión de la regla"
+
+msgid "title"
+msgstr "título"
+
+#, python-brace-format
+msgid ""
+"The two reports use different report schema versions ({before} and "
+"{after})."
+msgstr ""
+"Los dos informes usan versiones distintas del esquema de informe ({before} "
+"y {after})."
+
+#, python-brace-format
+msgid ""
+"The two reports were produced by different tool versions ({before} and "
+"{after})."
+msgstr ""
+"Los dos informes se generaron con versiones distintas de la herramienta "
+"({before} y {after})."
+
+#, python-brace-format
+msgid ""
+"The two reports were produced against different rulesets ({before} and "
+"{after}). A check that no longer appears may have left the ruleset rather "
+"than been resolved."
+msgstr ""
+"Los dos informes se generaron con conjuntos de reglas distintos ({before} "
+"y {after}). Una verificación que ya no aparece puede haber salido del "
+"conjunto de reglas en lugar de haberse resuelto."
+
+#, python-brace-format
+msgid ""
+"The two reports describe different filing types ({before} and {after})."
+msgstr ""
+"Los dos informes describen tipos de presentación distintos ({before} y "
+"{after})."
+
+#, python-brace-format
+msgid ""
+"The two reports describe different package contents ({before} and "
+"{after})."
+msgstr ""
+"Los dos informes describen contenidos de paquete distintos ({before} y "
+"{after})."
+
+#, python-brace-format
+msgid ""
+"{before} finding(s) before and {after} after share this rule, document and "
+"field, so no pairing between them is knowable."
+msgstr ""
+"{before} hallazgo(s) antes y {after} después comparten esta regla, "
+"documento y campo, por lo que no es posible saber cómo se corresponden "
+"entre sí."
+
+msgid "was"
+msgstr "era"
+
+#, python-brace-format
+msgid ""
+"{added} new, {removed} no longer reported, {changed} changed, {unchanged} "
+"unchanged, {not_comparable} not comparable, {regressions} regression(s)."
+msgstr ""
+"{added} nuevo(s), {removed} que ya no se informan, {changed} con cambios, "
+"{unchanged} sin cambios, {not_comparable} no comparable(s), {regressions} "
+"regresión(es)."
+
+#, python-brace-format
+msgid ""
+"No finding and no skipped check moved between these two reports of package "
+"fingerprint {fingerprint}."
+msgstr ""
+"Ningún hallazgo ni verificación omitida cambió entre estos dos informes "
+"del paquete con huella {fingerprint}."
+
+msgid "CEQA Preflight report comparison"
+msgstr "Comparación de informes de CEQA Preflight"
+
+msgid "Before any comparison"
+msgstr "Antes de cualquier comparación"
+
+msgid "Findings that moved"
+msgstr "Hallazgos que cambiaron"
+
+#, python-brace-format
+msgid ""
+"Earlier report: tool {tool}, ruleset {ruleset}, generated {generated}, "
+"package fingerprint {fingerprint}."
+msgstr ""
+"Informe anterior: herramienta {tool}, conjunto de reglas {ruleset}, "
+"generado {generated}, huella del paquete {fingerprint}."
+
+#, python-brace-format
+msgid ""
+"Later report: tool {tool}, ruleset {ruleset}, generated {generated}, "
+"package fingerprint {fingerprint}."
+msgstr ""
+"Informe posterior: herramienta {tool}, conjunto de reglas {ruleset}, "
+"generado {generated}, huella del paquete {fingerprint}."
+
+msgid ""
+"Every finding whose presence or content differs between the two reports"
+msgstr ""
+"Todo hallazgo cuya presencia o contenido difiere entre los dos informes"
+
+msgid "Change"
+msgstr "Cambio"
+
+msgid "Detail"
+msgstr "Detalle"
+
+msgid "No finding moved between these two reports."
+msgstr "Ningún hallazgo cambió entre estos dos informes."
+
+msgid "Skipped checks whose state differs between the two reports"
+msgstr "Verificaciones omitidas cuyo estado difiere entre los dos informes"
+
+msgid ""
+"Every check that did not run in one report did not run in the other, for "
+"the same reason."
+msgstr ""
+"Toda verificación que no se ejecutó en un informe tampoco se ejecutó en el "
+"otro, por el mismo motivo."
+
+#, python-brace-format
+msgid "Comparison generated {generated} by tool version {tool}."
+msgstr ""
+"Comparación generada {generated} por la versión {tool} de la herramienta."

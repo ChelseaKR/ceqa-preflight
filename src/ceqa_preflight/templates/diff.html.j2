@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="{{ lang }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ _("CEQA Preflight report comparison") }}</title>
+    <style>
+      body { color: #1b1b1b; font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem auto; max-width: 70rem; padding: 0 1rem; }
+      table { border-collapse: collapse; width: 100%; }
+      caption { font-weight: 700; text-align: left; }
+      th, td { border: 1px solid #555; padding: .65rem; text-align: left; vertical-align: top; }
+      th { background: #f1f1f1; }
+      .change { font-weight: 700; }
+      .added { color: #9c0006; }
+      .removed { color: #146c2e; }
+      .changed { color: #7a4d00; }
+      .not_comparable { color: #444; }
+      .metadata { color: #444; font-size: .9rem; }
+      .warnings { border-left: .25rem solid #7a4d00; padding-left: .75rem; }
+      @media print {
+        body { margin: 0; max-width: none; }
+        a { color: inherit; text-decoration: none; }
+        tr { break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>{{ _("CEQA Preflight report comparison") }}</h1>
+      <p>{{ diff.disclaimer }}</p>
+      {% if warnings %}
+      <section class="warnings" aria-labelledby="mismatch-heading">
+        <h2 id="mismatch-heading">{{ _("Before any comparison") }}</h2>
+        <ul>
+          {% for warning in warnings %}<li>{{ warning }}</li>{% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+      <p><strong>{{ _("Summary") }}:</strong> {{ summary }}</p>
+      <p class="metadata">
+        {{ _("Earlier report: tool {tool}, ruleset {ruleset}, generated {generated}, package fingerprint {fingerprint}.").format(tool=diff.before.tool_version, ruleset=diff.before.ruleset_version, generated=diff.before.generated_at.isoformat(), fingerprint=diff.before.input_fingerprint) }}<br>
+        {{ _("Later report: tool {tool}, ruleset {ruleset}, generated {generated}, package fingerprint {fingerprint}.").format(tool=diff.after.tool_version, ruleset=diff.after.ruleset_version, generated=diff.after.generated_at.isoformat(), fingerprint=diff.after.input_fingerprint) }}
+      </p>
+    </header>
+    <main>
+      {% if diff.is_unchanged %}
+      <p>{{ no_change }}</p>
+      {% else %}
+      <h2>{{ _("Findings that moved") }}</h2>
+      {% if diff.moved %}
+      <table>
+        <caption>{{ _("Every finding whose presence or content differs between the two reports") }}</caption>
+        <thead><tr><th scope="col">{{ _("Change") }}</th><th scope="col">{{ _("Rule") }}</th><th scope="col">{{ _("Status") }}</th><th scope="col">{{ _("Detail") }}</th></tr></thead>
+        <tbody>
+        {% for delta in diff.moved %}
+          <tr>
+            <td class="change {{ delta.change }}">{{ change_labels[delta.change] }}</td>
+            <td>{{ delta.rule_id }}{{ location(delta) }}</td>
+            <td>{{ status_pair(delta) }}</td>
+            <td>
+              {%- if delta.change.value == "not_comparable" -%}
+                {{ _("{before} finding(s) before and {after} after share this rule, document and field, so no pairing between them is knowable.").format(before=delta.before_count, after=delta.after_count) }}
+              {%- elif delta.change.value == "added" -%}
+                {{ delta.after.message }}
+              {%- elif delta.change.value == "removed" -%}
+                {{ _("was") }} {{ delta.before.message }}
+              {%- else -%}
+                {% for name in delta.changed_attributes %}{{ attribute_labels[name] }}{% if not loop.last %}, {% endif %}{% endfor %}
+                {%- if delta.before and delta.after and delta.before.message != delta.after.message %}<br>{{ delta.after.message }}{% endif -%}
+              {%- endif -%}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>{{ _("No finding moved between these two reports.") }}</p>
+      {% endif %}
+
+      <h2>{{ _("Checks that did not run") }}</h2>
+      {% set skips = diff.not_run | rejectattr("change.value", "equalto", "still_not_run") | list %}
+      {% if skips %}
+      <table>
+        <caption>{{ _("Skipped checks whose state differs between the two reports") }}</caption>
+        <thead><tr><th scope="col">{{ _("Rule") }}</th><th scope="col">{{ _("Change") }}</th></tr></thead>
+        <tbody>
+        {% for delta in skips %}
+          <tr><td>{{ delta.rule_id }} ({{ delta.title }})</td><td>{{ skip_labels[delta.change] }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>{{ _("Every check that did not run in one report did not run in the other, for the same reason.") }}</p>
+      {% endif %}
+      {% endif %}
+    </main>
+    <footer>
+      <p class="metadata">{{ _("Comparison generated {generated} by tool version {tool}.").format(generated=diff.generated_at.isoformat(), tool=diff.tool_version) }}</p>
+    </footer>
+  </body>
+</html>

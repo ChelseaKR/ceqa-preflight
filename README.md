@@ -34,9 +34,9 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 488 tests under a
-90% branch-coverage floor, `strict = true` mypy over 37 source files, bandit,
-and an i18n gate holding 168 English and Spanish messages at enforced parity.
+whole tool understated it. `make verify` is the merge gate: 517 tests under a
+90% branch-coverage floor, `strict = true` mypy over 38 source files, bandit,
+and an i18n gate holding 210 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
 than asserted. None of that makes the tool production-ready: `0.1.0` is a
@@ -68,6 +68,8 @@ See [Public API and release status](#public-api-and-release-status).
     uv run ceqa-preflight check ./pkg-a ./pkg-b --filing-type NOE --format json --output ./reports
     uv run ceqa-preflight check ./my-package --filing-type NOE --format checklist
     uv run ceqa-preflight --locale es check ./my-package --filing-type NOE
+    uv run ceqa-preflight diff ./reports/before.json ./reports/report.json
+    uv run ceqa-preflight diff ./before.json ./after.json --format html --output ./comparison.html
     uv run ceqa-preflight synth ./demo-package --filing-type NOE --defect scanned
     uv run ceqa-preflight rules list --filing-type NOE
     uv run ceqa-preflight rules list --format json
@@ -106,6 +108,33 @@ given, because `--rules` or `--exclude-rules` removed it, or because it has been
 withdrawn — is listed by identifier, with the reason and the way to run it, in
 all four report formats. A report with no failures therefore always says whether
 it covered every applicable check or only some of them.
+
+### Comparing two reports
+
+A package is usually checked, corrected, and checked again, and nothing said
+what moved between the two runs. `diff` reads two JSON reports written by
+`check` and names every finding that appeared, cleared, or changed, in console,
+JSON or self-contained HTML through the same locale seam the reports use.
+
+    uv run ceqa-preflight diff ./before.json ./after.json
+
+It is deliberately unwilling to guess. Findings pair on rule identifier,
+document and field, which is the only identity the report schema offers; where
+that key is not unique on either side the pair is reported as **not comparable**
+with both counts, rather than paired in list order and called a change. A rule
+that did not run in one report and is absent from the other is **not
+comparable** too — the second report says nothing about it, which is not the
+same as the finding having cleared. Differences in `tool_version`,
+`ruleset_version`, `filing_type` or `input_fingerprint` are stated before any
+delta, because a check that "cleared" by leaving the ruleset is not a
+correction. A report announcing a `report_schema_version` this tool does not
+know is refused rather than compared. Two identical reports produce an explicit
+no-change line naming the shared package fingerprint, never an empty screen.
+
+`diff` exits `0` when nothing regressed, `1` when a failure is new or a finding
+became one, and `2` when an input cannot be read as a comparable report. A
+finding that no longer appears has cleared a technical check; it has not been
+determined compliant, and the comparison says so on every format.
 
 ### Report language
 

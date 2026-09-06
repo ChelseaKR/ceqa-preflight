@@ -1,0 +1,378 @@
+{
+  "$defs": {
+    "Confidence": {
+      "description": "Confidence in extracted or inferred evidence.",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "FilingType": {
+      "description": "Filing types supported by the initial product scope.",
+      "enum": [
+        "NOD",
+        "NOE"
+      ],
+      "title": "FilingType",
+      "type": "string"
+    },
+    "FindingChange": {
+      "description": "What happened to one (rule, document, field) between the two reports.",
+      "enum": [
+        "added",
+        "removed",
+        "changed",
+        "unchanged",
+        "not_comparable"
+      ],
+      "title": "FindingChange",
+      "type": "string"
+    },
+    "FindingDelta": {
+      "additionalProperties": false,
+      "description": "One pairing key's outcome, with both sides where they exist.",
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FindingSide"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "after_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "After Count",
+          "type": "integer"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FindingSide"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "before_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Before Count",
+          "type": "integer"
+        },
+        "change": {
+          "$ref": "#/$defs/FindingChange"
+        },
+        "changed_attributes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Attributes",
+          "type": "array"
+        },
+        "document": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "regression": {
+          "default": false,
+          "title": "Regression",
+          "type": "boolean"
+        },
+        "rule_id": {
+          "minLength": 1,
+          "title": "Rule Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id",
+        "change"
+      ],
+      "title": "FindingDelta",
+      "type": "object"
+    },
+    "FindingSide": {
+      "additionalProperties": false,
+      "description": "One report's view of a finding, reduced to the attributes a diff compares.",
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "remediation": {
+          "minLength": 1,
+          "title": "Remediation",
+          "type": "string"
+        },
+        "rule_version": {
+          "minLength": 1,
+          "title": "Rule Version",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/FindingStatus"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "rule_version",
+        "title",
+        "message",
+        "remediation",
+        "confidence"
+      ],
+      "title": "FindingSide",
+      "type": "object"
+    },
+    "FindingStatus": {
+      "description": "User-facing outcome levels for a check.",
+      "enum": [
+        "pass",
+        "warning",
+        "failure",
+        "manual"
+      ],
+      "title": "FindingStatus",
+      "type": "string"
+    },
+    "ProvenanceMismatch": {
+      "description": "A way in which the two reports do not describe the same run of the same thing.",
+      "enum": [
+        "tool_version",
+        "ruleset_version",
+        "filing_type",
+        "input_fingerprint",
+        "report_schema_version"
+      ],
+      "title": "ProvenanceMismatch",
+      "type": "string"
+    },
+    "ReportSide": {
+      "additionalProperties": false,
+      "description": "The provenance of one of the two reports being compared.",
+      "properties": {
+        "filing_type": {
+          "$ref": "#/$defs/FilingType"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "input_fingerprint": {
+          "minLength": 1,
+          "title": "Input Fingerprint",
+          "type": "string"
+        },
+        "report_schema_version": {
+          "minLength": 1,
+          "title": "Report Schema Version",
+          "type": "string"
+        },
+        "ruleset_version": {
+          "minLength": 1,
+          "title": "Ruleset Version",
+          "type": "string"
+        },
+        "tool_version": {
+          "minLength": 1,
+          "title": "Tool Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_schema_version",
+        "tool_version",
+        "ruleset_version",
+        "generated_at",
+        "input_fingerprint",
+        "filing_type"
+      ],
+      "title": "ReportSide",
+      "type": "object"
+    },
+    "SkipChange": {
+      "description": "What happened to one rule's ``not_run`` entry between the two reports.",
+      "enum": [
+        "still_not_run",
+        "reason_changed",
+        "now_ran",
+        "now_not_run",
+        "not_comparable"
+      ],
+      "title": "SkipChange",
+      "type": "string"
+    },
+    "SkipDelta": {
+      "additionalProperties": false,
+      "description": "One rule's ``not_run`` outcome across the two reports.",
+      "properties": {
+        "after_reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SkipReason"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "before_reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SkipReason"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "change": {
+          "$ref": "#/$defs/SkipChange"
+        },
+        "rule_id": {
+          "minLength": 1,
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id",
+        "title",
+        "change"
+      ],
+      "title": "SkipDelta",
+      "type": "object"
+    },
+    "SkipReason": {
+      "description": "Why an applicable rule did not run during a check.",
+      "enum": [
+        "experimental_not_included",
+        "withdrawn",
+        "not_selected",
+        "excluded_by_request"
+      ],
+      "title": "SkipReason",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Versioned, JSON-serializable output for a comparison of two check reports.",
+  "properties": {
+    "after": {
+      "$ref": "#/$defs/ReportSide"
+    },
+    "before": {
+      "$ref": "#/$defs/ReportSide"
+    },
+    "diff_schema_version": {
+      "default": "1.0",
+      "title": "Diff Schema Version",
+      "type": "string"
+    },
+    "disclaimer": {
+      "minLength": 1,
+      "title": "Disclaimer",
+      "type": "string"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/FindingDelta"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "mismatches": {
+      "items": {
+        "$ref": "#/$defs/ProvenanceMismatch"
+      },
+      "title": "Mismatches",
+      "type": "array"
+    },
+    "not_run": {
+      "items": {
+        "$ref": "#/$defs/SkipDelta"
+      },
+      "title": "Not Run",
+      "type": "array"
+    },
+    "tool_version": {
+      "minLength": 1,
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "tool_version",
+    "generated_at",
+    "before",
+    "after",
+    "disclaimer"
+  ],
+  "title": "DiffReport",
+  "type": "object"
+}
