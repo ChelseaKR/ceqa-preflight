@@ -403,3 +403,35 @@ def test_every_console_change_line_says_which_way_the_finding_moved(
 ) -> None:
     """Each branch renders the direction, not just the fact that something differs."""
     assert expected in render_diff_console(diff_reports(before_report, after_report))
+
+
+def test_an_existing_directory_is_written_into_not_beside(tmp_path: Path) -> None:
+    """`check --output` takes a directory, so `diff --output` is reached for the same way.
+
+    Before this, a directory argument fell through the extension branch and produced a
+    sibling file — `reports.txt` next to `reports/` — which the success line then named as
+    though the person had asked for it.
+    """
+    before = _write(tmp_path / "before.json", _report())
+    after = _write(tmp_path / "after.json", _report([_finding()]))
+    destination = tmp_path / "reports"
+    destination.mkdir()
+
+    result = _runner.invoke(app, ["diff", str(before), str(after), "--output", str(destination)])
+
+    assert result.exit_code == 0
+    assert (destination / "comparison.txt").exists()
+    assert not (tmp_path / "reports.txt").exists()
+
+
+def test_an_extensionless_file_path_still_gains_the_format_suffix(tmp_path: Path) -> None:
+    before = _write(tmp_path / "before.json", _report())
+    after = _write(tmp_path / "after.json", _report([_finding()]))
+
+    result = _runner.invoke(
+        app,
+        ["diff", str(before), str(after), "--format", "json", "--output", str(tmp_path / "out")],
+    )
+
+    assert result.exit_code == 0
+    assert (tmp_path / "out.json").exists()
