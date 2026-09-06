@@ -349,3 +349,17 @@ never been published anywhere, so nothing here supersedes a released version.
   `--format checklist` sign-off report, `init --from-package` manifest
   prepopulation, `rules list --format json`, and report summaries with a
   print-friendly HTML stylesheet.
+- **Fixed: the eval figure that proves no determination reaches a reader was
+  asserted, not measured.** `evals/grounding/run.py` published
+  `"determinations_reaching_display": 0` with the comment `# by construction;
+  the verifier withholds them` — the code under test stating its own result.
+  Nothing read the claims that were actually shown, so a claim that reached
+  display carrying determination language, which is the single failure this
+  number exists to rule out, would have left it reading zero; and
+  `tests/test_ai_evals.py` compared the published README figure against that
+  same literal, so the check could not fail either. The runner now scans every
+  displayed claim with `determination_language`, the same predicate the
+  verifier withholds on, and records the phrases found per finding and in the
+  summary so a nonzero is diagnosable. `row_for` and `summarize` are split out
+  as pure functions so the metric is tested offline against a claim that
+  reached display without passing `verify_claims`.
