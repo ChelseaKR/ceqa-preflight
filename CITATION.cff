@@ -7,14 +7,20 @@ authors:
     given-names: "Chelsea"
 repository-code: "https://github.com/ChelseaKR/ceqa-preflight"
 license: "Apache-2.0"
-# `version` mirrors pyproject.toml (single source of truth).
-# `date-released` is the date of the v0.1.0 tag, which is the project's first release. It
-# was omitted for as long as no tag and no GitHub Release existed; the date that had been
-# here before, 2026-07-18, was the first commit date rather than a release, and citation
-# tooling surfaces this field as a release date. `tests/test_manifest.py` holds it to
-# CHANGELOG.md: the field may only be present while the changelog records a released
-# version. If the tag is cut on a different day, this date and the CHANGELOG heading move
-# together.
+# `version` mirrors pyproject.toml (single source of truth); tests/test_release_claims.py
+# asserts the two agree.
+#
+# `date-released` is absent, and has been wrong in both directions. It first carried
+# 2026-07-18, the first commit date, which is not a release. It then carried 2026-09-02,
+# described here as "the date of the v0.1.0 tag" -- and no v0.1.0 tag was ever cut:
+# `git tag --list` is empty and the repository has no GitHub Release. Citation tooling
+# prints this field as the date the software was released, so both times the file
+# published a release date for a release that did not exist.
+#
+# The check that was supposed to prevent that read a heading in CHANGELOG.md, and both
+# files were edited in the same commit, so a document agreed with a document while both
+# stopped being true. tests/test_release_claims.py ties this field to `git tag --list`
+# instead, in both directions: it may not appear without a tag naming the declared
+# version, and it may not be missing once one exists.
 version: "0.1.0"
-date-released: "2026-09-02"
 abstract: "A local, source-cited advisory preflight checker for CEQA Submit filing packages."

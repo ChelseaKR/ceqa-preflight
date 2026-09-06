@@ -25,6 +25,14 @@ jobs:
         python: ["3.12"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # tests/test_release_claims.py compares the version pyproject.toml declares
+          # against `git tag --list`. The default depth fetches no tags, which would make
+          # an untagged repository and an unfetched one look identical and turn that gate
+          # into one that always passes -- the exact shape of the check it replaces. It
+          # refuses to answer from a shallow checkout for that reason, so without this the
+          # verify job fails rather than passing blind.
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           python-version: ${{ matrix.python }}

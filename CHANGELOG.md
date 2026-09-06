@@ -6,11 +6,18 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
-## [0.1.0] - 2026-09-02
+Everything below was prepared as `0.1.0` in #76 under the heading
+`## [0.1.0] - 2026-09-02`, opening "First tagged release". The tag was never
+cut. `git tag --list` is empty on this repository and on `origin`, the GitHub
+tags and releases endpoints both return zero, and `docs/ROADMAP.md` and
+`docs/RESPONSIBLE-TECH-AUDITS.md` said "no tagged release yet" in the same
+tree. Nothing has been released, so these notes sit here rather than under a
+dated heading that would date a release that did not happen.
 
-First tagged release. Everything below is the whole history of the project to
-this point: `0.1.0` was the in-development baseline from the first commit and
-was never published anywhere, so nothing here supersedes a released version.
+`0.1.0` has been the in-development baseline since the first commit and has
+never been published anywhere, so nothing here supersedes a released version.
+`tests/test_release_claims.py` reads `git tag --list` and asks for the dated
+`## [0.1.0]` heading back the moment a tag names that version.
 
 - **Fixed: a check could pass a document it never read.** `_mapping()` in the PDF
   inspector resolved an unreadable indirect reference and a genuinely absent key
