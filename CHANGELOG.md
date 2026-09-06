@@ -363,3 +363,22 @@ never been published anywhere, so nothing here supersedes a released version.
   summary so a nonzero is diagnosable. `row_for` and `summarize` are split out
   as pure functions so the metric is tested offline against a claim that
   reached display without passing `verify_claims`.
+- **Added: `--format sarif` and `--format junit`, so a CI job can carry a report.**
+  Both are pure renderings of an existing `InspectionReport`; the deterministic
+  path is unchanged and neither makes a network request. SARIF 2.1.0 declares
+  one rule per finding id, carries each rule's official source as `helpUri` with
+  the source kind in `properties`, and maps failure/warning/manual-review/pass to
+  `error`/`warning`/`note`/`none`. A page number stays a property rather than
+  being coerced into a `startLine` that would point a reader at the wrong place
+  in the file, and a package-level finding carries no location rather than an
+  invented one. Every `not_run` check becomes a tool-execution notification: a
+  SARIF listing only what ran would let a green job stand for the whole package,
+  which is what `SkippedCheck` exists to prevent. JUnit reserves `<skipped>` for
+  those same checks and nothing else — a warning or a manual-review item ran and
+  produced a result, so counting either as "did not execute" would misreport it.
+  Neither format is localized: both are read by tooling whose element names and
+  level vocabularies are fixed by their specifications, and the report text
+  inside them is already rendered in the active locale. The catalog is unchanged
+  at 210 messages. Part of [#89](https://github.com/ChelseaKR/ceqa-preflight/issues/89);
+  the composite Action and pre-commit hook in that issue are not here, because
+  they install a release wheel from a `v0.1` tag that does not exist.
