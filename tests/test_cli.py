@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree  # our own output
 
 import pytest
 from pypdf import PdfWriter
@@ -296,7 +297,9 @@ def test_check_rule_selection_flags(tmp_path: Path) -> None:
     assert "--include-experimental" in experimental_only.stderr
 
 
-@pytest.mark.parametrize("output_format", ["console", "json", "html", "checklist"])
+@pytest.mark.parametrize(
+    "output_format", ["console", "json", "html", "checklist", "sarif", "junit"]
+)
 def test_no_output_format_reports_a_clean_pass_while_hiding_a_skipped_check(
     tmp_path: Path, output_format: str
 ) -> None:
@@ -330,7 +333,24 @@ def test_no_output_format_reports_a_clean_pass_while_hiding_a_skipped_check(
 
     assert result.exit_code == 0
     assert "PDF-003" in result.stdout
-    assert "did not run" in result.stdout
+    if output_format in {"console", "json", "html", "checklist"}:
+        assert "did not run" in result.stdout
+    elif output_format == "sarif":
+        # SARIF has no prose for this; the skip is a tool-execution notification.
+        run = json.loads(result.stdout)["runs"][0]
+        notified = {
+            n["descriptor"]["id"] for n in run["invocations"][0]["toolExecutionNotifications"]
+        }
+        assert "PDF-003" in notified
+        assert "PDF-003" not in {r["ruleId"] for r in run["results"]}
+    else:
+        # JUnit reserves <skipped> for checks that did not run.
+        suite = ElementTree.fromstring(result.stdout).find("testsuite")  # noqa: S314  # our own output
+        assert suite is not None
+        skipped = {
+            case.get("name", "").split(":")[0] for case in suite if case.find("skipped") is not None
+        }
+        assert "PDF-003" in skipped
     if output_format == "json":
         _, not_run = _reported_rule_ids(result.stdout)
         assert not_run == {"PDF-003", "NOE-001", "NOE-002", "NOE-003"} | {
@@ -338,9 +358,29 @@ def test_no_output_format_reports_a_clean_pass_while_hiding_a_skipped_check(
             "NOE-M002",
             "NOE-M003",
         }
-    else:
+    elif output_format in {"console", "html", "checklist"}:
+        # The prose scope line. SARIF and JUnit carry the same fact structurally,
+        # asserted above, and have no prose to carry it in.
         assert "6 check(s) not run" not in result.stdout  # PDF-003 plus the six pilot rules
         assert "7 check(s) not run" in result.stdout
+    else:
+        # Machine formats: the count must still be complete and self-consistent.
+        expected = {"PDF-003", "NOE-001", "NOE-002", "NOE-003", "NOE-M001", "NOE-M002", "NOE-M003"}
+        if output_format == "sarif":
+            run = json.loads(result.stdout)["runs"][0]
+            reported = {
+                n["descriptor"]["id"] for n in run["invocations"][0]["toolExecutionNotifications"]
+            }
+        else:
+            suite = ElementTree.fromstring(result.stdout).find("testsuite")  # noqa: S314  # our own output
+            assert suite is not None
+            assert suite.get("skipped") == "7"
+            reported = {
+                case.get("name", "").split(":")[0]
+                for case in suite
+                if case.find("skipped") is not None
+            }
+        assert reported == expected
 
 
 def test_a_report_with_no_skipped_checks_says_so(tmp_path: Path) -> None:

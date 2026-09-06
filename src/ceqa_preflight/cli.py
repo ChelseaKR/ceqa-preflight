@@ -28,6 +28,8 @@ from ceqa_preflight.reporting import (
     render_diff_json,
     render_html,
     render_json,
+    render_junit,
+    render_sarif,
     summarize_counts,
 )
 from ceqa_preflight.rule_registry import default_catalog
@@ -135,8 +137,17 @@ _RENDERERS = {
     "html": render_html,
     "json": render_json,
     "checklist": render_checklist,
+    "sarif": render_sarif,
+    "junit": render_junit,
 }
-_REPORT_SUFFIXES = {"console": "txt", "html": "html", "json": "json", "checklist": "txt"}
+_REPORT_SUFFIXES = {
+    "console": "txt",
+    "html": "html",
+    "json": "json",
+    "checklist": "txt",
+    "sarif": "sarif",
+    "junit": "xml",
+}
 _DIFF_RENDERERS = {
     "console": render_diff_console,
     "html": render_diff_html,
@@ -184,7 +195,10 @@ def check(
     ] = None,
     output_format: Annotated[
         str,
-        typer.Option("--format", help="Report format: console, json, html, or checklist."),
+        typer.Option(
+            "--format",
+            help="Report format: console, json, html, checklist, sarif, or junit.",
+        ),
     ] = "console",
     output: Annotated[
         Path | None,
@@ -209,7 +223,9 @@ def check(
     """Inspect local packages without uploading or changing their source files."""
 
     if output_format not in _RENDERERS:
-        raise typer.BadParameter("must be console, json, html, or checklist", param_hint="--format")
+        raise typer.BadParameter(
+            "must be one of: " + ", ".join(sorted(_RENDERERS)), param_hint="--format"
+        )
     if manifest_path is not None and len(sources) > 1:
         raise typer.BadParameter("a manifest applies to a single package", param_hint="--manifest")
     rule_ids = _parse_rule_ids(rules)

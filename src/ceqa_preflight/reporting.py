@@ -5,6 +5,11 @@ from __future__ import annotations
 import json
 from collections import Counter
 
+# Serialization only: this module builds a JUnit document and never parses XML, so the
+# untrusted-input attack B405 warns about has no input here. `defusedxml` hardens the
+# parsers, which this module does not use, and adds a dependency to the shipped wheel.
+from xml.etree import ElementTree  # nosec B405
+
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from ceqa_preflight.diffing import (
@@ -409,3 +414,190 @@ def render_diff_html(diff: DiffReport) -> str:
         status_pair=_diff_status_pair,
         lang=active_locale(),
     )
+
+
+# ── Machine-readable CI formats (SARIF 2.1.0, JUnit XML) ──────────────────────
+#
+# Deliberately NOT localized. Both are consumed by tooling — GitHub code
+# scanning, a JUnit summary plugin — not read as prose, and their element names
+# and level vocabularies are fixed by their specifications. `finding.message`
+# and the other report fields are already rendered in the active locale by the
+# time they arrive here, so a Spanish run produces a Spanish message inside an
+# English envelope, which is what both formats expect.
+
+SARIF_VERSION = "2.1.0"
+SARIF_SCHEMA = (
+    "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/"
+    "sarif-2.1/schema/sarif-schema-2.1.0.json"
+)
+INFORMATION_URI = "https://github.com/ChelseaKR/ceqa-preflight"
+
+# A status maps to a SARIF level. `pass` is `none`, and carries `kind: "pass"`
+# so a clean run is a stated result rather than an empty file: an empty SARIF
+# and a SARIF saying every rule passed look identical to a reader otherwise.
+_SARIF_LEVELS: dict[FindingStatus, str] = {
+    FindingStatus.FAILURE: "error",
+    FindingStatus.WARNING: "warning",
+    FindingStatus.MANUAL: "note",
+    FindingStatus.PASS: "none",
+}
+
+
+def _sarif_rule(finding: Finding) -> dict[str, object]:
+    properties: dict[str, object] = {"ruleVersion": finding.rule_version}
+    rule: dict[str, object] = {
+        "id": finding.rule_id,
+        "name": finding.rule_id,
+        "shortDescription": {"text": finding.title},
+        "properties": properties,
+    }
+    if finding.source is not None:
+        rule["helpUri"] = finding.source.url
+        properties["kind"] = finding.source.kind.value
+        properties["sourceTitle"] = finding.source.title
+    return rule
+
+
+def _sarif_result(finding: Finding) -> dict[str, object]:
+    properties: dict[str, object] = {
+        "status": finding.status.value,
+        "confidence": finding.confidence.value,
+        "remediation": finding.remediation,
+    }
+    result: dict[str, object] = {
+        "ruleId": finding.rule_id,
+        "level": _SARIF_LEVELS[finding.status],
+        "message": {"text": finding.message},
+        "properties": properties,
+    }
+    if finding.status is FindingStatus.PASS:
+        result["kind"] = "pass"
+    if finding.document is not None:
+        location: dict[str, object] = {"artifactLocation": {"uri": finding.document}}
+        if finding.page is not None:
+            # A page is not a line. SARIF regions are text ranges, so the page
+            # goes in properties rather than being coerced into a startLine that
+            # would point a reader at the wrong place in the file.
+            properties["page"] = finding.page
+        result["locations"] = [{"physicalLocation": location}]
+    return result
+
+
+def _sarif_notification(skipped: SkippedCheck) -> dict[str, object]:
+    """A rule that did not run, as a SARIF notification.
+
+    Dropping these would make a report of what ran indistinguishable from a
+    report about the whole package — the same reason `SkippedCheck` exists.
+    """
+
+    return {
+        "descriptor": {"id": skipped.rule_id},
+        "level": "note",
+        "message": {"text": f"{skipped.title}: {skipped.detail}"},
+        "properties": {
+            "reason": skipped.reason.value,
+            "ruleVersion": skipped.rule_version,
+        },
+    }
+
+
+def render_sarif(report: InspectionReport) -> str:
+    """Render a report as SARIF 2.1.0 for code scanning."""
+
+    scored = list(report.findings) + list(report.manual_review)
+    rules: dict[str, dict[str, object]] = {}
+    for finding in scored:
+        rules.setdefault(finding.rule_id, _sarif_rule(finding))
+    notifications = [_sarif_notification(skipped) for skipped in report.not_run]
+    document = {
+        "$schema": SARIF_SCHEMA,
+        "version": SARIF_VERSION,
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "CEQA Preflight",
+                        "version": report.tool_version,
+                        "semanticVersion": report.tool_version,
+                        "informationUri": INFORMATION_URI,
+                        "rules": [rules[key] for key in sorted(rules)],
+                        "notifications": [
+                            {"id": skipped.rule_id, "shortDescription": {"text": skipped.title}}
+                            for skipped in report.not_run
+                        ],
+                    }
+                },
+                "invocations": [
+                    {
+                        "executionSuccessful": True,
+                        "toolExecutionNotifications": notifications,
+                    }
+                ],
+                "properties": {
+                    "rulesetVersion": report.ruleset_version,
+                    "filingType": report.filing_type.value,
+                    "inputFingerprint": report.input_fingerprint,
+                    "reportSchemaVersion": report.report_schema_version,
+                    "generatedAt": report.generated_at.isoformat(),
+                    "disclaimer": report.disclaimer,
+                },
+                "results": [_sarif_result(finding) for finding in scored],
+            }
+        ],
+    }
+    return json.dumps(document, indent=2, sort_keys=True) + "\n"
+
+
+def _junit_text(finding: Finding) -> str:
+    location = f" ({finding.document})" if finding.document else ""
+    return f"{finding.status.value.upper()} {finding.rule_id}{location}: {finding.message}"
+
+
+def render_junit(report: InspectionReport) -> str:
+    """Render a report as JUnit XML for a CI job summary.
+
+    ``<skipped>`` is reserved for `not_run`, and nothing else uses it: JUnit
+    readers total skips as "did not execute", so mapping a manual-review item
+    or a warning onto it would report a check that ran as one that did not.
+    A warning and a manual-review item are passing test cases carrying their
+    text in ``<system-out>``; only a failure is a ``<failure>``.
+    """
+
+    suite = ElementTree.Element(
+        "testsuite",
+        {
+            "name": "ceqa-preflight",
+            "tests": str(len(report.findings) + len(report.manual_review) + len(report.not_run)),
+            "failures": str(sum(1 for f in report.findings if f.status is FindingStatus.FAILURE)),
+            "errors": "0",
+            "skipped": str(len(report.not_run)),
+            "timestamp": report.generated_at.isoformat(),
+        },
+    )
+    classname = f"ceqa-preflight.{report.filing_type.value}"
+    for finding in list(report.findings) + list(report.manual_review):
+        case = ElementTree.SubElement(
+            suite,
+            "testcase",
+            {"name": f"{finding.rule_id}: {finding.title}", "classname": classname},
+        )
+        if finding.status is FindingStatus.FAILURE:
+            failure = ElementTree.SubElement(
+                case, "failure", {"message": finding.message, "type": finding.status.value}
+            )
+            failure.text = f"{_junit_text(finding)}\n{finding.remediation}"
+        elif finding.status is not FindingStatus.PASS:
+            ElementTree.SubElement(case, "system-out").text = _junit_text(finding)
+    for skipped in report.not_run:
+        case = ElementTree.SubElement(
+            suite,
+            "testcase",
+            {"name": f"{skipped.rule_id}: {skipped.title}", "classname": classname},
+        )
+        ElementTree.SubElement(
+            case, "skipped", {"message": f"{skipped.reason.value}: {skipped.detail}"}
+        )
+    suites = ElementTree.Element("testsuites", dict(suite.attrib))
+    suites.append(suite)
+    ElementTree.indent(suites, space="  ")
+    return ElementTree.tostring(suites, encoding="unicode", xml_declaration=True) + "\n"

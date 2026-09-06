@@ -34,7 +34,7 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 522 tests under a
+whole tool understated it. `make verify` is the merge gate: 544 tests under a
 90% branch-coverage floor, `strict = true` mypy over 38 source files, bandit,
 and an i18n gate holding 210 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
@@ -67,6 +67,8 @@ See [Public API and release status](#public-api-and-release-status).
     uv run ceqa-preflight check ./my-package --filing-type NOE --include-experimental
     uv run ceqa-preflight check ./pkg-a ./pkg-b --filing-type NOE --format json --output ./reports
     uv run ceqa-preflight check ./my-package --filing-type NOE --format checklist
+    uv run ceqa-preflight check ./my-package --filing-type NOE --format sarif --output ./reports
+    uv run ceqa-preflight check ./my-package --filing-type NOE --format junit --output ./reports
     uv run ceqa-preflight --locale es check ./my-package --filing-type NOE
     uv run ceqa-preflight diff ./reports/before.json ./reports/report.json
     uv run ceqa-preflight diff ./before.json ./after.json --format html --output ./comparison.html
@@ -93,7 +95,15 @@ find it. From a clone, `uvx --from /path/to/ceqa-preflight ceqa-preflight
 
 The `check` command reads one or more directories or ZIP packages locally,
 never uploads or alters their contents, and can emit console, JSON,
-self-contained HTML, or printable sign-off checklist advisory reports.
+self-contained HTML, or printable sign-off checklist advisory reports. For CI
+it also emits `--format sarif` (SARIF 2.1.0, for code scanning: each rule
+carries its official source as `helpUri`, and every check that did not run
+appears as a tool-execution notification rather than being dropped) and
+`--format junit` (for a job summary: `<skipped>` is reserved for checks that
+did not run, so a warning or a manual-review item is never counted as one that
+never executed). Both are unlocalized envelopes around report text that is
+already rendered in the active locale, because both are read by tools rather
+than by people.
 Checking several packages at once prints a per-package roll-up summary. Add
 `--manifest package.yaml` to enable explicit primary form and
 document-category checks when experimental rules are opted into (single
