@@ -34,7 +34,7 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 544 tests under a
+whole tool understated it. `make verify` is the merge gate: 554 tests under a
 90% branch-coverage floor, `strict = true` mypy over 38 source files, bandit,
 and an i18n gate holding 210 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
@@ -97,13 +97,15 @@ The `check` command reads one or more directories or ZIP packages locally,
 never uploads or alters their contents, and can emit console, JSON,
 self-contained HTML, or printable sign-off checklist advisory reports. For CI
 it also emits `--format sarif` (SARIF 2.1.0, for code scanning: each rule
-carries its official source as `helpUri`, and every check that did not run
-appears as a tool-execution notification rather than being dropped) and
+carries its official source as `helpUri`, every check that did not run appears
+as a tool-execution notification rather than being dropped, and
+`executionSuccessful` is `false` when a check could not complete) and
 `--format junit` (for a job summary: `<skipped>` is reserved for checks that
-did not run, so a warning or a manual-review item is never counted as one that
-never executed). Both are unlocalized envelopes around report text that is
-already rendered in the active locale, because both are read by tools rather
-than by people.
+did not run and `<error>` for a check that could not complete, so a warning or
+a manual-review item is never counted as one that never executed, and a check
+that concluded nothing is never counted among the ones that passed). Both are
+unlocalized envelopes around report text that is already rendered in the active
+locale, because both are read by tools rather than by people.
 Checking several packages at once prints a per-package roll-up summary. Add
 `--manifest package.yaml` to enable explicit primary form and
 document-category checks when experimental rules are opted into (single
@@ -116,8 +118,11 @@ Every report states its own scope. Any rule that applies to the filing type but
 did not run — because it is experimental and `--include-experimental` was not
 given, because `--rules` or `--exclude-rules` removed it, or because it has been
 withdrawn — is listed by identifier, with the reason and the way to run it, in
-all four report formats. A report with no failures therefore always says whether
-it covered every applicable check or only some of them.
+all six report formats. A report with no failures therefore always says whether
+it covered every applicable check or only some of them. A check that started and
+threw is the same kind of gap and is disclosed the same way: the prose formats
+carry its "No package conclusion was made" warning, and the two CI formats carry
+it as a SARIF error notification and a JUnit `<error>`.
 
 ### Comparing two reports
 

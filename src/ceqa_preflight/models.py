@@ -99,6 +99,15 @@ class Finding(StrictModel):
     remediation: str = Field(min_length=1)
     source: SourceCitation | None = None
     confidence: Confidence = Confidence.HIGH
+    #: Did the check that produced this finding run to completion?
+    #:
+    #: ``False`` on the one finding the engine raises for itself when a check throws. That
+    #: is the second way a rule reaches the report without having evaluated anything --
+    #: :class:`SkippedCheck` is the first -- and the prose formats say so in the finding's
+    #: own message. The machine-readable CI formats cannot read a sentence, and both have a
+    #: dedicated place for a check that could not complete, so they need the fact as a
+    #: field. Everything a check actually concluded carries ``True``.
+    check_completed: bool = True
 
 
 class SkippedCheck(StrictModel):
@@ -218,7 +227,7 @@ class PackageManifest(StrictModel):
 class InspectionReport(StrictModel):
     """Versioned, JSON-serializable output for an inspection run."""
 
-    report_schema_version: str = Field(default="1.1")
+    report_schema_version: str = Field(default="1.2")
     tool_version: str = Field(min_length=1)
     ruleset_version: str = Field(min_length=1)
     generated_at: datetime
