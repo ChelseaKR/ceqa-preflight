@@ -11,6 +11,7 @@ import typer
 from ceqa_preflight import __version__
 from ceqa_preflight.ai.cli import ai_app
 from ceqa_preflight.checker import check_package
+from ceqa_preflight.diffing import DiffError, diff_reports, exit_code_for, load_report
 from ceqa_preflight.i18n import LocaleError, resolve, set_locale
 from ceqa_preflight.i18n import gettext as _
 from ceqa_preflight.manifest import ManifestError, load_manifest
@@ -19,8 +20,12 @@ from ceqa_preflight.observability import configure_logging, event
 from ceqa_preflight.package_loader import PackageLoadError
 from ceqa_preflight.pilot import PilotDataError, summarize_pilot, write_pilot_templates
 from ceqa_preflight.reporting import (
+    diff_counts,
     render_checklist,
     render_console,
+    render_diff_console,
+    render_diff_html,
+    render_diff_json,
     render_html,
     render_json,
     summarize_counts,
@@ -132,6 +137,12 @@ _RENDERERS = {
     "checklist": render_checklist,
 }
 _REPORT_SUFFIXES = {"console": "txt", "html": "html", "json": "json", "checklist": "txt"}
+_DIFF_RENDERERS = {
+    "console": render_diff_console,
+    "html": render_diff_html,
+    "json": render_diff_json,
+}
+_DIFF_SUFFIXES = {"console": "txt", "html": "html", "json": "json"}
 
 
 def _parse_rule_ids(raw: str | None) -> set[str] | None:
@@ -259,6 +270,72 @@ def check(
         for line in batch_lines:
             typer.echo(f"  {line}")
     raise typer.Exit(code=worst_exit_code)
+
+
+@app.command()
+def diff(
+    before: Annotated[
+        Path,
+        typer.Argument(
+            exists=True, readable=True, help="The earlier JSON report written by `check`."
+        ),
+    ],
+    after: Annotated[
+        Path,
+        typer.Argument(
+            exists=True, readable=True, help="The later JSON report written by `check`."
+        ),
+    ],
+    output_format: Annotated[
+        str,
+        typer.Option("--format", help="Comparison format: console, json, or html."),
+    ] = "console",
+    output: Annotated[
+        Path | None,
+        typer.Option("--output", help="Optional file to write the comparison to."),
+    ] = None,
+) -> None:
+    """Name every finding that moved between two reports, and everything that did not.
+
+    Exits 0 when nothing regressed, 1 when a failure is new or a finding became one, and
+    2 when either input cannot be read as a report this tool knows how to compare. A
+    comparison is never a determination: a finding that no longer appears has cleared a
+    check, not been found compliant.
+    """
+
+    if output_format not in _DIFF_RENDERERS:
+        raise typer.BadParameter("must be console, json, or html", param_hint="--format")
+    event("diff_started", report_format=output_format)
+    try:
+        earlier = load_report(before.read_text(encoding="utf-8"))
+        later = load_report(after.read_text(encoding="utf-8"))
+    except DiffError as error:
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
+        raise typer.Exit(code=2) from error
+    except OSError as error:
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
+        raise typer.Exit(code=2) from error
+
+    comparison = diff_reports(earlier, later)
+    rendered = _DIFF_RENDERERS[output_format](comparison)
+    if output is None:
+        typer.echo(rendered, nl=False)
+    else:
+        if output.suffix == "":
+            output = output.with_suffix(f".{_DIFF_SUFFIXES[output_format]}")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(rendered, encoding="utf-8")
+        typer.echo(_("Wrote comparison to {path}").format(path=output))
+    counts = diff_counts(comparison)
+    event(
+        "diff_completed",
+        added=counts["added"],
+        removed=counts["removed"],
+        changed=counts["changed"],
+        not_comparable=counts["not_comparable"],
+        regressions=counts["regressions"],
+    )
+    raise typer.Exit(code=exit_code_for(comparison))
 
 
 @app.command()

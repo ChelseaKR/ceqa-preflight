@@ -675,3 +675,203 @@ msgid ""
 msgstr ""
 "Correct the manifest so the primary form's category is {category}, or check this "
 "package as the filing type its primary form actually declares."
+
+#, python-brace-format
+msgid "Wrote comparison to {path}"
+msgstr "Wrote comparison to {path}"
+
+msgid ""
+"This comparison describes what two advisory technical reports say. It is "
+"not legal advice, and a finding that no longer appears has not been "
+"determined compliant."
+msgstr ""
+"This comparison describes what two advisory technical reports say. It is "
+"not legal advice, and a finding that no longer appears has not been "
+"determined compliant."
+
+#, python-brace-format
+msgid ""
+"report schema {declared} is not one this tool can compare; it understands "
+"{supported}.x"
+msgstr ""
+"report schema {declared} is not one this tool can compare; it understands "
+"{supported}.x"
+
+#, python-brace-format
+msgid "that file is not a check report this tool can read: {error}"
+msgstr "that file is not a check report this tool can read: {error}"
+
+msgid "NEW"
+msgstr "NEW"
+
+msgid "GONE"
+msgstr "GONE"
+
+msgid "CHANGED"
+msgstr "CHANGED"
+
+msgid "SAME"
+msgstr "SAME"
+
+msgid "NOT COMPARABLE"
+msgstr "NOT COMPARABLE"
+
+msgid "still did not run"
+msgstr "still did not run"
+
+msgid "did not run in either report, for a different reason"
+msgstr "did not run in either report, for a different reason"
+
+msgid "did not run before; it ran this time"
+msgstr "did not run before; it ran this time"
+
+msgid "ran before; it did not run this time"
+msgstr "ran before; it did not run this time"
+
+msgid ""
+"did not run in one report and is absent from the other, so these reports "
+"cannot be compared on it"
+msgstr ""
+"did not run in one report and is absent from the other, so these reports "
+"cannot be compared on it"
+
+msgid "status"
+msgstr "status"
+
+msgid "message"
+msgstr "message"
+
+msgid "page"
+msgstr "page"
+
+msgid "remediation"
+msgstr "remediation"
+
+msgid "confidence"
+msgstr "confidence"
+
+msgid "rule version"
+msgstr "rule version"
+
+msgid "title"
+msgstr "title"
+
+#, python-brace-format
+msgid ""
+"The two reports use different report schema versions ({before} and "
+"{after})."
+msgstr ""
+"The two reports use different report schema versions ({before} and "
+"{after})."
+
+#, python-brace-format
+msgid ""
+"The two reports were produced by different tool versions ({before} and "
+"{after})."
+msgstr ""
+"The two reports were produced by different tool versions ({before} and "
+"{after})."
+
+#, python-brace-format
+msgid ""
+"The two reports were produced against different rulesets ({before} and "
+"{after}). A check that no longer appears may have left the ruleset rather "
+"than been resolved."
+msgstr ""
+"The two reports were produced against different rulesets ({before} and "
+"{after}). A check that no longer appears may have left the ruleset rather "
+"than been resolved."
+
+#, python-brace-format
+msgid ""
+"The two reports describe different filing types ({before} and {after})."
+msgstr ""
+"The two reports describe different filing types ({before} and {after})."
+
+#, python-brace-format
+msgid ""
+"The two reports describe different package contents ({before} and "
+"{after})."
+msgstr ""
+"The two reports describe different package contents ({before} and "
+"{after})."
+
+#, python-brace-format
+msgid ""
+"{before} finding(s) before and {after} after share this rule, document and "
+"field, so no pairing between them is knowable."
+msgstr ""
+"{before} finding(s) before and {after} after share this rule, document and "
+"field, so no pairing between them is knowable."
+
+msgid "was"
+msgstr "was"
+
+#, python-brace-format
+msgid ""
+"{added} new, {removed} no longer reported, {changed} changed, {unchanged} "
+"unchanged, {not_comparable} not comparable, {regressions} regression(s)."
+msgstr ""
+"{added} new, {removed} no longer reported, {changed} changed, {unchanged} "
+"unchanged, {not_comparable} not comparable, {regressions} regression(s)."
+
+#, python-brace-format
+msgid ""
+"No finding and no skipped check moved between these two reports of package "
+"fingerprint {fingerprint}."
+msgstr ""
+"No finding and no skipped check moved between these two reports of package "
+"fingerprint {fingerprint}."
+
+msgid "CEQA Preflight report comparison"
+msgstr "CEQA Preflight report comparison"
+
+msgid "Before any comparison"
+msgstr "Before any comparison"
+
+msgid "Findings that moved"
+msgstr "Findings that moved"
+
+#, python-brace-format
+msgid ""
+"Earlier report: tool {tool}, ruleset {ruleset}, generated {generated}, "
+"package fingerprint {fingerprint}."
+msgstr ""
+"Earlier report: tool {tool}, ruleset {ruleset}, generated {generated}, "
+"package fingerprint {fingerprint}."
+
+#, python-brace-format
+msgid ""
+"Later report: tool {tool}, ruleset {ruleset}, generated {generated}, "
+"package fingerprint {fingerprint}."
+msgstr ""
+"Later report: tool {tool}, ruleset {ruleset}, generated {generated}, "
+"package fingerprint {fingerprint}."
+
+msgid ""
+"Every finding whose presence or content differs between the two reports"
+msgstr ""
+"Every finding whose presence or content differs between the two reports"
+
+msgid "Change"
+msgstr "Change"
+
+msgid "Detail"
+msgstr "Detail"
+
+msgid "No finding moved between these two reports."
+msgstr "No finding moved between these two reports."
+
+msgid "Skipped checks whose state differs between the two reports"
+msgstr "Skipped checks whose state differs between the two reports"
+
+msgid ""
+"Every check that did not run in one report did not run in the other, for "
+"the same reason."
+msgstr ""
+"Every check that did not run in one report did not run in the other, for "
+"the same reason."
+
+#, python-brace-format
+msgid "Comparison generated {generated} by tool version {tool}."
+msgstr "Comparison generated {generated} by tool version {tool}."

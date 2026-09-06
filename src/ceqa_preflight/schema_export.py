@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from ceqa_preflight.diffing import DiffReport
 from ceqa_preflight.models import InspectionReport, PackageManifest
 
 
@@ -15,6 +16,7 @@ def export_schemas(destination: Path) -> None:
     artifacts = {
         "manifest.schema.json": PackageManifest.model_json_schema(),
         "report.schema.json": InspectionReport.model_json_schema(),
+        "diff.schema.json": DiffReport.model_json_schema(),
     }
     for filename, schema in artifacts.items():
         path = destination / filename

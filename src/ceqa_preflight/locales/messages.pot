@@ -22,6 +22,10 @@ msgid "Batch summary"
 msgstr ""
 
 #, python-brace-format
+msgid "Wrote comparison to {path}"
+msgstr ""
+
+#, python-brace-format
 msgid "Created manifest template at {path}"
 msgstr ""
 
@@ -69,6 +73,22 @@ msgstr ""
 
 #, python-brace-format
 msgid "{value} seconds"
+msgstr ""
+
+msgid ""
+"This comparison describes what two advisory technical reports say. It is "
+"not legal advice, and a finding that no longer appears has not been "
+"determined compliant."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"report schema {declared} is not one this tool can compare; it understands"
+" {supported}.x"
+msgstr ""
+
+#, python-brace-format
+msgid "that file is not a check report this tool can read: {error}"
 msgstr ""
 
 msgid "Every check that applies to this filing type ran."
@@ -154,6 +174,118 @@ msgid "Reviewed by: ______________________  Date: ____________"
 msgstr ""
 
 msgid "No manual-review items were generated."
+msgstr ""
+
+msgid "NEW"
+msgstr ""
+
+msgid "GONE"
+msgstr ""
+
+msgid "CHANGED"
+msgstr ""
+
+msgid "SAME"
+msgstr ""
+
+msgid "NOT COMPARABLE"
+msgstr ""
+
+msgid "still did not run"
+msgstr ""
+
+msgid "did not run in either report, for a different reason"
+msgstr ""
+
+msgid "did not run before; it ran this time"
+msgstr ""
+
+msgid "ran before; it did not run this time"
+msgstr ""
+
+msgid ""
+"did not run in one report and is absent from the other, so these reports "
+"cannot be compared on it"
+msgstr ""
+
+msgid "status"
+msgstr ""
+
+msgid "message"
+msgstr ""
+
+msgid "page"
+msgstr ""
+
+msgid "remediation"
+msgstr ""
+
+msgid "confidence"
+msgstr ""
+
+msgid "rule version"
+msgstr ""
+
+msgid "title"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The two reports use different report schema versions ({before} and "
+"{after})."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The two reports were produced by different tool versions ({before} and "
+"{after})."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The two reports were produced against different rulesets ({before} and "
+"{after}). A check that no longer appears may have left the ruleset rather"
+" than been resolved."
+msgstr ""
+
+#, python-brace-format
+msgid "The two reports describe different filing types ({before} and {after})."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The two reports describe different package contents ({before} and "
+"{after})."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{before} finding(s) before and {after} after share this rule, document "
+"and field, so no pairing between them is knowable."
+msgstr ""
+
+msgid "was"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{added} new, {removed} no longer reported, {changed} changed, {unchanged}"
+" unchanged, {not_comparable} not comparable, {regressions} regression(s)."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"No finding and no skipped check moved between these two reports of "
+"package fingerprint {fingerprint}."
+msgstr ""
+
+msgid "CEQA Preflight report comparison"
+msgstr ""
+
+msgid "Before any comparison"
+msgstr ""
+
+msgid "Findings that moved"
 msgstr ""
 
 msgid ""
@@ -576,6 +708,48 @@ msgstr ""
 msgid "Confirm supporting findings, if applicable, manually."
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"Earlier report: tool {tool}, ruleset {ruleset}, generated {generated}, "
+"package fingerprint {fingerprint}."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Later report: tool {tool}, ruleset {ruleset}, generated {generated}, "
+"package fingerprint {fingerprint}."
+msgstr ""
+
+msgid "Every finding whose presence or content differs between the two reports"
+msgstr ""
+
+msgid "Change"
+msgstr ""
+
+msgid "Rule"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Detail"
+msgstr ""
+
+msgid "No finding moved between these two reports."
+msgstr ""
+
+msgid "Skipped checks whose state differs between the two reports"
+msgstr ""
+
+msgid ""
+"Every check that did not run in one report did not run in the other, for "
+"the same reason."
+msgstr ""
+
+#, python-brace-format
+msgid "Comparison generated {generated} by tool version {tool}."
+msgstr ""
+
 msgid "Filing type"
 msgstr ""
 
@@ -591,12 +765,6 @@ msgid "Automated findings"
 msgstr ""
 
 msgid "Automated technical checks"
-msgstr ""
-
-msgid "Status"
-msgstr ""
-
-msgid "Rule"
 msgstr ""
 
 msgid "Finding"
