@@ -321,7 +321,13 @@ def diff(
     if output is None:
         typer.echo(rendered, nl=False)
     else:
-        if output.suffix == "":
+        # `check --output` takes a directory, so a hand reaching for `diff --output` will
+        # reach for one too. Writing `reports.txt` beside a `reports/` directory the person
+        # meant to write into is a file in a place nobody asked for, and the success line
+        # would name it as though it had been requested.
+        if output.is_dir():
+            output = output / f"comparison.{_DIFF_SUFFIXES[output_format]}"
+        elif output.suffix == "":
             output = output.with_suffix(f".{_DIFF_SUFFIXES[output_format]}")
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(rendered, encoding="utf-8")
