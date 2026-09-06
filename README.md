@@ -34,14 +34,14 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 470 tests under a
+whole tool understated it. `make verify` is the merge gate: 488 tests under a
 90% branch-coverage floor, `strict = true` mypy over 37 source files, bandit,
 and an i18n gate holding 168 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
-than asserted. None of that makes the tool production-ready:
-`v0.1.0` is a first tagged release of pre-alpha software, nothing is published
-to a package registry, and the CLI and JSON report schema are still unstable.
+than asserted. None of that makes the tool production-ready: `0.1.0` is a
+pre-release development baseline with no tag behind it, nothing is published to
+a package registry, and the CLI and JSON report schema are still unstable.
 See [Public API and release status](#public-api-and-release-status).
 
 ## Intended initial scope
@@ -74,17 +74,20 @@ See [Public API and release status](#public-api-and-release-status).
     uv run ceqa-preflight pilot init ./pilot-evidence
     uv run ceqa-preflight pilot summarize --reviews ./pilot-evidence/finding-review.csv --baseline ./pilot-evidence/manual-baseline.csv
 
-Without a local checkout, run the CLI straight from the tagged release with
+Without a local checkout, run the CLI straight from the default branch with
 [uv](https://docs.astral.sh/uv/), or install it with `pipx`:
 
-    uvx --from git+https://github.com/ChelseaKR/ceqa-preflight@v0.1.0 ceqa-preflight --help
-    pipx install git+https://github.com/ChelseaKR/ceqa-preflight@v0.1.0
+    uvx --from git+https://github.com/ChelseaKR/ceqa-preflight ceqa-preflight --help
+    pipx install git+https://github.com/ChelseaKR/ceqa-preflight
 
-The release attaches a built wheel and sdist, with a CycloneDX SBOM and build
-provenance, to the GitHub Release; those install directly too. There is no
-package-registry publication, so plain `uvx ceqa-preflight` will not find it.
-From a clone, `uvx --from /path/to/ceqa-preflight ceqa-preflight --help` still
-works.
+Both track `main` rather than a fixed point, because no tag has been cut. These
+two commands read `@v0.1.0` until 2026-09-06 and failed for everyone who ran
+them: no such tag exists. `release.yml` is committed and will attach a built
+wheel and sdist, a CycloneDX SBOM and build provenance to a GitHub Release when
+a signed `v*` tag is pushed, and nothing is attached to anything yet. There is
+no package-registry publication either, so plain `uvx ceqa-preflight` will not
+find it. From a clone, `uvx --from /path/to/ceqa-preflight ceqa-preflight
+--help` still works.
 
 The `check` command reads one or more directories or ZIP packages locally,
 never uploads or alters their contents, and can emit console, JSON,
@@ -233,9 +236,12 @@ The project also documents its [pilot protocol](docs/pilot-protocol.md),
 ## Public API and release status
 
 The command-line interface and JSON report schema are **not yet stable**.
-`v0.1.0` is the first tagged release: the pre-release development baseline
-given a version number, not a promise of production readiness. Under the 0ver
-intent of the
+`0.1.0` is the pre-release development baseline, and no tag has been cut for
+it: `git tag --list` is empty on this repository, there is no GitHub Release,
+and nothing has been released. It is a version number, not a promise of
+production readiness and not an artifact you can install. `tests/test_release_claims.py`
+reads the tags and fails if that stops being said here while it stays true.
+Under the 0ver intent of the
 [Release & Versioning standard](docs/standards/RELEASE-AND-VERSIONING-STANDARD.md)
 (§2, REL-05), a `MINOR` bump before `1.0.0` may break. No package-registry
 publication has been made. See [CHANGELOG.md](CHANGELOG.md) and
@@ -253,7 +259,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with a 90% branch-coverage floor, and complexity <= 10), `uv.lock`, and `.python-version` |
 | Security & Supply-Chain | Applies | [Security policy](SECURITY.md); bandit, pip-audit, gitleaks, and CodeQL in CI; SHA-pinned actions and a committed lockfile |
 | CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
-| Release & Versioning | Applies | `v0.1.0`, cut by the committed signed-tag `release.yml`: authorized against `.github/allowed_signers`, `make verify` re-run at the tagged commit, CycloneDX SBOM and SLSA build provenance attached to the GitHub Release. No package-registry publication |
+| Release & Versioning | Applies -- not met | `0.1.0` is declared in `pyproject.toml` and `CITATION.cff` and no tag has been cut, so nothing has been released: no signed tag, no GitHub Release, no SBOM or provenance attached to anything, no package-registry publication. The signed-tag `release.yml` is committed and will do all of that when a `v*` tag is pushed, authorized against `.github/allowed_signers` with `make verify` re-run at the tagged commit; it has never run. `tests/test_release_claims.py` derives this row's state from `git tag --list` rather than restating it |
 | Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |

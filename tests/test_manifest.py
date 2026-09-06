@@ -153,9 +153,19 @@ def test_distinct_document_paths_are_still_accepted() -> None:
 
 
 # CITATION.cff once carried `date-released: "2026-07-18"`, which was the first commit date
-# and not a release: no tag and no GitHub Release have ever been cut, and CHANGELOG.md holds
-# only `## Unreleased`. Citation tooling surfaces that field as a release date, so it stayed
-# omitted. These gates keep the file honest against the two in-repo sources of truth.
+# and not a release: no tag and no GitHub Release have ever been cut. Citation tooling
+# surfaces that field as a release date, so it stayed omitted. These gates keep the file
+# honest against the two in-repo sources of truth.
+#
+# Two in-repo documents is the limit of what they can do, and it was not enough. In #76 the
+# CHANGELOG gained `## [0.1.0] - 2026-09-02` and CITATION.cff gained the matching
+# `date-released` in the same commit, so the check below agreed at the moment both files
+# stopped being true, and `main` published a release date, a "first tagged release" README
+# and two `@v0.1.0` install commands for a tag nobody had cut. The message below says "only
+# once a version is actually tagged and released"; what it reads is a markdown heading.
+# A release claim can only be checked against the release, so
+# tests/test_release_claims.py checks `git tag --list` and is the authority on all of this.
+# This pair stays as the cheap document-level consistency check it always was.
 
 _ROOT = Path(__file__).resolve().parent.parent
 _RELEASED_HEADING = re.compile(r"^##\s+\[?\d+\.\d+\.\d+", re.MULTILINE)
