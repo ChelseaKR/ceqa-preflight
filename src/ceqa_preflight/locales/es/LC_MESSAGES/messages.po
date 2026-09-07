@@ -1113,3 +1113,7 @@ msgid ""
 "said when they were read; a source no record names is not a source that "
 "was checked. It changes no rule and is not a review."
 msgstr "Estado de las fuentes según {path}, leído de {read_from} el {checked_at}, sobre los {documents} documento(s) que ese registro nombra. Informa lo que decían las fuentes cuando se leyeron; una fuente que ningún registro nombra no es una fuente verificada. No modifica ninguna regla y no es una revisión."
+
+#, python-brace-format
+msgid "Checking {package} as {filing_type}, per {manifest}"
+msgstr "Revisando {package} como {filing_type}, según {manifest}"

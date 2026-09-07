@@ -34,9 +34,9 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 657 tests under a
-90% branch-coverage floor, `strict = true` mypy over 41 source files, bandit,
-and an i18n gate holding 244 English and Spanish messages at enforced parity.
+whole tool understated it. `make verify` is the merge gate: 677 tests under a
+90% branch-coverage floor, `strict = true` mypy over 43 source files, bandit,
+and an i18n gate holding 245 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
 than asserted. None of that makes the tool production-ready: `0.1.0` is a
@@ -115,6 +115,60 @@ package only), and `--rules` / `--exclude-rules` to select specific rule
 identifiers. The default run includes active technical checks only. Add
 `--log-format json` for minimal, package-content-free operational events on
 stderr, including inspection progress counts for large packages.
+
+### Running it in CI, and before a commit
+
+A composite action installs a pinned release wheel, checks one or more
+packages, uploads the SARIF to code scanning, and puts the counts in the job
+summary. **It cannot run yet.** The wheel comes from a GitHub Release, and this
+repository has cut no tag; until one exists the action's install step has
+nothing to download. The tags below are the shape a caller will write, not a
+release that is available today — see
+[Public API and release status](#public-api-and-release-status).
+`examples/workflows/ceqa-preflight.yml` is the full copy:
+
+```yaml
+- id: preflight
+  uses: ChelseaKR/ceqa-preflight@v0.1.0
+  with:
+    packages: filings/2026-noe-example
+    filing-type: NOE
+    version: v0.1.0
+```
+
+`version` is required and has no default. The wheel comes from that GitHub
+Release — the project's only distribution channel — and the install step
+compares the tag with the version it actually installed, because a report's
+`tool_version` says which catalog ran and is read as evidence. The job's own
+permissions must include `security-events: write`; a composite action cannot
+widen the token its caller hands it. The action's outputs are `failures`,
+`warnings` and `not-run`, and the counts come from the package's own
+`summarize_counts` rather than from a second implementation in shell. A run
+that produced no report at all exits 2 and says so, instead of publishing
+`failures=0` for a job that checked nothing.
+
+The action fails on the tool's own exit code: `0` clean, `1` findings, `2` a
+package that could not be read. `not-run` is the number worth reading on a
+green job — a check that did not run is not a check that passed.
+
+For a check before the commit rather than after the push,
+`.pre-commit-hooks.yaml` ships a `ceqa-preflight` hook:
+
+```yaml
+repos:
+  - repo: https://github.com/ChelseaKR/ceqa-preflight
+    rev: v0.1.0
+    hooks:
+      - id: ceqa-preflight
+```
+
+The hook resolves the package from the staged files: it takes their common
+directory and walks up, no higher than where the hook was invoked, to the first
+directory holding a `package.yaml`, `package.yml` or `package.json`, and reads
+the filing type from that manifest. When no such directory exists it stops with
+exit 2 and asks for `args: [--package, path/to/package]` rather than falling
+back to the repository root — a hook that quietly checked the wrong directory
+would report on a package nobody is filing, and pass while doing it.
 
 Every report states its own scope. Any rule that applies to the filing type but
 did not run — because it is experimental and `--include-experimental` was not

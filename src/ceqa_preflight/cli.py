@@ -25,6 +25,12 @@ from ceqa_preflight.pilot import (
     summarize_pilot,
     write_pilot_templates,
 )
+from ceqa_preflight.precommit import (
+    MANIFEST_NAMES,
+    PackageNotResolved,
+    manifest_in,
+    resolve_package,
+)
 from ceqa_preflight.reporting import (
     diff_counts,
     render_checklist,
@@ -235,6 +241,33 @@ def check(
 ) -> None:
     """Inspect local packages without uploading or changing their source files."""
 
+    raise typer.Exit(
+        code=_check_sources(
+            sources,
+            filing_type,
+            manifest_path=manifest_path,
+            output_format=output_format,
+            output=output,
+            include_experimental=include_experimental,
+            rules=rules,
+            exclude_rules=exclude_rules,
+        )
+    )
+
+
+def _check_sources(
+    sources: list[Path],
+    filing_type: FilingType,
+    *,
+    manifest_path: Path | None,
+    output_format: str,
+    output: Path | None,
+    include_experimental: bool,
+    rules: str | None,
+    exclude_rules: str | None,
+) -> int:
+    """Run `check` over every source and return the worst exit code it produced."""
+
     if output_format not in _RENDERERS:
         raise typer.BadParameter(
             "must be one of: " + ", ".join(sorted(_RENDERERS)), param_hint="--format"
@@ -298,7 +331,75 @@ def check(
         typer.echo(_("Batch summary"))
         for line in batch_lines:
             typer.echo(f"  {line}")
-    raise typer.Exit(code=worst_exit_code)
+    return worst_exit_code
+
+
+@app.command("pre-commit")
+def pre_commit(
+    files: Annotated[
+        list[Path],
+        typer.Argument(help="Staged files, as `pre-commit` passes them."),
+    ],
+    package: Annotated[
+        Path | None,
+        typer.Option(
+            "--package",
+            help="The package directory, when the staged files do not identify one.",
+        ),
+    ] = None,
+    output_format: Annotated[
+        str,
+        typer.Option(
+            "--format", help="Report format: console, json, html, checklist, sarif, junit."
+        ),
+    ] = "console",
+    include_experimental: Annotated[
+        bool,
+        typer.Option(
+            "--include-experimental",
+            help="Include filing-specific pilot rules; they are advisory and not release-ready.",
+        ),
+    ] = False,
+) -> None:
+    """Check the package the staged files belong to, or refuse rather than guess at one.
+
+    The filing type comes from the resolved manifest, which is the file that makes a
+    directory a package in the first place. Exits 2 when no package can be identified: a
+    hook that quietly checked the wrong directory, or the whole repository, would report
+    on a package nobody is filing and pass while doing it.
+    """
+
+    try:
+        if package is None:
+            directory, manifest = resolve_package(files, boundary=Path.cwd())
+        else:
+            found = manifest_in(package)
+            if found is None:
+                names = " or ".join(MANIFEST_NAMES)
+                raise PackageNotResolved(f"{package} holds no {names}")
+            directory, manifest = package, found
+        filing_type = load_manifest(manifest).filing_type
+    except (PackageNotResolved, ManifestError) as error:
+        typer.echo(_("Input error: {error}").format(error=error), err=True)
+        raise typer.Exit(code=2) from error
+
+    typer.echo(
+        _("Checking {package} as {filing_type}, per {manifest}").format(
+            package=directory, filing_type=filing_type.value, manifest=manifest.name
+        )
+    )
+    raise typer.Exit(
+        code=_check_sources(
+            [directory],
+            filing_type,
+            manifest_path=manifest,
+            output_format=output_format,
+            output=None,
+            include_experimental=include_experimental,
+            rules=None,
+            exclude_rules=None,
+        )
+    )
 
 
 @app.command()

@@ -1047,3 +1047,7 @@ msgstr ""
 "{documents} document(s) that record names. It reports what the sources "
 "said when they were read; a source no record names is not a source that "
 "was checked. It changes no rule and is not a review."
+
+#, python-brace-format
+msgid "Checking {package} as {filing_type}, per {manifest}"
+msgstr "Checking {package} as {filing_type}, per {manifest}"
