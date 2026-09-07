@@ -875,3 +875,64 @@ msgstr ""
 #, python-brace-format
 msgid "Comparison generated {generated} by tool version {tool}."
 msgstr "Comparison generated {generated} by tool version {tool}."
+
+#, python-brace-format
+msgid "Per-rule precision, with {level} confidence intervals:"
+msgstr "Per-rule precision, with {level} confidence intervals:"
+
+#, python-brace-format
+msgid ""
+"  {rule}: {precision}; {reviewers} of {required} independent reviewers"
+msgstr ""
+"  {rule}: {precision}; {reviewers} of {required} independent reviewers"
+
+msgid ""
+"Reviewer counts above are labelling coverage. Approval of a rule's wording "
+"is the private rubric's decision and is deliberately not an evidence-file "
+"field."
+msgstr ""
+"Reviewer counts above are labelling coverage. Approval of a rule's wording "
+"is the private rubric's decision and is deliberately not an evidence-file "
+"field."
+
+msgid "Inter-reviewer agreement:"
+msgstr "Inter-reviewer agreement:"
+
+#, python-brace-format
+msgid ""
+"  {rule}, {first} and {second}: {agreement} agreement on {count} findings; "
+"kappa {kappa}"
+msgstr ""
+"  {rule}, {first} and {second}: {agreement} agreement on {count} findings; "
+"kappa {kappa}"
+
+#, python-brace-format
+msgid ""
+"Reviewer calibration against seeded synthetic defects ({count} findings):"
+msgstr ""
+"Reviewer calibration against seeded synthetic defects ({count} findings):"
+
+#, python-brace-format
+msgid ""
+"  {reviewer}, {defect}: {identified} of {seeded} identified, {missed} "
+"missed"
+msgstr ""
+"  {reviewer}, {defect}: {identified} of {seeded} identified, {missed} "
+"missed"
+
+msgid ""
+"Calibration findings are excluded from every figure above; they are "
+"synthetic."
+msgstr ""
+"Calibration findings are excluded from every figure above; they are "
+"synthetic."
+
+msgid "not measurable"
+msgstr "not measurable"
+
+#, python-brace-format
+msgid "{value} ({level} CI {low} to {high}, n={count})"
+msgstr "{value} ({level} CI {low} to {high}, n={count})"
+
+msgid "not defined; both reviewers used one identical label throughout"
+msgstr "not defined; both reviewers used one identical label throughout"

@@ -18,7 +18,12 @@ from ceqa_preflight.manifest import ManifestError, load_manifest
 from ceqa_preflight.models import FilingType
 from ceqa_preflight.observability import configure_logging, event
 from ceqa_preflight.package_loader import PackageLoadError
-from ceqa_preflight.pilot import PilotDataError, summarize_pilot, write_pilot_templates
+from ceqa_preflight.pilot import (
+    PilotDataError,
+    PilotSummary,
+    summarize_pilot,
+    write_pilot_templates,
+)
 from ceqa_preflight.reporting import (
     diff_counts,
     render_checklist,
@@ -519,7 +524,13 @@ def summarize_pilot_data(
                 _("Reviewed findings: {value}").format(value=summary.reviewed_findings),
                 _("Reviewed packages: {value}").format(value=summary.reviewed_packages),
                 _("Actionable precision: {value}").format(
-                    value=_format_rate(summary.actionable_precision)
+                    value=_format_proportion(
+                        summary.actionable_precision,
+                        summary.actionable_precision_interval_low,
+                        summary.actionable_precision_interval_high,
+                        summary.true_positives + summary.false_positives,
+                        summary.interval_confidence_level,
+                    )
                 ),
                 _("High-severity false-negative rate: {value}").format(
                     value=_format_rate(summary.high_severity_false_negative_rate)
@@ -527,14 +538,125 @@ def summarize_pilot_data(
                 _("Median report time: {value}").format(
                     value=_format_seconds(summary.median_report_seconds)
                 ),
+                *_rule_lines(summary),
+                *_agreement_lines(summary),
+                *_calibration_lines(summary),
                 *summary.reasons,
             )
         )
     )
 
 
+def _rule_lines(summary: PilotSummary) -> list[str]:
+    if not summary.rules:
+        return []
+    lines = [
+        _("Per-rule precision, with {level} confidence intervals:").format(
+            level=f"{summary.interval_confidence_level:.0%}"
+        )
+    ]
+    lines.extend(
+        _("  {rule}: {precision}; {reviewers} of {required} independent reviewers").format(
+            rule=rule.rule_id,
+            precision=_format_proportion(
+                rule.precision,
+                rule.precision_interval_low,
+                rule.precision_interval_high,
+                rule.labelled_findings,
+                summary.interval_confidence_level,
+            ),
+            reviewers=rule.independent_reviewers,
+            required=summary.reviewer_coverage_threshold,
+        )
+        for rule in summary.rules
+    )
+    lines.append(
+        _(
+            "Reviewer counts above are labelling coverage. Approval of a rule's wording is "
+            "the private rubric's decision and is deliberately not an evidence-file field."
+        )
+    )
+    return lines
+
+
+def _agreement_lines(summary: PilotSummary) -> list[str]:
+    if not summary.reviewer_agreement:
+        return []
+    lines = [_("Inter-reviewer agreement:")]
+    lines.extend(
+        _(
+            "  {rule}, {first} and {second}: {agreement} agreement on {count} findings; "
+            "kappa {kappa}"
+        ).format(
+            rule=pair.rule_id,
+            first=pair.reviewer_a,
+            second=pair.reviewer_b,
+            agreement=_format_rate(pair.percent_agreement),
+            count=pair.compared_findings,
+            kappa=_format_kappa(pair.cohens_kappa, pair.kappa_undefined),
+        )
+        for pair in summary.reviewer_agreement
+    )
+    return lines
+
+
+def _calibration_lines(summary: PilotSummary) -> list[str]:
+    if not summary.calibration:
+        return []
+    lines = [
+        _("Reviewer calibration against seeded synthetic defects ({count} findings):").format(
+            count=summary.calibration_findings
+        )
+    ]
+    lines.extend(
+        _("  {reviewer}, {defect}: {identified} of {seeded} identified, {missed} missed").format(
+            reviewer=entry.reviewer_id,
+            defect=entry.expected_defect,
+            identified=entry.identified,
+            seeded=entry.seeded_findings,
+            missed=entry.missed,
+        )
+        for entry in summary.calibration
+    )
+    lines.append(
+        _("Calibration findings are excluded from every figure above; they are synthetic.")
+    )
+    return lines
+
+
 def _format_rate(value: float | None) -> str:
-    return _("not measured") if value is None else f"{value:.1%}"
+    return _("not measurable") if value is None else f"{value:.1%}"
+
+
+def _format_proportion(
+    value: float | None, low: float | None, high: float | None, count: int, level: float
+) -> str:
+    """A rate with the interval and sample size that say what it rests on.
+
+    A bare ``100.0%`` from two labels reads as certainty. The interval and ``n`` are
+    printed with it so that reading is not available, and the confidence level is named
+    rather than assumed: an interval whose level the reader has to guess is not evidence.
+    """
+
+    if value is None or low is None or high is None:
+        return _("not measurable")
+    return _("{value} ({level} CI {low} to {high}, n={count})").format(
+        value=f"{value:.1%}",
+        level=f"{level:.0%}",
+        low=f"{low:.1%}",
+        high=f"{high:.1%}",
+        count=count,
+    )
+
+
+def _format_kappa(value: float | None, undefined: bool) -> str:
+    if value is None:
+        return (
+            _("not defined; both reviewers used one identical label throughout")
+            if undefined
+            else _("not measurable")
+        )
+    return f"{value:.3f}"
 
 
 def _format_seconds(value: float | None) -> str:
