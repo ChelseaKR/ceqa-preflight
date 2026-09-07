@@ -381,6 +381,89 @@ msgstr ""
 msgid "Review this item manually and report the rule identifier if it recurs."
 msgstr ""
 
+#, python-brace-format
+msgid "{path} is not a source-watch record: its top level is not an object."
+msgstr ""
+
+#, python-brace-format
+msgid "No source-watch record at {path}."
+msgstr ""
+
+#, python-brace-format
+msgid "Could not read the source-watch record at {path}: {reason}"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} is not valid JSON: {reason}"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} declares no watch_schema_version, so it cannot be read safely."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{path} declares watch_schema_version {declared}; this build reads version"
+" {supported}."
+msgstr ""
+
+#, python-brace-format
+msgid "{path} carries no documents list, so it reports on nothing."
+msgstr ""
+
+#, python-brace-format
+msgid "{path}: document {index} is not an object."
+msgstr ""
+
+#, python-brace-format
+msgid "{path}: document {index} has no id."
+msgstr ""
+
+#, python-brace-format
+msgid "{path}: document {document_id} reports an unknown status {status}."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{path}: document {document_id} is recorded as unverifiable and as "
+"examined at the same time."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{path}: document {document_id} is recorded as {status} but reports "
+"nothing examined."
+msgstr ""
+
+msgid "source unchanged"
+msgstr ""
+
+msgid "source changed; this rule's retained passages still occur"
+msgstr ""
+
+msgid "source changed; retained passages for this rule no longer occur"
+msgstr ""
+
+msgid "not examined; a bound source could not be read"
+msgstr ""
+
+msgid "not watched; this record names no source for it"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Source status from {path}, read {read_from} at {checked_at}, over the "
+"{documents} document(s) that record names. It reports what the sources "
+"said when they were read; a source no record names is not a source that "
+"was checked. It changes no rule and is not a review."
+msgstr ""
+
+msgid "an unrecorded origin"
+msgstr ""
+
+msgid "an unrecorded time"
+msgstr ""
+
 msgid "No action is needed for this check."
 msgstr ""
 

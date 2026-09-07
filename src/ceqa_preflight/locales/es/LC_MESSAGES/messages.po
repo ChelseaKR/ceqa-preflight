@@ -1029,3 +1029,87 @@ msgstr "El registro de calibración está actualizado."
 #, python-brace-format
 msgid "Wrote calibration record to {path}"
 msgstr "Se escribió el registro de calibración en {path}"
+
+#, python-brace-format
+msgid "{path} is not a source-watch record: its top level is not an object."
+msgstr "{path} no es un registro de vigilancia de fuentes: su nivel superior no es un objeto."
+
+#, python-brace-format
+msgid "No source-watch record at {path}."
+msgstr "No hay ningún registro de vigilancia de fuentes en {path}."
+
+#, python-brace-format
+msgid "Could not read the source-watch record at {path}: {reason}"
+msgstr "No se pudo leer el registro de vigilancia de fuentes en {path}: {reason}"
+
+#, python-brace-format
+msgid "{path} is not valid JSON: {reason}"
+msgstr "{path} no es JSON válido: {reason}"
+
+#, python-brace-format
+msgid ""
+"{path} declares no watch_schema_version, so it cannot be read safely."
+msgstr "{path} no declara watch_schema_version, así que no se puede leer con seguridad."
+
+#, python-brace-format
+msgid ""
+"{path} declares watch_schema_version {declared}; this build reads version "
+"{supported}."
+msgstr "{path} declara watch_schema_version {declared}; esta compilación lee la versión {supported}."
+
+#, python-brace-format
+msgid "{path} carries no documents list, so it reports on nothing."
+msgstr "{path} no incluye una lista de documentos, así que no informa sobre nada."
+
+#, python-brace-format
+msgid "{path}: document {index} is not an object."
+msgstr "{path}: el documento {index} no es un objeto."
+
+#, python-brace-format
+msgid "{path}: document {index} has no id."
+msgstr "{path}: el documento {index} no tiene id."
+
+#, python-brace-format
+msgid ""
+"{path}: document {document_id} is recorded as unverifiable and as examined "
+"at the same time."
+msgstr "{path}: el documento {document_id} está registrado a la vez como no verificable y como examinado."
+
+#, python-brace-format
+msgid ""
+"{path}: document {document_id} is recorded as {status} but reports nothing "
+"examined."
+msgstr "{path}: el documento {document_id} está registrado como {status} pero no informa nada examinado."
+
+msgid "source unchanged"
+msgstr "fuente sin cambios"
+
+msgid "source changed; this rule's retained passages still occur"
+msgstr "la fuente cambió; los pasajes conservados de esta regla siguen apareciendo"
+
+msgid "source changed; retained passages for this rule no longer occur"
+msgstr "la fuente cambió; los pasajes conservados de esta regla ya no aparecen"
+
+msgid "not examined; a bound source could not be read"
+msgstr "no examinada; no se pudo leer una fuente vinculada"
+
+msgid "not watched; this record names no source for it"
+msgstr "no vigilada; este registro no nombra ninguna fuente para ella"
+
+msgid "an unrecorded origin"
+msgstr "un origen no registrado"
+
+msgid "an unrecorded time"
+msgstr "un momento no registrado"
+
+#, python-brace-format
+msgid "{path}: document {document_id} reports an unknown status {status}."
+msgstr "{path}: el documento {document_id} informa un estado desconocido: {status}."
+
+#, python-brace-format
+msgid ""
+"Source status from {path}, read {read_from} at {checked_at}, over the "
+"{documents} document(s) that record names. It reports what the sources "
+"said when they were read; a source no record names is not a source that "
+"was checked. It changes no rule and is not a review."
+msgstr "Estado de las fuentes según {path}, leído de {read_from} el {checked_at}, sobre los {documents} documento(s) que ese registro nombra. Informa lo que decían las fuentes cuando se leyeron; una fuente que ningún registro nombra no es una fuente verificada. No modifica ninguna regla y no es una revisión."

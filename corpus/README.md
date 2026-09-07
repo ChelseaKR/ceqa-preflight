@@ -162,6 +162,36 @@ The exit code follows: `0` only when every document was unchanged, `1` when any
 document is *not known to be unchanged* — changed **or** unverifiable — and `2`
 when the watch could not run at all.
 
+### Reading a record back per rule
+
+The record is written per *document*. `rules list --source-status` turns it into
+a statement per rule, which is the shape a reviewer works in:
+
+    uv run ceqa-preflight rules list --source-status docs/audits/source-watch-2026-09-07.json
+    uv run ceqa-preflight rules list --format json --source-status docs/audits/source-watch-2026-09-07.json
+
+It keeps the record's distinctions rather than flattening them into "fine" and
+"not fine":
+
+| Rule status | When |
+| --- | --- |
+| `passages_lost` | a bound document changed and this rule is named in `rules_with_lost_passages` |
+| `source_changed` | a bound document changed and this rule is not named there |
+| `not_examined` | a bound document could not be read at all |
+| `not_watched` | **no** document in the record names this rule |
+| `unchanged` | every bound document in the record was unchanged |
+
+A rule bound to several documents takes the worst status among them, so one
+unread document is never averaged away by two clean ones. `not_watched` is kept
+apart from `unchanged` for the same reason `unverifiable` is: a record that
+never looked at a rule's source has said nothing about it.
+
+The listing reads only the file you hand it. It has no way to tell what a record
+left out — a run narrowed with `--document` covers part of the corpus, and the
+installed package carries no manifest to compare against — so the preamble names
+how many documents the record covers. Read that number before reading the
+verdicts.
+
 ### Adopting a changed source
 
 Nothing is automatic. When the watch reports `changed`:

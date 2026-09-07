@@ -951,3 +951,99 @@ msgstr "Calibration record is current."
 #, python-brace-format
 msgid "Wrote calibration record to {path}"
 msgstr "Wrote calibration record to {path}"
+
+#, python-brace-format
+msgid "{path} is not a source-watch record: its top level is not an object."
+msgstr ""
+"{path} is not a source-watch record: its top level is not an object."
+
+#, python-brace-format
+msgid "No source-watch record at {path}."
+msgstr "No source-watch record at {path}."
+
+#, python-brace-format
+msgid "Could not read the source-watch record at {path}: {reason}"
+msgstr "Could not read the source-watch record at {path}: {reason}"
+
+#, python-brace-format
+msgid "{path} is not valid JSON: {reason}"
+msgstr "{path} is not valid JSON: {reason}"
+
+#, python-brace-format
+msgid ""
+"{path} declares no watch_schema_version, so it cannot be read safely."
+msgstr ""
+"{path} declares no watch_schema_version, so it cannot be read safely."
+
+#, python-brace-format
+msgid ""
+"{path} declares watch_schema_version {declared}; this build reads version "
+"{supported}."
+msgstr ""
+"{path} declares watch_schema_version {declared}; this build reads version "
+"{supported}."
+
+#, python-brace-format
+msgid "{path} carries no documents list, so it reports on nothing."
+msgstr "{path} carries no documents list, so it reports on nothing."
+
+#, python-brace-format
+msgid "{path}: document {index} is not an object."
+msgstr "{path}: document {index} is not an object."
+
+#, python-brace-format
+msgid "{path}: document {index} has no id."
+msgstr "{path}: document {index} has no id."
+
+#, python-brace-format
+msgid ""
+"{path}: document {document_id} is recorded as unverifiable and as examined "
+"at the same time."
+msgstr ""
+"{path}: document {document_id} is recorded as unverifiable and as examined "
+"at the same time."
+
+#, python-brace-format
+msgid ""
+"{path}: document {document_id} is recorded as {status} but reports nothing "
+"examined."
+msgstr ""
+"{path}: document {document_id} is recorded as {status} but reports nothing "
+"examined."
+
+msgid "source unchanged"
+msgstr "source unchanged"
+
+msgid "source changed; this rule's retained passages still occur"
+msgstr "source changed; this rule's retained passages still occur"
+
+msgid "source changed; retained passages for this rule no longer occur"
+msgstr "source changed; retained passages for this rule no longer occur"
+
+msgid "not examined; a bound source could not be read"
+msgstr "not examined; a bound source could not be read"
+
+msgid "not watched; this record names no source for it"
+msgstr "not watched; this record names no source for it"
+
+msgid "an unrecorded origin"
+msgstr "an unrecorded origin"
+
+msgid "an unrecorded time"
+msgstr "an unrecorded time"
+
+#, python-brace-format
+msgid "{path}: document {document_id} reports an unknown status {status}."
+msgstr "{path}: document {document_id} reports an unknown status {status}."
+
+#, python-brace-format
+msgid ""
+"Source status from {path}, read {read_from} at {checked_at}, over the "
+"{documents} document(s) that record names. It reports what the sources "
+"said when they were read; a source no record names is not a source that "
+"was checked. It changes no rule and is not a review."
+msgstr ""
+"Source status from {path}, read {read_from} at {checked_at}, over the "
+"{documents} document(s) that record names. It reports what the sources "
+"said when they were read; a source no record names is not a source that "
+"was checked. It changes no rule and is not a review."
