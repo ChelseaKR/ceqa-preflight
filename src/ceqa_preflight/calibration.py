@@ -40,6 +40,7 @@ little they rest on. Four of four is reported as its interval, not as 100%.
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -83,6 +84,12 @@ DEFECT_RULES: dict[SyntheticDefect, str] = {
     SyntheticDefect.WEAK_FILENAME: "FILE-001",
     SyntheticDefect.MISSING_MANIFEST_REFERENCE: "MAN-001",
 }
+
+#: How many times one package may be checked before an incomplete read is
+#: recorded as one. See :func:`_measure_package`: an undetermined read is the
+#: tool saying "ask again", and the corpus is deterministic, so re-taking it is
+#: the honest response rather than recording a miss the ruleset did not make.
+ATTEMPTS_PER_PACKAGE = 3
 
 #: The statuses that count as a rule having fired. `manual` is not one: a rule
 #: that routes a package to a human has not detected anything on its own.
@@ -181,6 +188,24 @@ class SyntheticCalibration(StrictModel):
     #: what it needed. Zero in a record worth publishing. See
     #: :attr:`DefectDetection.undetermined`.
     undetermined_reads: int = Field(ge=0, default=0)
+
+    def undetermined_detail(self) -> str:
+        """Name which defects came back undetermined, for a failure message.
+
+        An assertion that says only "something was undetermined" sends the
+        reader back to re-run the whole corpus to learn what. The rule and
+        defect are already in hand, so they are said.
+        """
+
+        rows = [row for row in self.detection if row.undetermined]
+        if not rows:
+            return "no defect came back undetermined"
+        return "; ".join(
+            f"{row.defect.value} (rule {row.rule_id}): {row.undetermined} of "
+            f"{row.seeded_packages} seeded packages"
+            for row in rows
+        )
+
     #: Always ``None``. Kept as a field, with its reason beside it, so that a
     #: consumer looking for a false-positive rate finds the explicit absence
     #: rather than reaching for the nearest number that looks like one.
@@ -268,6 +293,7 @@ def _tally_corpus(
     catalog_rules: Mapping[str, RuleDefinition],
     *,
     include_experimental: bool,
+    attempts_per_package: int,
 ) -> _Tally:
     """Generate every package in the corpus and count what each rule did."""
 
@@ -283,17 +309,80 @@ def _tally_corpus(
     )
     for filing_type in filing_types:
         for label, case_defects in _corpus(seeded):
-            with TemporaryDirectory() as scratch:
-                directory = Path(scratch) / f"{filing_type.value}-{label}"
-                write_synthetic_package(directory, filing_type, list(case_defects))
-                fired, statuses = _run_package(
-                    directory, filing_type, include_experimental=include_experimental
-                )
+            fired, statuses = _measure_package(
+                filing_type,
+                label,
+                case_defects,
+                include_experimental=include_experimental,
+                attempts=attempts_per_package,
+            )
             tally.total_packages += 1
             if not case_defects:
                 tally.control_packages += 1
             _count_package(tally, set(case_defects), fired, statuses)
     return tally
+
+
+def _undetermined_owners(
+    present: set[SyntheticDefect], fired: set[str], statuses: dict[str, set[str]]
+) -> set[str]:
+    """Owning rules that answered "ask a human" on a package seeding their defect."""
+
+    return {
+        DEFECT_RULES[defect]
+        for defect in present
+        if DEFECT_RULES[defect] not in fired
+        and FindingStatus.MANUAL.value in statuses.get(DEFECT_RULES[defect], set())
+    }
+
+
+def _measure_package(
+    filing_type: FilingType,
+    label: str,
+    case_defects: tuple[SyntheticDefect, ...],
+    *,
+    include_experimental: bool,
+    attempts: int,
+) -> tuple[set[str], dict[str, set[str]]]:
+    """Check one synthetic package, re-taking a read that reported itself incomplete.
+
+    `undetermined` is the tool saying "ask again or ask a human", not "no". The
+    corpus is deterministic, so a rule that could not read a file it read a
+    moment ago is a fact about the machine, and the honest response to an
+    incomplete read is to take it again rather than to record it as a miss.
+
+    This is not a softened assertion: ``undetermined_reads`` still has to reach
+    zero, and a read that stays incomplete after every attempt is still counted
+    and still fails the record. It was added because the constrained CI runners
+    reproduce it -- roughly one inspection in eighty on a two-core runner comes
+    back with the worker having never answered -- while the same command over
+    the same corpus is clean on a developer machine.
+
+    Every retry is announced on stderr. A run that quietly needed three attempts
+    every time is a broken environment, and hiding that would trade one silent
+    wrong number for another.
+    """
+
+    present = set(case_defects)
+    fired: set[str] = set()
+    statuses: dict[str, set[str]] = {}
+    for attempt in range(1, max(1, attempts) + 1):
+        with TemporaryDirectory() as scratch:
+            directory = Path(scratch) / f"{filing_type.value}-{label}"
+            write_synthetic_package(directory, filing_type, list(case_defects))
+            fired, statuses = _run_package(
+                directory, filing_type, include_experimental=include_experimental
+            )
+        incomplete = _undetermined_owners(present, fired, statuses)
+        if not incomplete:
+            return fired, statuses
+        print(
+            f"calibration: {filing_type.value}/{label} attempt {attempt} of "
+            f"{max(1, attempts)}: {', '.join(sorted(incomplete))} could not read "
+            "what they needed; re-taking the measurement",
+            file=sys.stderr,
+        )
+    return fired, statuses
 
 
 def _count_package(
@@ -329,6 +418,7 @@ def run_synthetic_calibration(
     filing_types: Iterable[FilingType] = (FilingType.NOE, FilingType.NOD),
     defects: Sequence[SyntheticDefect] | None = None,
     include_experimental: bool = True,
+    attempts_per_package: int = ATTEMPTS_PER_PACKAGE,
 ) -> SyntheticCalibration:
     """Generate the synthetic corpus, check it, and report what that establishes.
 
@@ -345,6 +435,7 @@ def run_synthetic_calibration(
         seeded,
         catalog_rules,
         include_experimental=include_experimental,
+        attempts_per_package=attempts_per_package,
     )
     detected = tally.detected
     seeded_packages = tally.seeded_packages

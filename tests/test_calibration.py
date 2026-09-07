@@ -14,6 +14,7 @@ from ceqa_preflight.calibration import (
     REVIEWER_SECONDS_REASON,
     SyntheticCalibration,
     _count_package,
+    _measure_package,
     _rate,
     _Tally,
     run_synthetic_calibration,
@@ -82,7 +83,8 @@ def test_every_seeded_defect_is_detected_across_the_corpus(
     # for one defect, and the run that produced it was a degraded read.
     assert calibration.undetermined_reads == 0, (
         "a rule could not read what it needed on a seeded package; this record was "
-        "measured under a degraded read and should be measured again, not published"
+        "measured under a degraded read and should be measured again, not published: "
+        + calibration.undetermined_detail()
     )
     assert calibration.detection
     for row in calibration.detection:
@@ -215,7 +217,8 @@ def test_the_committed_record_matches_a_fresh_measurement(
     #   ceqa-preflight pilot calibrate --out evals/synthetic-calibration.json
     assert COMMITTED_RECORD.exists()
     assert calibration.undetermined_reads == 0, (
-        "the fresh measurement was degraded, so a mismatch here says nothing about drift"
+        "the fresh measurement was degraded, so a mismatch here says nothing about "
+        "drift: " + calibration.undetermined_detail()
     )
     assert COMMITTED_RECORD.read_text(encoding="utf-8") == (
         calibration.model_dump_json(indent=2) + "\n"
@@ -303,3 +306,92 @@ def test_a_rule_that_did_not_run_emits_no_finding_to_count(tmp_path: Path) -> No
     assert skipped, "the fixture premise: experimental rules are skipped by default"
     reported = {finding.rule_id for finding in (*report.findings, *report.manual_review)}
     assert not skipped & reported
+
+
+# --- Re-taking a read that reported itself incomplete -------------------
+#
+# The constrained CI runners reproduce this and a developer machine does not:
+# roughly one PDF inspection in eighty on a two-core runner comes back with the
+# worker having never answered, and the rule that needed those facts routes to a
+# human. The corpus is deterministic, so that is a fact about the machine, and
+# the honest response is to take the reading again -- not to record a miss the
+# ruleset did not make, and not to relax the assertion that catches it.
+
+
+def test_an_incomplete_read_is_taken_again_rather_than_recorded(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    calls: list[int] = []
+
+    def flaky(directory, filing_type, *, include_experimental):  # type: ignore[no-untyped-def]
+        calls.append(1)
+        if len(calls) == 1:
+            return set(), {"PDF-003": {"manual"}}
+        return {"PDF-003"}, {"PDF-003": {"warning"}}
+
+    monkeypatch.setattr("ceqa_preflight.calibration._run_package", flaky)
+    fired, statuses = _measure_package(
+        FilingType.NOE,
+        "scanned",
+        (SyntheticDefect.SCANNED,),
+        include_experimental=True,
+        attempts=3,
+    )
+    assert len(calls) == 2, "the incomplete read should have been taken again exactly once"
+    assert fired == {"PDF-003"}
+    assert statuses == {"PDF-003": {"warning"}}
+    # Announced, not silent: a run that needs a retry every time is a broken
+    # environment, and hiding that trades one silent wrong number for another.
+    assert "re-taking the measurement" in capsys.readouterr().err
+
+
+def test_a_read_that_stays_incomplete_is_still_recorded_as_incomplete(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The strictness the retry must not buy away. Every attempt came back
+    # undetermined, so the record must still say so and still fail to publish.
+    calls: list[int] = []
+
+    def always_undetermined(directory, filing_type, *, include_experimental):  # type: ignore[no-untyped-def]
+        calls.append(1)
+        return set(), {"PDF-003": {"manual"}}
+
+    monkeypatch.setattr("ceqa_preflight.calibration._run_package", always_undetermined)
+    fired, statuses = _measure_package(
+        FilingType.NOE,
+        "scanned",
+        (SyntheticDefect.SCANNED,),
+        include_experimental=True,
+        attempts=3,
+    )
+    assert len(calls) == 3
+    assert fired == set()
+    assert statuses == {"PDF-003": {"manual"}}
+
+    tally = _Tally(
+        detected={SyntheticDefect.SCANNED: 0},
+        undetermined={SyntheticDefect.SCANNED: 0},
+        seeded_packages={SyntheticDefect.SCANNED: 0},
+        fired_without={"PDF-003": 0},
+        packages_without={"PDF-003": 0},
+        statuses_observed={},
+        total_packages=0,
+        control_packages=0,
+    )
+    _count_package(tally, {SyntheticDefect.SCANNED}, fired, statuses)
+    assert tally.undetermined[SyntheticDefect.SCANNED] == 1
+
+
+def test_a_control_package_is_never_retried(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Nothing is seeded, so no owning rule is expected to fire and there is no
+    # incomplete read to detect. Retrying here would turn every control package
+    # into three checks and triple the corpus's cost for nothing.
+    calls: list[int] = []
+
+    def counted(directory, filing_type, *, include_experimental):  # type: ignore[no-untyped-def]
+        calls.append(1)
+        return set(), {"PDF-003": {"pass"}}
+
+    monkeypatch.setattr("ceqa_preflight.calibration._run_package", counted)
+    _measure_package(FilingType.NOE, "control", (), include_experimental=True, attempts=3)
+    assert len(calls) == 1

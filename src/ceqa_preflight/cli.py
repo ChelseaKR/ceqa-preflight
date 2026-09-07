@@ -511,8 +511,15 @@ def calibrate_against_synthetic_packages(
         raise typer.BadParameter("--check needs the --out path to compare against")
     calibration = run_synthetic_calibration()
     rendered = calibration.model_dump_json(indent=2) + "\n"
+    # The `output is None` case is handled first so the two branches below are
+    # narrowed by the control flow itself. An `assert output is not None` after
+    # the `check` guard would read the same to a person and does the narrowing
+    # too, but it is stripped under `python -O` and bandit flags it (B101) for
+    # exactly that reason.
+    if output is None:
+        typer.echo(rendered, nl=False)
+        return
     if check:
-        assert output is not None
         if not output.exists():
             typer.echo(_("Input error: {error}").format(error=f"{output} does not exist"), err=True)
             raise typer.Exit(code=2)
@@ -527,11 +534,8 @@ def calibrate_against_synthetic_packages(
             raise typer.Exit(code=1)
         typer.echo(_("Calibration record is current."))
         return
-    if output is not None:
-        output.write_text(rendered, encoding="utf-8", newline="\n")
-        typer.echo(_("Wrote calibration record to {path}").format(path=output))
-        return
-    typer.echo(rendered, nl=False)
+    output.write_text(rendered, encoding="utf-8", newline="\n")
+    typer.echo(_("Wrote calibration record to {path}").format(path=output))
 
 
 @pilot_app.command("summarize")
