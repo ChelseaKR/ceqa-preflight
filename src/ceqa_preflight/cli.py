@@ -10,6 +10,7 @@ import typer
 
 from ceqa_preflight import __version__
 from ceqa_preflight.ai.cli import ai_app
+from ceqa_preflight.calibration import run_synthetic_calibration
 from ceqa_preflight.checker import check_package
 from ceqa_preflight.diffing import DiffError, diff_reports, exit_code_for, load_report
 from ceqa_preflight.i18n import LocaleError, resolve, set_locale
@@ -484,6 +485,53 @@ def init_pilot(
             review=review_path.name, baseline=baseline_path.name
         )
     )
+
+
+@pilot_app.command("calibrate")
+def calibrate_against_synthetic_packages(
+    output: Annotated[
+        Path | None,
+        typer.Option("--out", help="Write the calibration record to this JSON file."),
+    ] = None,
+    check: Annotated[
+        bool,
+        typer.Option(
+            "--check",
+            help="Compare a freshly measured record against --out and fail on any drift.",
+        ),
+    ] = False,
+) -> None:
+    """Measure the built-in rules against the synthetic generator's seeded defects.
+
+    This is not a false-positive rate and does not stand in for one; the record
+    carries that absence explicitly. See docs/synthetic-calibration.md.
+    """
+
+    if check and output is None:
+        raise typer.BadParameter("--check needs the --out path to compare against")
+    calibration = run_synthetic_calibration()
+    rendered = calibration.model_dump_json(indent=2) + "\n"
+    if check:
+        assert output is not None
+        if not output.exists():
+            typer.echo(_("Input error: {error}").format(error=f"{output} does not exist"), err=True)
+            raise typer.Exit(code=2)
+        if output.read_text(encoding="utf-8") != rendered:
+            typer.echo(
+                _(
+                    "The committed calibration record no longer matches a fresh measurement. "
+                    "Regenerate it with: ceqa-preflight pilot calibrate --out {path}"
+                ).format(path=output),
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        typer.echo(_("Calibration record is current."))
+        return
+    if output is not None:
+        output.write_text(rendered, encoding="utf-8", newline="\n")
+        typer.echo(_("Wrote calibration record to {path}").format(path=output))
+        return
+    typer.echo(rendered, nl=False)
 
 
 @pilot_app.command("summarize")

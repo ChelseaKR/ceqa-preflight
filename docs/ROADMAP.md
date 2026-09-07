@@ -24,8 +24,17 @@
 - **In progress:** validate NOE and NOD rule wording with qualified users.
 - **Blocked externally:** recruit participating organizations, obtain written
   package permission, and secure two qualified reviewers per activated rule.
-- Measure false-positive rate and reviewer time on synthetic or permissioned
-  packages; publish aggregate results only.
+- **Done, for the synthetic half:** `ceqa-preflight pilot calibrate` measures the
+  built-in rules against the generator's seeded defects and publishes the record
+  at `evals/synthetic-calibration.json`, with the method in
+  [synthetic calibration](synthetic-calibration.md). It is explicitly *not* a
+  false-positive rate — that needs qualified reviewers labelling real findings —
+  and the record carries `false_positive_rate: null` and
+  `reviewer_seconds_median: null` with written reasons rather than numbers. The
+  corpus exercises 8 of the 26 built-in rules and none of the filing-specific
+  ones.
+- Measure false-positive rate and reviewer time on permissioned packages;
+  publish aggregate results only. Needs the reviewers recruitment is blocked on.
 - Exit criteria: at least two qualified reviewers approve each activated rule;
   no untriaged high-severity parser or privacy finding.
 
@@ -95,7 +104,8 @@ by the owning standard.
 | EN/ES catalog parity | 100% keys and placeholders | `make i18n` in `make verify` (`scripts/check_i18n.py`) | AUTO | Maintainer |
 | Qualified Spanish terminology review | Named reviewer before first public tag | [i18n release gate](I18N.md) item 3; not yet done ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)) | REVIEW | Maintainer |
 | Accessibility review of console/HTML output | Recorded assistive-technology evidence per release | Release checklist; no tagged release yet | REVIEW | Maintainer |
-| Pilot false-positive rate | Measured on synthetic or permissioned packages; aggregate results only | `pilot summarize` evidence kit | REVIEW | Maintainer |
+| Pilot false-positive rate | Measured on permissioned packages; aggregate results only | `pilot summarize` evidence kit | REVIEW | Maintainer |
+| Synthetic detection against seeded defects | Published record, regenerable, with intervals | `tests/test_calibration.py` re-measures and compares the committed record in `make test`; `pilot calibrate --check` does the same from the CLI | AUTO | Maintainer |
 
 `AI-DEV-MEASUREMENT: APPLIES`. Development is AI-assisted; delivery and
 quality-debt metrics are measured by portfolio automation from Git and CI.

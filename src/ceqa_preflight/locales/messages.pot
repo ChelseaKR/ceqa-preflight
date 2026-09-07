@@ -41,6 +41,19 @@ msgstr ""
 msgid "Created pilot templates: {review}, {baseline}"
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"The committed calibration record no longer matches a fresh measurement. "
+"Regenerate it with: ceqa-preflight pilot calibrate --out {path}"
+msgstr ""
+
+msgid "Calibration record is current."
+msgstr ""
+
+#, python-brace-format
+msgid "Wrote calibration record to {path}"
+msgstr ""
+
 msgid "CEQA Preflight pilot summary"
 msgstr ""
 
