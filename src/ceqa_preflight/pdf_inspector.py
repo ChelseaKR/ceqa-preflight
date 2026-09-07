@@ -383,6 +383,45 @@ def _timeout_result() -> PdfInspection:
     )
 
 
+def _no_result_from_worker() -> PdfInspection:
+    return PdfInspection(
+        readable=False,
+        parser_warnings=[_warning_label("PDF inspection worker returned no result")],
+        extraction_confidence=Confidence.LOW,
+    )
+
+
+def _receive_inspection(connection: Any) -> PdfInspection:
+    """Read the worker's payload, or say plainly that it produced none.
+
+    The guard this replaces was ``if not connection.poll(): return <no result>``, and it
+    could never run. ``Connection.poll()`` reports that a connection is *readable*, and a
+    pipe whose only writer has gone is readable -- it yields end-of-file. Measured
+    2026-09-07 on a spawned worker that exited without sending, both after closing its end
+    and after ``os._exit`` mid-flight: ``is_alive()`` was ``False`` and ``poll()`` was
+    ``True`` in both cases, so the branch was unreachable and ``recv()`` raised
+    ``EOFError`` instead.
+
+    Nothing caught it. A worker the OS killed -- out of memory, a container limit, a
+    failure inside spawn's re-import before the worker's own ``try`` was entered -- took
+    the *whole run* down with a traceback, rather than producing a report saying this one
+    document could not be inspected. CI's coverage report had been naming both of these
+    return statements as unexecuted lines for as long as they have existed.
+    """
+
+    try:
+        payload = connection.recv()
+    except EOFError:
+        return _no_result_from_worker()
+    if "inspection" in payload:
+        return PdfInspection.model_validate(payload["inspection"])
+    return PdfInspection(
+        readable=False,
+        parser_warnings=[_warning_label("PDF inspection worker failed")],
+        extraction_confidence=Confidence.LOW,
+    )
+
+
 def inspect_pdf(path: Path, limits: PackageLimits = DEFAULT_PACKAGE_LIMITS) -> PdfInspection:
     """Inspect a local PDF in a spawned process with a hard wall-clock timeout."""
 
@@ -404,22 +443,9 @@ def inspect_pdf(path: Path, limits: PackageLimits = DEFAULT_PACKAGE_LIMITS) -> P
             process.terminate()
             process.join()
             return _timeout_result()
-        if not parent_connection.poll():
-            return PdfInspection(
-                readable=False,
-                parser_warnings=[_warning_label("PDF inspection worker returned no result")],
-                extraction_confidence=Confidence.LOW,
-            )
-        payload = parent_connection.recv()
+        return _receive_inspection(parent_connection)
     finally:
         parent_connection.close()
         if process.is_alive():
             process.terminate()
             process.join()
-    if "inspection" in payload:
-        return PdfInspection.model_validate(payload["inspection"])
-    return PdfInspection(
-        readable=False,
-        parser_warnings=[_warning_label("PDF inspection worker failed")],
-        extraction_confidence=Confidence.LOW,
-    )
