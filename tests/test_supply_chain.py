@@ -1,10 +1,21 @@
-"""Guards on the workflow pins that Dependabot has to be able to read.
+"""Guards on the reusable-workflow pins that decide whether a release can run at all.
 
-`release.yml` pins a reusable workflow held in ChelseaKR/portfolio-standards, a
-*private* repository. Dependabot's repo-scoped credentials cannot read it, and a
-single unreachable dependency fails the whole weekly update run. The mitigation
-is an explicit `ignore` entry in `.github/dependabot.yml`; this module keeps that
-entry and the `uses:` line it refers to from drifting apart.
+`release.yml` calls a reusable authorize workflow from another repository, and for
+months it named ChelseaKR/portfolio-standards, which is *private*. A **public**
+repository cannot call a reusable workflow that lives in a private one, and GitHub
+reports that as a missing file rather than as a permission error, so it read as a
+typo for months rather than as a broken release path.
+
+Measured 2026-09-07 by dispatching `release.yml` on `main`::
+
+    HTTP 422: Invalid Argument - failed to parse workflow: error parsing called workflow
+    "ChelseaKR/portfolio-standards/.github/workflows/release-authorize.yml@3692aa52..."
+    : workflow was not found
+
+The commit existed, the file existed at it, and the standards repository's Actions
+access level was already `user`. The workflow simply could not be dispatched -- not one
+job, not one step. Re-pinning to the public mirror at ChelseaKR/.github and changing
+nothing else made the same dispatch succeed.
 """
 
 import re
@@ -45,27 +56,57 @@ def _dependabot_ignored_dependencies(root: Path) -> set[str]:
     }
 
 
-def test_dependabot_ignores_every_cross_repo_reusable_workflow_pin() -> None:
-    """Keep `.github/dependabot.yml` and the workflow pins from drifting apart.
+#: Repositories under this account that are private, and so cannot host a reusable
+#: workflow this public repository calls. Named rather than derived: the check has to work
+#: offline, in a suite that runs with sockets disabled, and the failure it exists to catch
+#: is a *specific* one this repository shipped for months.
+_PRIVATE_REPOSITORIES = ("chelseakr/portfolio-standards",)
 
-    Dependabot cannot read a reusable workflow held in a private repository under a
-    personal account. One unreachable dependency fails the entire weekly update run
-    even when every other action was checked and its pull requests were opened, so
-    each such pin has to be ignored explicitly.
 
-    Both directions are asserted, so that neither a renamed workflow nor a stale
-    ignore entry can quietly reintroduce the weekly failure or quietly suppress a
-    dependency that Dependabot could in fact have updated.
+def test_no_reusable_workflow_is_called_from_a_private_repository() -> None:
+    """The pin that made `release.yml` undispatchable, kept from coming back.
+
+    See this module's docstring for the measurement. The point worth restating is how it
+    presented: `workflow was not found`, naming a commit that exists and a file that
+    exists at it. Nothing about that message says "this repository is private", which is
+    why the pin survived a review, a Dependabot mitigation, and a supply-chain test that
+    took the pin's target for granted.
+    """
+    root = Path(__file__).parents[1]
+    referenced = _cross_repo_reusable_workflows(root)
+
+    assert referenced, "expected at least one cross-repository reusable workflow pin"
+    unreachable = sorted(
+        name
+        for name in referenced
+        if name.startswith(tuple(f"{repository}/" for repository in _PRIVATE_REPOSITORIES))
+    )
+    assert not unreachable, (
+        "these reusable workflows are called from a private repository, so this public "
+        "repository cannot dispatch the workflow that calls them at all -- GitHub reports "
+        f"it as `workflow was not found`: {unreachable}"
+    )
+
+
+def test_no_dependabot_ignore_entry_suppresses_a_pin_that_no_longer_exists() -> None:
+    """Half of an older guard, kept; the other half is gone and this says why.
+
+    That guard also required *every* cross-repository reusable-workflow pin to carry a
+    Dependabot `ignore` entry, because the only such pin lived in a private repository
+    Dependabot could not read, and one unreachable dependency failed the whole weekly run.
+    The pin is public now, so the requirement is gone and the entry with it: automatic
+    updates are restored, and suppressing a readable dependency would hide updates that
+    can in fact be made.
+
+    What survives is the stale-entry direction. **It is vacuous today** -- there are no
+    ignore entries for it to check -- and it is kept rather than deleted because the
+    hazard is a future one: an entry that names nothing suppresses nothing while looking
+    like protection, which is exactly the shape the entry it replaced had taken on.
     """
     root = Path(__file__).parents[1]
     referenced = _cross_repo_reusable_workflows(root)
     ignored = _dependabot_ignored_dependencies(root)
 
-    assert referenced, "expected at least one cross-repository reusable workflow pin"
-    assert referenced <= ignored, (
-        "these cross-repository reusable workflows are pinned but not ignored by "
-        f"Dependabot, so the weekly update job will fail on them: {sorted(referenced - ignored)}"
-    )
     assert ignored <= referenced, (
         "these Dependabot ignore entries no longer match any pinned reusable workflow "
         f"and are suppressing nothing: {sorted(ignored - referenced)}"
