@@ -40,6 +40,13 @@ from ceqa_preflight.reporting import (
 )
 from ceqa_preflight.rule_registry import default_catalog
 from ceqa_preflight.scaffold import write_manifest_template
+from ceqa_preflight.source_status import (
+    SourceStatusError,
+    load_watch_record,
+    record_preamble,
+    rule_source_reports,
+    status_label,
+)
 from ceqa_preflight.synth import SyntheticDefect, write_synthetic_package
 
 app = typer.Typer(
@@ -433,23 +440,47 @@ def list_rules(
         str,
         typer.Option("--format", help="Listing format: console or json."),
     ] = "console",
+    source_status: Annotated[
+        Path | None,
+        typer.Option(
+            "--source-status",
+            help=(
+                "Read a source-watch record written by scripts/watch_sources.py and "
+                "report each rule's source status from it."
+            ),
+        ),
+    ] = None,
 ) -> None:
     """List rule identifiers, lifecycle, and source titles."""
 
     if output_format not in {"console", "json"}:
         raise typer.BadParameter("must be console or json", param_hint="--format")
     catalog = default_catalog(filing_type)
+    reports = None
+    record = None
+    if source_status is not None:
+        try:
+            record = load_watch_record(source_status)
+        except SourceStatusError as error:
+            typer.echo(str(error), err=True)
+            raise typer.Exit(code=2) from error
+        reports = rule_source_reports(record, [rule.id for rule in catalog.rules])
     if output_format == "json":
-        typer.echo(
-            json.dumps(
-                [rule.model_dump(mode="json") for rule in catalog.rules],
-                indent=2,
-                sort_keys=True,
-            )
-        )
+        payload = []
+        for rule in catalog.rules:
+            entry = rule.model_dump(mode="json")
+            if reports is not None:
+                entry["source_status"] = reports[rule.id].as_json()
+            payload.append(entry)
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         return
+    if record is not None:
+        typer.echo(record_preamble(record))
     for rule in catalog.rules:
-        typer.echo(f"{rule.id}\t{rule.lifecycle}\t{rule.title}\t{rule.source.title}")
+        line = f"{rule.id}\t{rule.lifecycle}\t{rule.title}\t{rule.source.title}"
+        if reports is not None:
+            line = f"{line}\t{status_label(reports[rule.id].status)}"
+        typer.echo(line)
 
 
 @rules_app.command("show")

@@ -54,6 +54,29 @@ never been published anywhere, so nothing here supersedes a released version.
     opens a socket.
   - `corpus/README.md` records what a person does with a `changed` verdict, and
     states that a `changed` verdict is not by itself a reason to change a rule.
+  - **`rules list --source-status FILE` reads a record back per rule.** The
+    watch reports on documents; a reviewer works rule by rule. The translation
+    keeps every distinction the record makes rather than flattening it into
+    "fine" and "not fine": `passages_lost`, `source_changed`, `not_examined`
+    (a bound document could not be read), `not_watched` (no document in the
+    record names this rule at all) and `unchanged`. A rule bound to several
+    documents takes the **worst** status among them, so one unread document is
+    never averaged away by two clean ones, and `not_watched` is kept apart from
+    `unchanged` for the same reason `unverifiable` is.
+    - The listing reads only the file it is handed and has no way to tell what
+      a record left out, so its preamble names how many documents the record
+      covers. A run narrowed with `--document` describes part of the corpus,
+      and a two-document record must not read as a checked one.
+    - A record whose shape contradicts itself is refused rather than half-read:
+      a document recorded as `unverifiable` *and* as having examined passages,
+      or as `unchanged` while reporting nothing examined, is not readable in
+      one of the two ways it describes itself. So is an unrecognized status
+      word, and a `watch_schema_version` this build does not know, which is
+      named rather than parsed on the assumption its fields still mean what
+      they meant. All of these exit `2`.
+    - Twenty new messages, English and Spanish at enforced parity. The Spanish
+      is a maintainer draft like the rest of the `es` catalog and carries the
+      same header saying so; #49 still governs qualified review.
 
 - **Added: per-rule precision, reviewer agreement and calibration in
   `pilot summarize`.** The pilot's exit criteria are stated per rule -- two
