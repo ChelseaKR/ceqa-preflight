@@ -72,7 +72,16 @@ def _examined(document: DocumentFact) -> PdfInspection | None:
     """
 
     inspection = document.inspection
-    if inspection is None or inspection.timed_out or not inspection.readable:
+    if (
+        inspection is None
+        or inspection.timed_out
+        or not inspection.completed
+        or not inspection.readable
+    ):
+        # `timed_out` is kept beside `completed` rather than folded into it. Every result
+        # this module's producers build sets both, but the invariant is not enforced by the
+        # model, and a check that excludes a document from an absence claim is the wrong
+        # place to rely on one flag implying another.
         return None
     return inspection
 
@@ -189,6 +198,21 @@ def check_pdf_readable(context: RuleContext, _rule: RuleDefinition) -> Iterable[
         if inspection is None or inspection.timed_out:
             outcomes.extend(
                 _indeterminate(_("A PDF could not be fully inspected within the safe limit."))
+            )
+            continue
+        if not inspection.completed:
+            # The inspection worker did not answer -- it died, or reported its own failure.
+            # That is a fact about this machine, not about the document, and it arrives
+            # carrying `readable=False` exactly like a genuinely corrupt file. Falling
+            # through would publish "This PDF is unreadable or encrypted." about a document
+            # nothing ever read.
+            outcomes.extend(
+                _indeterminate(
+                    _(
+                        "A PDF was not inspected: the inspection did not complete, so this "
+                        "report makes no statement about that document."
+                    )
+                )
             )
             continue
         # An inspection that ran to completion and reported the document unreadable is a

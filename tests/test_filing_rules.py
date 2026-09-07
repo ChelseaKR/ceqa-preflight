@@ -121,6 +121,46 @@ def test_unreadable_primary_form_fails(filing_type: FilingType, category: str, p
 
 
 @pytest.mark.parametrize(
+    ("filing_type", "category", "prefix"),
+    [
+        (FilingType.NOD, "Notice of Determination", "NOD"),
+        (FilingType.NOE, "Notice of Exemption", "NOE"),
+    ],
+)
+def test_a_primary_form_whose_inspection_never_answered_is_not_called_unreadable(
+    filing_type: FilingType, category: str, prefix: str
+) -> None:
+    """The same gap PDF-002 had, on the one document the whole filing rule rests on.
+
+    An inspection that timed out was already excluded here. One that died, or reported its
+    own failure, arrives carrying `readable=False` exactly like the encrypted form in the
+    test above, and fell through to the same failure -- telling a filer their primary form
+    is unreadable on the strength of a worker this machine could not run.
+    """
+
+    def form(**inspection: object) -> list[dict[str, object]]:
+        return [
+            {
+                "path": "form.pdf",
+                "is_pdf": True,
+                "primary": True,
+                "category": category,
+                "inspection": _inspection(**inspection),
+            }
+        ]
+
+    encrypted = _run(filing_type, form(readable=False, encrypted=True))
+    never_answered = _run(filing_type, form(readable=False, completed=False))
+    timed_out = _run(filing_type, form(readable=False, completed=False, timed_out=True))
+
+    assert encrypted[f"{prefix}-002"].status.value == "failure"
+    assert never_answered[f"{prefix}-002"].status.value == "manual"
+    assert "the inspection did not complete" in never_answered[f"{prefix}-002"].message
+    assert timed_out[f"{prefix}-002"].status.value == "manual"
+    assert "within the safe limit" in timed_out[f"{prefix}-002"].message
+
+
+@pytest.mark.parametrize(
     ("filing_type", "prefix"),
     [(FilingType.NOD, "NOD"), (FilingType.NOE, "NOE")],
 )

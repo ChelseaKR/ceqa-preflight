@@ -527,6 +527,11 @@ msgstr ""
 msgid "A PDF could not be fully inspected within the safe limit."
 msgstr ""
 
+msgid ""
+"A PDF was not inspected: the inspection did not complete, so this report "
+"makes no statement about that document."
+msgstr ""
+
 msgid "This PDF is unreadable or encrypted."
 msgstr ""
 
@@ -799,6 +804,11 @@ msgid "The primary form could not be fully inspected within the safe limit."
 msgstr ""
 
 msgid "Review the primary form manually and provide a readable PDF if needed."
+msgstr ""
+
+msgid ""
+"The primary form was not inspected: the inspection did not complete, so "
+"this report makes no statement about it."
 msgstr ""
 
 msgid "The primary filing form is unreadable or encrypted."
