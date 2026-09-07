@@ -36,6 +36,11 @@
       "additionalProperties": false,
       "description": "A deterministic result from one versioned rule.",
       "properties": {
+        "check_completed": {
+          "default": true,
+          "title": "Check Completed",
+          "type": "boolean"
+        },
         "confidence": {
           "$ref": "#/$defs/Confidence",
           "default": "high"
@@ -318,7 +323,7 @@
       "type": "array"
     },
     "report_schema_version": {
-      "default": "1.1",
+      "default": "1.2",
       "title": "Report Schema Version",
       "type": "string"
     },

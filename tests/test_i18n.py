@@ -312,7 +312,7 @@ def test_report_json_stays_valid_against_its_schema_in_every_locale(tmp_path: Pa
         with i18n.use_locale(locale):
             report, _ = check_package(package, FilingType.NOE)
             document: dict[str, Any] = json.loads(render_json(report))
-        assert document["report_schema_version"] == "1.1"
+        assert document["report_schema_version"] == "1.2"
         assert document["filing_type"] == "NOE"
         for finding in document["findings"]:
             assert finding["status"] in {"pass", "warning", "failure", "manual"}

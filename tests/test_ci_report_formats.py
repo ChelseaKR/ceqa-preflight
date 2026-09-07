@@ -43,6 +43,7 @@ def _finding(
     document: str | None = "notice.pdf",
     page: int | None = None,
     source: SourceCitation | None = _SOURCE,
+    check_completed: bool = True,
 ) -> Finding:
     return Finding(
         rule_id=rule_id,
@@ -55,6 +56,22 @@ def _finding(
         remediation="Re-export the PDF with searchable text.",
         source=source,
         confidence=Confidence.HIGH,
+        check_completed=check_completed,
+    )
+
+
+def _errored(rule_id: str = "PDF-006") -> Finding:
+    """What `RuleEngine` publishes for a check that threw: a warning, concluding nothing."""
+
+    return Finding(
+        rule_id=rule_id,
+        rule_version="1.0.0",
+        status=FindingStatus.WARNING,
+        title="Active PDF content: internal rule error",
+        message="This check could not complete. No package conclusion was made.",
+        remediation="Review this item manually and report the rule identifier if it recurs.",
+        confidence=Confidence.LOW,
+        check_completed=False,
     )
 
 
@@ -200,6 +217,51 @@ class TestSarifNeverHidesWhatDidNotRun:
         assert run["results"][0]["level"] == "none"
 
 
+class TestSarifNeverHidesACheckThatCouldNotComplete:
+    """The other way a rule reaches the report having evaluated nothing.
+
+    `not_run` is the first, and it was disclosed from the start. A check that threw is the
+    second, and `executionSuccessful` was the literal `True` on every run the renderer
+    could ever be handed -- including the ones the tool itself exits 2 for.
+    """
+
+    def test_execution_is_not_successful_when_a_check_could_not_complete(self) -> None:
+        run = _run(_report([_finding(status=FindingStatus.PASS), _errored()]))
+        assert run["invocations"][0]["executionSuccessful"] is False
+
+    def test_execution_is_successful_when_every_check_completed(self) -> None:
+        """The other direction, so the flag cannot be a constant `False` instead."""
+
+        run = _run(_report([_finding()], not_run=[_skipped()]))
+        assert run["invocations"][0]["executionSuccessful"] is True
+
+    def test_a_check_that_threw_becomes_an_error_level_notification(self) -> None:
+        run = _run(_report([_errored()]))
+        notifications = run["invocations"][0]["toolExecutionNotifications"]
+
+        assert [n["descriptor"]["id"] for n in notifications] == ["PDF-006"]
+        assert notifications[0]["level"] == "error"
+        assert notifications[0]["properties"]["reason"] == "internal_rule_error"
+        assert notifications[0]["associatedRule"]["id"] == "PDF-006"
+
+    def test_the_notification_joins_the_skips_rather_than_replacing_them(self) -> None:
+        run = _run(_report([_errored()], not_run=[_skipped("PDF-009")]))
+        notifications = run["invocations"][0]["toolExecutionNotifications"]
+
+        assert {n["descriptor"]["id"] for n in notifications} == {"PDF-006", "PDF-009"}
+        assert {n["level"] for n in notifications} == {"error", "note"}
+        assert {d["id"] for d in run["tool"]["driver"]["notifications"]} == {"PDF-006", "PDF-009"}
+
+    def test_the_warning_still_appears_as_a_result_so_nothing_is_moved_out_of_sight(
+        self,
+    ) -> None:
+        """The notification is added to the report, not substituted for part of it."""
+
+        run = _run(_report([_errored()]))
+        assert [result["ruleId"] for result in run["results"]] == ["PDF-006"]
+        assert run["results"][0]["level"] == "warning"
+
+
 # --- JUnit ----------------------------------------------------------------------------
 
 
@@ -258,6 +320,57 @@ class TestJunit:
         assert suite is not None
         assert suite.get("tests") == "4"
         assert len(list(suite)) == 4
+
+    def test_error_is_reserved_for_a_check_that_could_not_complete(self) -> None:
+        """JUnit already separates "the assertion did not hold" from "the test could
+        not run", and `errors` was the literal `"0"`. A check that threw rendered as a
+        `<system-out>` warning -- a *passing* test case -- on a run exiting 2."""
+
+        report = _report(
+            [
+                _finding("PDF-001", status=FindingStatus.FAILURE),
+                _finding("PDF-002", status=FindingStatus.WARNING),
+                _errored("PDF-006"),
+            ],
+            not_run=[_skipped("PDF-009")],
+        )
+        suite = _junit(report).find("testsuite")
+        assert suite is not None
+
+        errored = [case.get("name") for case in suite if case.find("error") is not None]
+        assert errored == ["PDF-006: Active PDF content: internal rule error"]
+        assert suite.get("errors") == "1"
+        # It is an error, not a failure and not a skip: the check ran and concluded
+        # nothing, which is neither "the package is wrong" nor "the rule never started".
+        assert suite.get("failures") == "1"
+        assert suite.get("skipped") == "1"
+
+    def test_a_check_that_could_not_complete_is_never_a_passing_case(self) -> None:
+        suite = _junit(_report([_errored()])).find("testsuite")
+        assert suite is not None
+        case = suite[0]
+
+        assert case.find("system-out") is None
+        assert case.find("skipped") is None
+        error = case.find("error")
+        assert error is not None
+        assert error.get("type") == "internal_rule_error"
+        assert error.text is not None
+        assert "No package conclusion was made." in error.text
+        assert "Review this item manually" in error.text
+
+    def test_a_run_in_which_every_check_completed_reports_no_errors(self) -> None:
+        """So `errors` cannot become a constant that happens to read right once."""
+
+        report = _report(
+            [_finding("PDF-001"), _finding("PDF-002", status=FindingStatus.WARNING)],
+            manual_review=[_finding("MAN-001", status=FindingStatus.MANUAL)],
+            not_run=[_skipped()],
+        )
+        suite = _junit(report).find("testsuite")
+        assert suite is not None
+        assert suite.get("errors") == "0"
+        assert [case.get("name") for case in suite if case.find("error") is not None] == []
 
     def test_the_document_is_well_formed_and_escapes_report_text(self) -> None:
         finding = _finding()

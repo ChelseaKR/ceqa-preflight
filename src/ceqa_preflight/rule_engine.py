@@ -183,6 +183,14 @@ def _finding_from_outcome(rule: RuleDefinition, outcome: RuleOutcome) -> Finding
 
 
 def _internal_error_finding(rule: RuleDefinition) -> Finding:
+    """The finding a check that threw contributes in place of everything it did not conclude.
+
+    ``check_completed=False`` is the machine-readable half of the message. The sentence
+    below says the check reached no conclusion, and the prose formats print it, but a
+    JUnit summary and a SARIF viewer count elements rather than reading them: without a
+    field they render this exactly like a rule that ran and had nothing to report.
+    """
+
     return Finding(
         rule_id=rule.id,
         rule_version=rule.version,
@@ -192,4 +200,5 @@ def _internal_error_finding(rule: RuleDefinition) -> Finding:
         remediation=_("Review this item manually and report the rule identifier if it recurs."),
         source=rule.source,
         confidence=Confidence.LOW,
+        check_completed=False,
     )
