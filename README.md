@@ -34,9 +34,9 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 570 tests under a
-90% branch-coverage floor, `strict = true` mypy over 39 source files, bandit,
-and an i18n gate holding 221 English and Spanish messages at enforced parity.
+whole tool understated it. `make verify` is the merge gate: 591 tests under a
+90% branch-coverage floor, `strict = true` mypy over 40 source files, bandit,
+and an i18n gate holding 224 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
 than asserted. None of that makes the tool production-ready: `0.1.0` is a
@@ -77,6 +77,7 @@ See [Public API and release status](#public-api-and-release-status).
     uv run ceqa-preflight rules list --format json
     uv run ceqa-preflight pilot init ./pilot-evidence
     uv run ceqa-preflight pilot summarize --reviews ./pilot-evidence/finding-review.csv --baseline ./pilot-evidence/manual-baseline.csv
+    uv run ceqa-preflight pilot calibrate --out ./synthetic-calibration.json
 
 Without a local checkout, run the CLI straight from the default branch with
 [uv](https://docs.astral.sh/uv/), or install it with `pipx`:

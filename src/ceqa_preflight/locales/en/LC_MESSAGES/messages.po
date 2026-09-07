@@ -936,3 +936,18 @@ msgstr "{value} ({level} CI {low} to {high}, n={count})"
 
 msgid "not defined; both reviewers used one identical label throughout"
 msgstr "not defined; both reviewers used one identical label throughout"
+
+#, python-brace-format
+msgid ""
+"The committed calibration record no longer matches a fresh measurement. "
+"Regenerate it with: ceqa-preflight pilot calibrate --out {path}"
+msgstr ""
+"The committed calibration record no longer matches a fresh measurement. "
+"Regenerate it with: ceqa-preflight pilot calibrate --out {path}"
+
+msgid "Calibration record is current."
+msgstr "Calibration record is current."
+
+#, python-brace-format
+msgid "Wrote calibration record to {path}"
+msgstr "Wrote calibration record to {path}"

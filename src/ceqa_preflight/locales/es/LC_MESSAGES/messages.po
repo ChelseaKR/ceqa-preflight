@@ -1013,3 +1013,19 @@ msgid "not defined; both reviewers used one identical label throughout"
 msgstr ""
 "no definida; ambos revisores usaron una única etiqueta idéntica en todos "
 "los casos"
+
+#, python-brace-format
+msgid ""
+"The committed calibration record no longer matches a fresh measurement. "
+"Regenerate it with: ceqa-preflight pilot calibrate --out {path}"
+msgstr ""
+"El registro de calibración incluido en el repositorio ya no coincide con una "
+"medición recién realizada. Regénerelo con: ceqa-preflight pilot calibrate "
+"--out {path}"
+
+msgid "Calibration record is current."
+msgstr "El registro de calibración está actualizado."
+
+#, python-brace-format
+msgid "Wrote calibration record to {path}"
+msgstr "Se escribió el registro de calibración en {path}"
