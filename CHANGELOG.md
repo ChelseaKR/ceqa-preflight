@@ -19,6 +19,30 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Added: per-rule precision, reviewer agreement and calibration in
+  `pilot summarize`.** The pilot's exit criteria are stated per rule -- two
+  qualified reviewers, 90% precision -- and one pooled precision figure cannot
+  say which rule fails them. The summary now reports, for each rule, precision
+  with a 95% Wilson confidence interval and the sample size behind it; how many
+  distinct reviewers labelled it, against the two-reviewer requirement; percent
+  agreement and Cohen's kappa for every reviewer pair that labelled the same
+  findings; and, for synthetic packages, how many seeded defects each reviewer
+  identified and missed. Three figures that no data supports are now refused
+  rather than rounded to one: a rate with a zero denominator prints *not
+  measurable* and serialises as `null`, never 0%; a two-of-two rule carries an
+  interval reaching down to 34% rather than a bare 100%; and kappa is *not
+  defined* -- not zero, not one -- when both reviewers used a single identical
+  label throughout and chance agreement is total. Calibration rows are excluded
+  from precision, timing and the stop/go decision, because a synthetic package
+  is built to contain the defect its rule looks for. The `finding-review.csv`
+  template gains `reviewer_id` (required) and the `synth_seed` /
+  `expected_defect` calibration pair; a file with the earlier seven columns is
+  refused with a message naming what to add. What the summary does **not**
+  claim is approval: `docs/pilot-partner-kit.md` keeps the rubric's
+  approve/revise decision in the participant's private register, so the counts
+  reported are labelling coverage, and both documents now say so.
+  ([#98](https://github.com/ChelseaKR/ceqa-preflight/issues/98))
+
 - **Fixed: a check could pass a document it never read.** `_mapping()` in the PDF
   inspector resolved an unreadable indirect reference and a genuinely absent key
   to the same empty mapping, so a PDF whose `/Root`, `/Names` or `/OpenAction`

@@ -64,7 +64,7 @@ the participant approves that transfer through its own process.
 
 | May remain with participant | May enter the controlled-label evidence file | Never place in the repository or evidence file |
 | --- | --- | --- |
-| Package files, manual-review notes, authorization record, reviewer qualification basis | Opaque package ID, filing type, rule ID, finding status, controlled disposition, severity, elapsed seconds | Project/document names, addresses, contacts, screenshots, extracted text, legal analysis, free-text rationale |
+| Package files, manual-review notes, authorization record, reviewer qualification basis, the rubric's approve/revise decision | Opaque package ID, opaque reviewer ID, filing type, rule ID, finding status, controlled disposition, severity, elapsed seconds, and for synthetic calibration rows an opaque synthetic-set label and the seeded defect name | Project/document names, addresses, contacts, screenshots, extracted text, legal analysis, free-text rationale, reviewer names |
 
 The tool rejects unexpected columns, free text, spreadsheet-formula-like
 values, duplicate review rows, and inconsistent package timing. See the
@@ -110,7 +110,11 @@ only the specified controlled labels.
 
 A rule is not eligible for activation until two qualified reviewers independently
 select **Approve** for its wording and scope, and the aggregate pilot metrics
-meet the documented thresholds. A disagreement, unclear scope, privacy concern,
+meet the documented thresholds. `ceqa-preflight pilot summarize` reports how many
+distinct reviewers labelled each rule's findings, which is labelling *coverage*:
+it is necessary for two independent approvals and is not a record of them. The
+approve/revise decision itself stays in the private register, so the coordinator
+must confirm it there rather than reading it off the summary. A disagreement, unclear scope, privacy concern,
 or potentially misleading output means revise or stop; it does not mean widen
 the rule.
 

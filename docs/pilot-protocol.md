@@ -36,14 +36,52 @@ authorization because they contain no real filing material.
 
 Keep private qualitative notes in a participant-controlled register. For the
 aggregate evidence file, record only an opaque package ID, filing type, rule
-ID, finding status, controlled disposition, severity, and elapsed time. Do not
-put a rationale, document name, project title, contact detail, or extracted
-text in the evidence file.
+ID, finding status, controlled disposition, severity, elapsed time, and an
+opaque reviewer ID. Do not put a rationale, document name, project title,
+contact detail, or extracted text in the evidence file.
 
 Run `ceqa-preflight pilot init ./pilot-evidence` to create the two CSV templates
 and `ceqa-preflight pilot summarize --reviews ... --baseline ...` to calculate
-aggregate precision, high-severity false-negative rate, and median report time.
-The summarizer rejects free text and spreadsheet-formula-like cells.
+the aggregate measures. The summarizer rejects free text and
+spreadsheet-formula-like cells.
+
+`reviewer_id` is required on every row and is an opaque identifier assigned in
+the private pilot register, never a name or an email address. Two reviewers
+labelling the same finding are two rows that differ only in that column; the
+summarizer refuses two rows that agree on package, rule, finding status **and**
+reviewer.
+
+`synth_seed` and `expected_defect` are the calibration pair. Leave both empty
+for a real package. Fill both for a row about a `ceqa-preflight synth` package:
+`synth_seed` is an opaque label for the generated set, and `expected_defect` is
+the seeded defect name (`scanned`, `fillable-form`, `duplicate`, and so on).
+Half of the pair is refused, because a half-filled row cannot be told from a
+real-package row.
+
+### What the summary reports
+
+* Aggregate precision, high-severity false-negative rate and median report
+  time, as before, plus a 95% Wilson confidence interval and the sample size
+  behind the precision figure.
+* Per-rule precision with the same interval and `n`, and the number of distinct
+  reviewers who labelled that rule against the two-reviewer requirement.
+  **This is labelling coverage, not approval.** Approval of a rule's wording is
+  the private rubric's "Approve / revise / do not activate" decision, which
+  stays with the participant and is deliberately not an evidence-file field.
+  Coverage is necessary for two approvals and is not the same as having them.
+* Inter-reviewer agreement: percent agreement and Cohen's kappa for every pair
+  of reviewers who labelled the same findings of a rule. Kappa is reported as
+  *not defined* — never as zero and never as one — when both reviewers used a
+  single identical label throughout and chance agreement is therefore total.
+* Reviewer calibration: for each reviewer and seeded defect, how many of the
+  synthetic findings they identified and how many they missed.
+
+Calibration rows are excluded from the precision, timing and stop/go figures. A
+synthetic package is built to contain the defect its rule looks for, so counting
+it would raise the very number the pilot exists to measure on real filings.
+
+Any figure whose denominator is zero is reported as *not measurable*, in words,
+in the console and as `null` in the JSON. It is never printed as 0%.
 
 ## Stop/go decision
 

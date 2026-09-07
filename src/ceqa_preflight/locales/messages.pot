@@ -68,6 +68,54 @@ msgstr ""
 msgid "Median report time: {value}"
 msgstr ""
 
+#, python-brace-format
+msgid "Per-rule precision, with {level} confidence intervals:"
+msgstr ""
+
+#, python-brace-format
+msgid "  {rule}: {precision}; {reviewers} of {required} independent reviewers"
+msgstr ""
+
+msgid ""
+"Reviewer counts above are labelling coverage. Approval of a rule's "
+"wording is the private rubric's decision and is deliberately not an "
+"evidence-file field."
+msgstr ""
+
+msgid "Inter-reviewer agreement:"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"  {rule}, {first} and {second}: {agreement} agreement on {count} "
+"findings; kappa {kappa}"
+msgstr ""
+
+#, python-brace-format
+msgid "Reviewer calibration against seeded synthetic defects ({count} findings):"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"  {reviewer}, {defect}: {identified} of {seeded} identified, {missed} "
+"missed"
+msgstr ""
+
+msgid ""
+"Calibration findings are excluded from every figure above; they are "
+"synthetic."
+msgstr ""
+
+msgid "not measurable"
+msgstr ""
+
+#, python-brace-format
+msgid "{value} ({level} CI {low} to {high}, n={count})"
+msgstr ""
+
+msgid "not defined; both reviewers used one identical label throughout"
+msgstr ""
+
 msgid "not measured"
 msgstr ""
 

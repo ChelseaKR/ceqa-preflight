@@ -171,8 +171,9 @@ def test_pilot_commands_create_and_summarize_controlled_label_files(tmp_path: Pa
     reviews = tmp_path / "finding-review.csv"
     baseline = tmp_path / "manual-baseline.csv"
     reviews.write_text(
-        "package_id,filing_type,rule_id,finding_status,disposition,severity,elapsed_seconds\n"
-        "PKG_001,NOE,NOE-001,warning,true_positive,medium,60\n",
+        "package_id,filing_type,rule_id,finding_status,disposition,severity,elapsed_seconds,"
+        "reviewer_id,synth_seed,expected_defect\n"
+        "PKG_001,NOE,NOE-001,warning,true_positive,medium,60,REVIEWER_1,,\n",
         encoding="utf-8",
     )
     baseline.write_text(
@@ -451,3 +452,44 @@ def test_rules_list_supports_json_output() -> None:
     assert result.exit_code == 0
     assert '"id": "CORE-001"' in result.stdout
     assert invalid.exit_code == 2
+
+
+def test_pilot_summary_console_states_the_interval_its_level_and_what_is_not_measurable(
+    tmp_path: Path,
+) -> None:
+    """The three things a reader needs before believing a rate computed from two labels.
+
+    A bare `100.0%` is the defect; the assertions below are that the console never prints
+    one, that the level the interval was computed at is named rather than assumed, and
+    that a rule with nothing to divide says so in words instead of showing `0.0%`.
+    """
+
+    reviews = tmp_path / "finding-review.csv"
+    baseline = tmp_path / "manual-baseline.csv"
+    reviews.write_text(
+        "package_id,filing_type,rule_id,finding_status,disposition,severity,elapsed_seconds,"
+        "reviewer_id,synth_seed,expected_defect\n"
+        "PKG_001,NOE,NOE-001,warning,true_positive,medium,60,REVIEWER_1,,\n"
+        "PKG_001,NOE,NOE-001,warning,true_positive,medium,60,REVIEWER_2,,\n"
+        "PKG_001,NOE,NOE-002,warning,indeterminate,medium,60,REVIEWER_1,,\n"
+        "SYN_001,NOE,PDF-003,warning,false_positive,medium,30,REVIEWER_1,SYNTH_A,scanned\n",
+        encoding="utf-8",
+    )
+    baseline.write_text(
+        "package_id,filing_type,severity,was_missed\nPKG_001,NOE,high,false\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app, ["pilot", "summarize", "--reviews", str(reviews), "--baseline", str(baseline)]
+    )
+
+    assert result.exit_code == 0
+    assert "95% CI 34.2% to 100.0%, n=2" in result.stdout
+    assert "NOE-001: 100.0% (95% CI" in result.stdout
+    assert "100.0%\n" not in result.stdout, "no rate may be printed without its interval"
+    assert "NOE-002: not measurable; 1 of 2 independent reviewers" in result.stdout
+    assert "kappa not defined" in result.stdout
+    assert "REVIEWER_1, scanned: 0 of 1 identified, 1 missed" in result.stdout
+    assert "Calibration findings are excluded" in result.stdout
+    assert "Approval of a rule's wording" in result.stdout

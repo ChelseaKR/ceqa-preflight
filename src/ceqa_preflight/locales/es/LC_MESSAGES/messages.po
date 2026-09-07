@@ -949,3 +949,67 @@ msgstr ""
 msgid "Comparison generated {generated} by tool version {tool}."
 msgstr ""
 "Comparación generada {generated} por la versión {tool} de la herramienta."
+
+#, python-brace-format
+msgid "Per-rule precision, with {level} confidence intervals:"
+msgstr "Precisión por regla, con intervalos de confianza del {level}:"
+
+#, python-brace-format
+msgid ""
+"  {rule}: {precision}; {reviewers} of {required} independent reviewers"
+msgstr ""
+"  {rule}: {precision}; {reviewers} de {required} revisores independientes"
+
+msgid ""
+"Reviewer counts above are labelling coverage. Approval of a rule's wording "
+"is the private rubric's decision and is deliberately not an evidence-file "
+"field."
+msgstr ""
+"Los recuentos de revisores anteriores indican la cobertura de etiquetado. "
+"La aprobación de la redacción de una regla es una decisión de la rúbrica "
+"privada y, deliberadamente, no es un campo del archivo de evidencia."
+
+msgid "Inter-reviewer agreement:"
+msgstr "Concordancia entre revisores:"
+
+#, python-brace-format
+msgid ""
+"  {rule}, {first} and {second}: {agreement} agreement on {count} findings; "
+"kappa {kappa}"
+msgstr ""
+"  {rule}, {first} y {second}: {agreement} de concordancia en {count} "
+"hallazgos; kappa {kappa}"
+
+#, python-brace-format
+msgid ""
+"Reviewer calibration against seeded synthetic defects ({count} findings):"
+msgstr ""
+"Calibración de revisores frente a defectos sintéticos sembrados ({count} "
+"hallazgos):"
+
+#, python-brace-format
+msgid ""
+"  {reviewer}, {defect}: {identified} of {seeded} identified, {missed} "
+"missed"
+msgstr ""
+"  {reviewer}, {defect}: {identified} de {seeded} identificados, {missed} "
+"omitidos"
+
+msgid ""
+"Calibration findings are excluded from every figure above; they are "
+"synthetic."
+msgstr ""
+"Los hallazgos de calibración quedan excluidos de todas las cifras "
+"anteriores; son sintéticos."
+
+msgid "not measurable"
+msgstr "no medible"
+
+#, python-brace-format
+msgid "{value} ({level} CI {low} to {high}, n={count})"
+msgstr "{value} (IC del {level} de {low} a {high}, n={count})"
+
+msgid "not defined; both reviewers used one identical label throughout"
+msgstr ""
+"no definida; ambos revisores usaron una única etiqueta idéntica en todos "
+"los casos"
