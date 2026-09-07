@@ -4,7 +4,7 @@ I18N_LOCALES := src/ceqa_preflight/locales
 
 .PHONY: help install format lint typecheck test security audit schemas i18n i18n-update verify build \
 	lock-check \
-	audit-sources
+	audit-sources watch-sources
 
 help:
 	@uv run --locked ceqa-preflight --help
@@ -79,6 +79,13 @@ i18n-update:
 # it makes real network requests, which the shipped product and CI gate deliberately never do.
 audit-sources:
 	uv run --locked python3 scripts/check_rule_sources.py
+
+# Maintainer-only, and the other half of the question above: `audit-sources` asks whether
+# the link resolves, this asks whether what is behind it still says what the corpus
+# retained. Same network caveat, same exclusion from `verify`. It adopts nothing; it
+# writes a dated record under docs/audits/. See corpus/README.md, "When a source changes".
+watch-sources:
+	uv run --locked python3 scripts/watch_sources.py
 
 verify: lock-check lint typecheck test security audit i18n
 

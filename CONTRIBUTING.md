@@ -9,7 +9,9 @@ Thanks for improving CEQA Preflight.
   locations, or copyrighted third-party documents without explicit permission.
 - Do not add a CEQA-specific rule without a current official source and tests.
 - Periodically confirm rule source citations still resolve with
-  `make audit-sources` (network access required; not part of `make verify`).
+  `make audit-sources`, and that the text behind them still says what the corpus
+  retained with `make watch-sources` (both need network access; neither is part
+  of `make verify`). A resolving link is not a current source.
 - Keep the default `check` path local; do not add telemetry or network calls
   to it. Model calls live only in the opt-in `ai` command group
   ([ADR 0002](docs/adr/0002-ai-at-the-edges.md)), import the SDK lazily, and
