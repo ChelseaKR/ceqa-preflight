@@ -508,6 +508,155 @@ def test_gate_fails_on_an_empty_extraction_template(
     assert "extraction template is empty" in stderr
 
 
+# --------------------------------------------------------------------------------------
+# A translated catalog that ships English
+# --------------------------------------------------------------------------------------
+#
+# Measured 2026-09-07, before the check below existed: `make i18n` exited 0 with the `es`
+# msgstr for "Correct the manifest paths or add the referenced files to the package." set
+# character for character to its English msgid, and the catalog still reported 245
+# messages at 100%. Completeness sees a non-empty string, parity sees a matching key, and
+# placeholder parity sees the same characters on both sides. The English identity row asks
+# whether `en` matches its source and asks nothing of any other locale.
+
+
+def test_gate_fails_when_a_spanish_message_is_left_verbatim_english(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The reader gets English out of a catalog that says it is 100% Spanish."""
+
+    root = _sandbox(tmp_path, monkeypatch)
+    path = _po(root, "es")
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            'msgstr "Resumen del lote"', 'msgstr "Batch summary"'
+        ),
+        encoding="utf-8",
+    )
+    _recompile(root, "es")
+    code, stderr = _run_gate(capsys)
+    assert code == 1
+    assert "msgstr is verbatim English for 'Batch summary'" in stderr
+
+
+def test_the_shipped_catalogs_are_green_on_that_same_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The other half of the control: a real catalog of 245 messages raises nothing.
+
+    A must-differ rule is only worth having if it is silent on the catalog it ships
+    against. This is that measurement, against the real committed `es` file rather than a
+    fixture, so a future translation that happens to match its source has to be argued for
+    rather than sneaking in behind a green suite.
+    """
+
+    _sandbox(tmp_path, monkeypatch)
+    code, stderr = _run_gate(capsys)
+    assert code == 0, stderr
+
+
+def test_a_message_recorded_as_identical_by_design_raises_no_finding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The exemption door, and the positive control the whole design turns on.
+
+    `CSV` is the same word in both languages. Without a way to say so, the first person to
+    wrap it would face a red gate they could only clear by deleting the check, which is
+    how gates die.
+    """
+
+    monkeypatch.setattr(
+        check_i18n,
+        "IDENTICAL_BY_DESIGN",
+        {"CSV": "a file-format name, written the same way in both languages"},
+    )
+    assert check_i18n._translation_identity_failures("es", {"CSV": "CSV"}) == []
+
+
+def test_the_same_message_without_an_entry_is_reported(monkeypatch: pytest.MonkeyPatch) -> None:
+    """And the door is shut until someone opens it deliberately.
+
+    The pair matters more than either half. `CSV` and `NEW` are the same shape -- three
+    ASCII capitals -- and this catalog translates `NEW` to `NUEVO`. No predicate can
+    separate them, so neither is exempt until a person writes down which one is which.
+    """
+
+    monkeypatch.setattr(check_i18n, "IDENTICAL_BY_DESIGN", {})
+    failures = check_i18n._translation_identity_failures("es", {"CSV": "CSV"})
+    assert len(failures) == 1
+    assert "verbatim English for 'CSV'" in failures[0]
+    assert "IDENTICAL_BY_DESIGN" in failures[0]
+
+
+@pytest.mark.parametrize(
+    "message",
+    ["{path}", "{before} {after}", "1.2", "2.1.0", "--", "https://example.gov/notice"],
+)
+def test_a_message_with_no_translatable_word_needs_no_exemption(
+    message: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Placeholders, numbers, punctuation and a bare URL cannot hide an English word."""
+
+    monkeypatch.setattr(check_i18n, "IDENTICAL_BY_DESIGN", {})
+    assert check_i18n._translation_identity_failures("es", {message: message}) == []
+
+
+@pytest.mark.parametrize("message", ["CSV", "NEW", "Failure", "Correct the manifest paths."])
+def test_anything_carrying_a_letter_is_examined(message: str) -> None:
+    """The exemption is about letters, not about length or case.
+
+    Exempting short all-caps tokens would take `CSV` and `SARIF` and would also take
+    `NEW`, `SAME` and `GONE`, which the shipped catalog renders `NUEVO`, `IGUAL` and
+    `YA NO APARECE`. That is why the structural exemption stops at "has a letter".
+    """
+
+    assert check_i18n._carries_translatable_text(message) is True
+
+
+def test_gate_fails_on_an_exemption_the_catalog_no_longer_needs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """An allowlist nobody prunes becomes the drawer an untranslated string rests in."""
+
+    _sandbox(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        check_i18n, "IDENTICAL_BY_DESIGN", {"Batch summary": "it was identical once"}
+    )
+    code, stderr = _run_gate(capsys)
+    assert code == 1
+    assert "but every translated catalog now translates it" in stderr
+
+
+def test_gate_fails_on_an_exemption_for_a_message_no_catalog_holds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _sandbox(tmp_path, monkeypatch)
+    monkeypatch.setattr(check_i18n, "IDENTICAL_BY_DESIGN", {"Retired string": "long gone"})
+    code, stderr = _run_gate(capsys)
+    assert code == 1
+    assert "which no translated catalog holds" in stderr
+
+
+def test_gate_fails_on_an_exemption_with_no_reason(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The reason is the entry. Without it the allowlist is a bare list of excuses."""
+
+    root = _sandbox(tmp_path, monkeypatch)
+    path = _po(root, "es")
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            'msgstr "Resumen del lote"', 'msgstr "Batch summary"'
+        ),
+        encoding="utf-8",
+    )
+    _recompile(root, "es")
+    monkeypatch.setattr(check_i18n, "IDENTICAL_BY_DESIGN", {"Batch summary": "   "})
+    code, stderr = _run_gate(capsys)
+    assert code == 1
+    assert "records no reason" in stderr
+
+
 def test_a_locale_does_not_leak_out_of_the_command_that_asked_for_it(tmp_path: Path) -> None:
     """One process, two commands: the second must not inherit the first one's language.
 

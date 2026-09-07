@@ -2,7 +2,7 @@
 
 `docs/I18N.md` promises four things of `make verify`: that catalogs compile, that EN and
 ES are at key and placeholder parity, that every shipped locale tag is valid BCP 47, and
-that extraction is fresh. All four live here, along with two invariants the standard
+that extraction is fresh. All four live here, along with three invariants the standard
 implies but does not name:
 
 * English is a catalog, not an implicit fallback, so every English msgstr must be
@@ -11,6 +11,13 @@ implies but does not name:
 * A compiled catalog must agree with the `.po` it came from. A stale `.mo` is the exact
   shape of the worst i18n bug: `--locale es` is accepted, no error is raised, and the
   reader gets English while believing they asked for Spanish.
+* A *non*-source msgstr must not be verbatim English. Measured 2026-09-07: before this
+  check existed, `make i18n` stayed green on a Spanish `msgstr` set character for
+  character to its English `msgid`. Parity, completeness and placeholder checks are all
+  satisfied by that string -- it is non-empty, its key matches, and its placeholders are
+  trivially identical -- and the English identity row above only ever looks at `en`. So
+  the reader got English, from a catalog reporting 100% translated, with the gate green.
+  See `_translation_identity_failures` for what is exempt and why.
 
 Extraction and compilation are regenerated in memory and compared byte for byte, so the
 gate writes nothing: running `make verify` can never quietly repair the drift it exists to
@@ -47,6 +54,33 @@ SOURCE_LOCALE = "en"
 # `[A-Za-z_]` and `[0-9]` are written out rather than using `\w`/`\d`, which in Python
 # match far more than ASCII and would treat a fullwidth digit as a placeholder name.
 PLACEHOLDER = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+#: A whole message that is nothing but a web address.
+URL_ONLY = re.compile(r"https?://\S+")
+#: One letter in any script. `\w` would also match digits and `_`.
+LETTER = re.compile(r"[^\W\d_]")
+
+#: Messages a translator may leave identical to their English source, each mapped to the
+#: reason it is the same in both languages.
+#:
+#: **This is deliberately empty, and that is a measurement, not an oversight.** All 245
+#: shipped `es` messages differ from their `msgid` today, so the identity check below
+#: costs nothing to satisfy and no exemption has yet had to be argued for.
+#:
+#: An entry here is a claim about a string, so it carries the reason as a value rather
+#: than living in a bare list. Adding one is meant to be a small, deliberate, reviewable
+#: act -- the way a spell-checker's dictionary grows -- because the alternative designs
+#: are both worse. A blanket must-differ rule with no exemption mechanism would go red the
+#: first time someone wraps `CSV`, and a gate that cannot be satisfied is a gate that gets
+#: deleted. A content heuristic that exempts short all-caps tokens would swallow `CSV` and
+#: `SARIF` and also `NEW`, `SAME` and `GONE` -- three real messages this catalog
+#: translates today (`NUEVO`, `IGUAL`, `YA NO APARECE`). No predicate can tell those two
+#: groups apart, because there is nothing in the strings to tell apart. Only a person
+#: knows which is which, so a person writes it down.
+#:
+#: `_allowlist_failures` fails on an entry that is no longer earning its place, so this
+#: cannot silently become the drawer an untranslated string is swept into.
+IDENTICAL_BY_DESIGN: dict[str, str] = {}
 
 
 def _read(path: Path, locale: str | None = None) -> dict[str, str]:
@@ -148,6 +182,89 @@ def _source_identity_failures(catalog: dict[str, str]) -> list[str]:
         for message, translation in catalog.items()
         if message != translation
     ]
+
+
+def _carries_translatable_text(message: str) -> bool:
+    """Is there anything in ``message`` a translator could have changed?
+
+    Two shapes structurally cannot hide an untranslated English word, so they need no
+    entry in :data:`IDENTICAL_BY_DESIGN` and raise no finding when they are identical:
+
+    * nothing but placeholders, digits, punctuation and symbols -- ``{path}``, ``1.2``,
+      ``--`` -- because after the placeholders are removed no letter is left to translate;
+    * a bare web address, which is an identifier rather than prose.
+
+    Both tests are about *letters*, not about length or case, and that is the point. It is
+    tempting to also exempt short all-caps tokens so `CSV` and `SARIF` pass unremarked --
+    and that heuristic would exempt `NEW`, `SAME` and `GONE`, which this catalog really
+    does translate. Anything with a letter in it therefore needs a person to say so.
+    """
+
+    without_placeholders = PLACEHOLDER.sub(" ", message).strip()
+    if URL_ONLY.fullmatch(without_placeholders):
+        return False
+    return bool(LETTER.search(without_placeholders))
+
+
+def _translation_identity_failures(locale: str, messages: dict[str, str]) -> list[str]:
+    """Fail when a translated catalog ships the English string as its translation.
+
+    This is the gap the three checks above cannot see between them. A verbatim-English
+    Spanish `msgstr` is non-empty, so completeness passes; its key is in the template, so
+    parity passes; its placeholders are the same characters, so placeholder parity passes.
+    `_source_identity_failures` asserts the *English* catalog matches its source and says
+    nothing about any other, which is correct for what it is checking and is why nothing
+    was left watching this.
+    """
+
+    identical = [
+        message
+        for message, translation in messages.items()
+        if message == translation
+        and _carries_translatable_text(message)
+        and message not in IDENTICAL_BY_DESIGN
+    ]
+    failures = [
+        f"{locale}: msgstr is verbatim English for {message[:60]!r}; translate it, or "
+        f"record it in IDENTICAL_BY_DESIGN in {Path(__file__).name} with the reason it "
+        "is the same in both languages"
+        for message in sorted(identical)[:5]
+    ]
+    if len(identical) > 5:
+        failures.append(f"{locale}: {len(identical)} message(s) are verbatim English in total")
+    return failures
+
+
+def _allowlist_failures(catalogs: dict[str, dict[str, str]]) -> list[str]:
+    """Fail on an exemption that is no longer earning its place.
+
+    Without this the allowlist is a one-way door: a string exempted once stays exempt
+    after it is renamed, deleted, or actually translated, and the drawer it opens is
+    exactly where a future untranslated message would come to rest. An exemption is live
+    only while some shipped non-source catalog still leaves that message identical.
+    """
+
+    translated = {
+        locale: messages for locale, messages in catalogs.items() if locale != SOURCE_LOCALE
+    }
+    failures = []
+    for message, reason in IDENTICAL_BY_DESIGN.items():
+        if not reason.strip():
+            failures.append(
+                f"IDENTICAL_BY_DESIGN records no reason for {message[:60]!r}; the reason "
+                "is the entry's whole justification"
+            )
+        if not any(message in messages for messages in translated.values()):
+            failures.append(
+                f"IDENTICAL_BY_DESIGN names {message[:60]!r}, which no translated catalog "
+                "holds; remove the entry"
+            )
+        elif not any(messages.get(message) == message for messages in translated.values()):
+            failures.append(
+                f"IDENTICAL_BY_DESIGN exempts {message[:60]!r}, but every translated "
+                "catalog now translates it; remove the entry"
+            )
+    return failures
 
 
 def _compiled_failures(catalogs: dict[str, dict[str, str]]) -> list[str]:
@@ -266,6 +383,10 @@ def main() -> int:
     failures.extend(_placeholder_failures(catalogs))
     if SOURCE_LOCALE in catalogs:
         failures.extend(_source_identity_failures(catalogs[SOURCE_LOCALE]))
+    for locale, messages in catalogs.items():
+        if locale != SOURCE_LOCALE:
+            failures.extend(_translation_identity_failures(locale, messages))
+    failures.extend(_allowlist_failures(catalogs))
     failures.extend(_compiled_failures(catalogs))
 
     if failures:

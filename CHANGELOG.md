@@ -19,6 +19,38 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Fixed: `make i18n` was green on a Spanish message that was verbatim
+  English.** Measured 2026-09-07 against the committed catalogs: setting the
+  `es` msgstr for "Correct the manifest paths or add the referenced files to
+  the package." character for character to its English msgid, and recompiling
+  the `.mo`, left the gate reporting *"245 messages extracted and at parity
+  across en, es"* and exiting `0`. Completeness saw a non-empty string, key
+  parity saw a matching key, and placeholder parity saw the same characters on
+  both sides; the English-identity row asks whether `en` matches its source and
+  asks nothing of any other locale, so nothing was watching. A reader could
+  have been handed English out of a catalog reporting itself 100% translated.
+  A non-source `msgstr` identical to its `msgid` is now a failure.
+  - **The exemptions are the design, not an afterthought.** Some strings are
+    genuinely identical across languages, and a rule that reddens on them is a
+    rule someone deletes. Two ways out: *structural*, needing no entry, for a
+    message with no letter left once its placeholders are removed (`{path}`,
+    `1.2`, `--`) or one that is only a web address — neither shape can hide an
+    untranslated English word; and *recorded*, one entry each, in
+    `IDENTICAL_BY_DESIGN`, where the value is the reason that message is the
+    same in both languages.
+  - **No heuristic replaces the recorded list.** Exempting short all-caps
+    tokens would take `CSV` and `SARIF` and would also take `NEW`, `SAME` and
+    `GONE`, which this catalog renders `NUEVO`, `IGUAL` and `YA NO APARECE`.
+    There is nothing in the strings to tell the two groups apart.
+  - `IDENTICAL_BY_DESIGN` is **empty**, which is a measurement: all 245 shipped
+    `es` messages differ from their source, so the new check is silent on the
+    catalog it ships against. Stale entries fail, so it cannot become the
+    drawer an untranslated string is swept into.
+  - This is a check on *whether* a string was translated, never on whether it
+    was translated well. The `es` catalog is still a maintainer draft pending
+    [#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49); the catalog
+    header, every non-English run, and the README all still say so.
+
 - **Added: a source-currency watch that asks whether the source still *says*
   what the corpus retained.** `make audit-sources` checks that a citation URL
   resolves; a URL that returns 200 can be serving a reissued edition the corpus
