@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import multiprocessing
 import re
 from pathlib import Path
 from typing import Any
@@ -242,6 +243,163 @@ def test_timeout_terminates_worker(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
 def test_rejects_nonpositive_timeout(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="per_file_timeout_seconds"):
         inspect_pdf(tmp_path / "document.pdf", PackageLimits(per_file_timeout_seconds=0))
+
+
+# --------------------------------------------------------------------------------------
+# A worker that produced nothing
+# --------------------------------------------------------------------------------------
+#
+# `inspect_pdf` used to guard the read with `if not parent_connection.poll()`. That branch
+# could never run, and one killed worker ended the whole run instead of one document's
+# inspection. It failed differently on each platform, which the first test below records.
+
+
+def test_poll_could_not_have_guarded_the_read_on_either_platform() -> None:
+    """The premise the old guard rested on, measured on all three runners rather than assumed.
+
+    On POSIX a pipe whose only writer has gone is *readable*, so `poll()` returns `True`,
+    control falls through to `recv()`, and `recv()` raises `EOFError`.
+
+    On Windows `poll()` does not return at all. Measured 2026-09-07 on windows-latest,
+    Python 3.12.10::
+
+        _winapi.PeekNamedPipe(self._handle)[0] != 0
+        BrokenPipeError: [WinError 109] The pipe has been ended
+
+    -- raised out of `Connection._poll` itself, at the guard line, before any read. So the
+    old guard was not merely unreachable there; it was the crash.
+
+    The assertion is what both platforms share and what the guard needed: `poll()` never
+    reports `False` for a worker that sent nothing, so it can never distinguish "nothing
+    was sent" from "something is waiting".
+    """
+
+    parent, child = multiprocessing.get_context("spawn").Pipe(duplex=False)
+    try:
+        child.close()
+        try:
+            polled: object = parent.poll()
+        except OSError as error:  # Windows: PeekNamedPipe raises instead of answering
+            polled = error
+        assert polled is True or isinstance(polled, OSError), (
+            f"poll() returned {polled!r} at end-of-file, so the guard this replaced could "
+            "have worked after all and the change needs rethinking"
+        )
+    finally:
+        parent.close()
+
+
+def test_a_worker_that_sent_nothing_is_reported_rather_than_raised() -> None:
+    parent, child = multiprocessing.get_context("spawn").Pipe(duplex=False)
+    try:
+        child.close()
+        result = pdf_inspector._receive_inspection(parent)
+    finally:
+        parent.close()
+
+    assert result.readable is False
+    assert result.timed_out is False
+    assert result.extraction_confidence is Confidence.LOW
+    assert any("worker returned no result" in warning for warning in result.parser_warnings)
+
+
+def test_a_read_that_fails_at_the_pipe_layer_is_also_reported_rather_than_raised() -> None:
+    """The catch is not `EOFError` alone, because the platforms do not agree.
+
+    CPython converts `ERROR_BROKEN_PIPE` to `EOFError` inside `PipeConnection._recv_bytes`,
+    so Windows currently reaches the same branch -- but it reports the same dead pipe as a
+    `BrokenPipeError` one function earlier (see the poll test above), and the whole point of
+    this function is that a pipe's failure mode costs one document rather than the run. A
+    narrow catch here would be the same bet that produced the bug.
+    """
+
+    class BrokenConnection:
+        def recv(self) -> object:
+            raise BrokenPipeError(109, "The pipe has been ended")
+
+    result = pdf_inspector._receive_inspection(BrokenConnection())
+
+    assert result.readable is False
+    assert any("worker returned no result" in warning for warning in result.parser_warnings)
+
+
+def test_a_worker_error_payload_is_reported_as_a_failed_inspection() -> None:
+    parent, child = multiprocessing.get_context("spawn").Pipe(duplex=False)
+    try:
+        child.send({"error": "PDF inspection worker failed"})
+        child.close()
+        result = pdf_inspector._receive_inspection(parent)
+    finally:
+        parent.close()
+
+    assert result.readable is False
+    assert any("worker failed" in warning for warning in result.parser_warnings)
+
+
+def test_inspect_pdf_survives_a_worker_that_died_before_sending(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The whole point: one dead worker costs one document, not the run.
+
+    The process is a stand-in for a worker the OS killed -- out of memory, a container
+    limit, a failure inside spawn's re-import before the worker's own `try` was entered.
+    The pipe is real, so the end-of-file this produces is the real one.
+    """
+
+    class Process:
+        def __init__(self, **_: object) -> None:
+            self.terminated = False
+
+        def start(self) -> None:
+            return None
+
+        def join(self, _: float | None = None) -> None:
+            return None
+
+        def is_alive(self) -> bool:
+            return False
+
+        def terminate(self) -> None:  # pragma: no cover - never reached; not alive
+            self.terminated = True
+
+    # Bound before the patch below, which otherwise routes this back into itself.
+    real_pipe = multiprocessing.get_context("spawn").Pipe
+
+    class Context:
+        def Pipe(self, *, duplex: bool) -> tuple[Any, Any]:
+            assert duplex is False
+            return real_pipe(duplex=False)
+
+        def Process(self, **kwargs: object) -> Process:
+            return Process(**kwargs)
+
+    monkeypatch.setattr(
+        "ceqa_preflight.pdf_inspector.multiprocessing.get_context", lambda _: Context()
+    )
+
+    result = inspect_pdf(tmp_path / "killed.pdf", PackageLimits(per_file_timeout_seconds=10))
+
+    assert result.readable is False
+    assert result.timed_out is False
+    assert any("worker returned no result" in warning for warning in result.parser_warnings)
+
+
+def test_a_worker_that_produced_nothing_is_distinguishable_from_one_that_timed_out() -> None:
+    """Not crashing is only worth something if the report then says the right thing.
+
+    Both states are `readable=False`, which the rule pack already routes away from any
+    pass. They are kept apart by `timed_out`, because "the document took too long" and
+    "the worker never answered" are different facts about different things, and
+    `rules/filing.py` reads the flag directly.
+    """
+
+    no_result = pdf_inspector._no_result_from_worker()
+    timed_out = pdf_inspector._timeout_result()
+
+    assert no_result.readable is timed_out.readable is False
+    assert no_result.text_coverage is None
+    assert no_result.timed_out is False
+    assert timed_out.timed_out is True
 
 
 def test_bounded_pdf_object_helpers_cover_indirect_and_name_trees() -> None:
