@@ -1,0 +1,184 @@
+name: CEQA Preflight
+description: >-
+  Run local, advisory, source-cited preflight checks over one or more CEQA Submit filing
+  packages, and publish the findings as SARIF and JUnit. Advisory only: this action does
+  not provide legal advice or determine CEQA compliance.
+author: CEQA Preflight contributors
+branding:
+  icon: check-square
+  color: green
+
+inputs:
+  packages:
+    description: >-
+      Newline- or space-separated package directories or ZIP files to check. Every entry
+      must exist; a package that cannot be read exits 2 rather than being skipped.
+    required: true
+  filing-type:
+    description: The intended filing type, NOD or NOE.
+    required: true
+  include-experimental:
+    description: >-
+      Run the filing-specific pilot rules as well. They are advisory and not
+      release-ready; the report lists them under `not_run` when this is false.
+    required: false
+    default: 'false'
+  rules:
+    description: Comma-separated rule identifiers to run, instead of the whole catalog.
+    required: false
+    default: ''
+  locale:
+    description: >-
+      BCP 47 tag for report prose (en, es). Nothing is inferred from the runner's
+      environment. The Spanish catalog is a maintainer draft; English is authoritative.
+    required: false
+    default: 'en'
+  version:
+    description: >-
+      The release tag to install, e.g. `v0.1.0`. The wheel comes from that GitHub
+      Release, which is the project's only distribution channel; there is no registry
+      install. Required, and deliberately has no default: a floating version would make a
+      report's `tool_version` unpredictable, and the report is evidence.
+    required: true
+  report-directory:
+    description: Directory the JSON, SARIF and JUnit reports are written to.
+    required: false
+    default: 'ceqa-preflight-reports'
+
+outputs:
+  failures:
+    description: Total findings with status `failure` across every package checked.
+    value: ${{ steps.summary.outputs.failures }}
+  warnings:
+    description: Total findings with status `warning` across every package checked.
+    value: ${{ steps.summary.outputs.warnings }}
+  not-run:
+    description: >-
+      Total checks that did not run across every package. A green job with a non-zero
+      value here has not checked everything it could have, and the SARIF notifications
+      say which.
+    value: ${{ steps.summary.outputs.not-run }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install the pinned CEQA Preflight release
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        work="$(mktemp -d)"
+        gh release download "${VERSION}" \
+          --repo ChelseaKR/ceqa-preflight \
+          --pattern '*.whl' \
+          --dir "${work}"
+        # One wheel, or stop. Two wheels in a release is a release problem, and picking
+        # one of them by sort order would make the version that ran unpredictable.
+        count="$(find "${work}" -maxdepth 1 -name '*.whl' | wc -l | tr -d ' ')"
+        if [ "${count}" != "1" ]; then
+          echo "expected exactly one wheel in release ${VERSION}, found ${count}" >&2
+          exit 1
+        fi
+        python3 -m pip install --quiet --disable-pip-version-check "${work}"/*.whl
+        installed="$(ceqa-preflight --version)"
+        echo "installed ceqa-preflight ${installed} from ${VERSION}"
+        # The tag is evidence about which code ran, so it has to match what got installed.
+        if [ "v${installed}" != "${VERSION}" ] && [ "${installed}" != "${VERSION}" ]; then
+          echo "release ${VERSION} installed version ${installed}" >&2
+          exit 1
+        fi
+
+    - name: Check the packages
+      id: check
+      shell: bash
+      env:
+        PACKAGES: ${{ inputs.packages }}
+        FILING_TYPE: ${{ inputs.filing-type }}
+        EXPERIMENTAL: ${{ inputs.include-experimental }}
+        RULES: ${{ inputs.rules }}
+        LOCALE: ${{ inputs.locale }}
+        REPORTS: ${{ inputs.report-directory }}
+      run: |
+        set -uo pipefail
+        # Deliberately not `set -e`. The tool's exit code is the result, not an accident:
+        # 0 clean, 1 findings, 2 a package that could not be read. It is carried to the
+        # last step so the SARIF and the job summary are published either way -- a job
+        # that fails without saying what it found is a worse gate than one that passes.
+        paths=()
+        while IFS= read -r entry; do
+          [ -n "${entry}" ] && paths+=("${entry}")
+        done < <(printf '%s\n' "${PACKAGES}" | tr ' ' '\n')
+        if [ "${#paths[@]}" -eq 0 ]; then
+          echo "no packages were given" >&2
+          exit 2
+        fi
+        flags=(--filing-type "${FILING_TYPE}")
+        if [ "${EXPERIMENTAL}" = "true" ]; then
+          flags+=(--include-experimental)
+        fi
+        if [ -n "${RULES}" ]; then
+          flags+=(--rules "${RULES}")
+        fi
+        mkdir -p "${REPORTS}"
+        worst=0
+        for format in json sarif junit; do
+          ceqa-preflight --locale "${LOCALE}" check "${paths[@]}" "${flags[@]}" \
+            --format "${format}" --output "${REPORTS}/${format}"
+          code=$?
+          if [ "${code}" -gt "${worst}" ]; then
+            worst="${code}"
+          fi
+        done
+        echo "exit-code=${worst}" >> "${GITHUB_OUTPUT}"
+        exit 0
+
+    - name: Summarise the findings
+      id: summary
+      shell: bash
+      env:
+        REPORTS: ${{ inputs.report-directory }}
+      run: |
+        set -euo pipefail
+        # The counts come from the package's own `summarize_counts`, not from a second
+        # implementation in shell. A directory holding no report exits 2 here rather than
+        # publishing failures=0, which would be an absence reported as a measurement.
+        python3 -m ceqa_preflight.ci_summary "${REPORTS}/json" --output-file "${GITHUB_OUTPUT}"
+
+    - name: Upload SARIF to code scanning
+      uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+      with:
+        sarif_file: ${{ inputs.report-directory }}/sarif
+
+    - name: Write the counts to the job summary
+      shell: bash
+      # Read through the environment rather than interpolated into the script. These are
+      # this action's own numeric outputs, but a `${{ }}` inside a `run:` block is the
+      # template-injection shape zizmor exists to stop, and an exception here would have
+      # to be argued every time someone edits it.
+      env:
+        FAILURES: ${{ steps.summary.outputs.failures }}
+        WARNINGS: ${{ steps.summary.outputs.warnings }}
+        NOT_RUN: ${{ steps.summary.outputs.not-run }}
+      run: |
+        set -euo pipefail
+        {
+          echo "## CEQA Preflight"
+          echo
+          echo "Advisory only. This action does not determine CEQA compliance."
+          echo
+          echo "| measure | count |"
+          echo "| --- | --- |"
+          echo "| failures | ${FAILURES} |"
+          echo "| warnings | ${WARNINGS} |"
+          echo "| checks that did not run | ${NOT_RUN} |"
+        } >> "${GITHUB_STEP_SUMMARY}"
+
+    - name: Fail the job on the tool's own exit code
+      shell: bash
+      env:
+        CODE: ${{ steps.check.outputs.exit-code }}
+      run: |
+        set -euo pipefail
+        exit "${CODE}"

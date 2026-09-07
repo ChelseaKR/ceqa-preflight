@@ -1,0 +1,15 @@
+- id: ceqa-preflight
+  name: CEQA Preflight (advisory)
+  description: >-
+    Run local, advisory, source-cited preflight checks over the filing package the staged
+    files belong to. Never uploads or modifies a package. Advisory only: it does not
+    provide legal advice or determine CEQA compliance.
+  entry: ceqa-preflight pre-commit
+  language: python
+  # PDFs are the package content the checks read; the manifest is what makes a directory
+  # a package. A commit touching neither cannot change a check's result.
+  files: '(?i)\.pdf$|(^|/)package\.(ya?ml|json)$'
+  # `pre-commit` passes the staged paths; the hook resolves the one package they belong to
+  # and refuses when they identify none, rather than falling back to the repository root.
+  pass_filenames: true
+  require_serial: true

@@ -78,6 +78,26 @@ never been published anywhere, so nothing here supersedes a released version.
       is a maintainer draft like the rest of the `es` catalog and carries the
       same header saying so; #49 still governs qualified review.
 
+- **Added: a GitHub Action and a pre-commit hook.** `check` gained SARIF and
+  JUnit in #104; what was missing was the packaging that makes them run without
+  anyone remembering to. `action.yml` is a composite action that installs a
+  pinned release wheel, checks one or more packages, uploads the SARIF to code
+  scanning, writes the counts to the job summary, and fails on the tool's own
+  exit code. `version` is required and has no default, and the install step
+  compares the tag against the version it installed, because a report's
+  `tool_version` is read as evidence about which catalog ran. Its `failures`,
+  `warnings` and `not-run` outputs come from `ceqa_preflight.ci_summary`, which
+  calls the same `summarize_counts` the console line does rather than counting
+  again in shell — and which exits 2 on a directory holding no report instead
+  of publishing `failures=0` for a job that checked nothing.
+  `.pre-commit-hooks.yaml` adds a `ceqa-preflight` hook and a new `pre-commit`
+  command behind it: it resolves the package from the staged files' common
+  directory upward to the first manifest, takes the filing type from that
+  manifest, and **refuses** with exit 2 when no package can be identified
+  rather than falling back to the repository root. A hook that silently checked
+  the wrong directory would report on a package nobody is filing and pass while
+  doing it.
+  ([#89](https://github.com/ChelseaKR/ceqa-preflight/issues/89))
 - **Added: per-rule precision, reviewer agreement and calibration in
   `pilot summarize`.** The pilot's exit criteria are stated per rule -- two
   qualified reviewers, 90% precision -- and one pooled precision figure cannot

@@ -1,0 +1,51 @@
+# Run CEQA Preflight over a filing package on every pull request.
+#
+# Copy this into `.github/workflows/` in the repository that holds the package. The
+# permissions below are the caller's to grant: a composite action cannot widen the token
+# it is handed, and `security-events: write` is what lets the SARIF reach code scanning.
+#
+# Advisory only. A green job means the technical checks in the catalog found nothing; it
+# is not a determination that the filing is complete or CEQA-compliant.
+name: CEQA Preflight
+
+on:
+  pull_request:
+    paths:
+      - 'filings/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # Reading the release wheel, and uploading the SARIF.
+      security-events: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - id: preflight
+        uses: ChelseaKR/ceqa-preflight@v0.1.0
+        with:
+          packages: filings/2026-noe-example
+          filing-type: NOE
+          # Pin the release the report was produced by. `tool_version` in the report is
+          # evidence about which catalog ran, so a floating tag would make it unreadable.
+          version: v0.1.0
+
+      # `not-run` is the number a green job is most likely to hide: checks that did not
+      # run are not checks that passed. Surface it rather than leaving it in the SARIF.
+      - if: always()
+        env:
+          NOT_RUN: ${{ steps.preflight.outputs.not-run }}
+        run: |
+          set -euo pipefail
+          if [ "${NOT_RUN}" != "0" ]; then
+            echo "::notice::${NOT_RUN} check(s) did not run; see the SARIF notifications"
+          fi
