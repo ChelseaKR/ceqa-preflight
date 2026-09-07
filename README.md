@@ -34,9 +34,9 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 700 tests under a
+whole tool understated it. `make verify` is the merge gate: 706 tests under a
 90% branch-coverage floor, `strict = true` mypy over 43 source files, bandit,
-and an i18n gate holding 245 English and Spanish messages at enforced parity.
+and an i18n gate holding 247 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
 than asserted. None of that makes the tool production-ready: `0.1.0` is a
@@ -239,7 +239,7 @@ verbatim English, which until then satisfied every other check it had.
 Legitimately identical strings are exempted structurally when no letter survives
 removing their placeholders, and otherwise one at a time in
 `IDENTICAL_BY_DESIGN` with a written reason; that mapping is empty today because
-all 245 shipped Spanish messages differ from their source. The gate can see that
+every shipped Spanish message differs from its source. The gate can see that
 a string was changed. It cannot see whether it was changed well, which is what
 #49 is for.
 

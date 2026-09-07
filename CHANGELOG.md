@@ -19,6 +19,29 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Fixed: a check that crashed was reported as a run that covered everything.**
+  Every report ends on a scope line, and `_scope_line` asked only
+  `if not report.not_run`. So on a run where every applicable rule was selected
+  and one of them threw, all three prose formats answered *"Every check that
+  applies to this filing type ran."* — beside a summary line reading *"0
+  check(s) not run"*, which is true. Both statements were about the wrong set:
+  `not_run` counts rules that never **started**, and a rule that started and
+  threw is not one of them. #105 gave that rule's finding a
+  `check_completed` field and carried it into SARIF and JUnit; the prose
+  formats, which a person actually reads, still claimed full coverage.
+  - `scope_sentence()` now reads both gaps, and says which it found: *"N
+    applicable check(s) could not complete."*, or *"N applicable check(s) did
+    not run and M could not complete."* when both. The existing skips-only
+    sentence is unchanged word for word, so no reader's expectation moves.
+  - Three whole sentences rather than one assembled from clauses.
+    `docs/I18N.md` forbids building a message by concatenation, because a
+    translator needs the sentence and not its pieces. Two new messages, English
+    and Spanish at enforced parity; the Spanish is a maintainer draft like the
+    rest of the `es` catalog and #49 still governs its review.
+  - The HTML report made the same claim in two places — the scope paragraph and
+    the "Checks that did not run" section — and both now read the same
+    function, so the template can no longer drift from the console.
+
 - **Fixed: one killed inspection worker ended the whole run.** `inspect_pdf`
   runs each PDF in a spawned process and guarded the read with
   `if not parent_connection.poll(): return <worker returned no result>`. That

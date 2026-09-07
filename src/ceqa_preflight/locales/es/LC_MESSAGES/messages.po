@@ -1117,3 +1117,19 @@ msgstr "Estado de las fuentes según {path}, leído de {read_from} el {checked_a
 #, python-brace-format
 msgid "Checking {package} as {filing_type}, per {manifest}"
 msgstr "Revisando {package} como {filing_type}, según {manifest}"
+
+#, python-brace-format
+msgid ""
+"{not_run} applicable check(s) did not run and {incomplete} could not "
+"complete. This report makes no statement about what they cover."
+msgstr ""
+"{not_run} comprobación(es) aplicable(s) no se ejecutaron y {incomplete} no "
+"pudieron completarse. Este informe no afirma nada sobre lo que cubren."
+
+#, python-brace-format
+msgid ""
+"{count} applicable check(s) could not complete. This report makes no "
+"statement about what they cover."
+msgstr ""
+"{count} comprobación(es) aplicable(s) no pudieron completarse. Este "
+"informe no afirma nada sobre lo que cubren."

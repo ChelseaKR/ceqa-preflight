@@ -161,8 +161,20 @@ msgstr ""
 
 #, python-brace-format
 msgid ""
+"{not_run} applicable check(s) did not run and {incomplete} could not "
+"complete. This report makes no statement about what they cover."
+msgstr ""
+
+#, python-brace-format
+msgid ""
 "{count} applicable check(s) did not run. This report makes no statement "
 "about what they cover."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{count} applicable check(s) could not complete. This report makes no "
+"statement about what they cover."
 msgstr ""
 
 msgid "Scope"
