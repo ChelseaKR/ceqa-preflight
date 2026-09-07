@@ -6,6 +6,10 @@
 #
 # Advisory only. A green job means the technical checks in the catalog found nothing; it
 # is not a determination that the filing is complete or CEQA-compliant.
+#
+# This workflow cannot run until the project cuts its first tagged release. The action
+# installs the wheel from a GitHub Release, and no tag exists yet, so the `v0.1.0` below
+# is the shape of the reference rather than a version you can pin today.
 name: CEQA Preflight
 
 on:

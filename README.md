@@ -120,7 +120,12 @@ stderr, including inspection progress counts for large packages.
 
 A composite action installs a pinned release wheel, checks one or more
 packages, uploads the SARIF to code scanning, and puts the counts in the job
-summary. `examples/workflows/ceqa-preflight.yml` is a working copy:
+summary. **It cannot run yet.** The wheel comes from a GitHub Release, and this
+repository has cut no tag; until one exists the action's install step has
+nothing to download. The tags below are the shape a caller will write, not a
+release that is available today — see
+[Public API and release status](#public-api-and-release-status).
+`examples/workflows/ceqa-preflight.yml` is the full copy:
 
 ```yaml
 - id: preflight
