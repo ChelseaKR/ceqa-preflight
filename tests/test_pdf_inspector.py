@@ -250,24 +250,41 @@ def test_rejects_nonpositive_timeout(tmp_path: Path) -> None:
 # --------------------------------------------------------------------------------------
 #
 # `inspect_pdf` used to guard the read with `if not parent_connection.poll()`. That branch
-# could never run, and `recv()` raised an uncaught `EOFError` in its place, so one killed
-# worker ended the whole run instead of one document's inspection.
+# could never run, and one killed worker ended the whole run instead of one document's
+# inspection. It failed differently on each platform, which the first test below records.
 
 
-def test_poll_is_true_at_end_of_file_so_it_cannot_guard_the_read() -> None:
-    """The premise the old guard rested on, pinned as an assertion.
+def test_poll_could_not_have_guarded_the_read_on_either_platform() -> None:
+    """The premise the old guard rested on, measured on all three runners rather than assumed.
 
-    `Connection.poll()` answers "is this readable", and a pipe whose only writer has gone
-    is readable: it yields end-of-file. Asserted rather than assumed, so a future Python
-    that changes it tells us here instead of in a report.
+    On POSIX a pipe whose only writer has gone is *readable*, so `poll()` returns `True`,
+    control falls through to `recv()`, and `recv()` raises `EOFError`.
+
+    On Windows `poll()` does not return at all. Measured 2026-09-07 on windows-latest,
+    Python 3.12.10::
+
+        _winapi.PeekNamedPipe(self._handle)[0] != 0
+        BrokenPipeError: [WinError 109] The pipe has been ended
+
+    -- raised out of `Connection._poll` itself, at the guard line, before any read. So the
+    old guard was not merely unreachable there; it was the crash.
+
+    The assertion is what both platforms share and what the guard needed: `poll()` never
+    reports `False` for a worker that sent nothing, so it can never distinguish "nothing
+    was sent" from "something is waiting".
     """
 
     parent, child = multiprocessing.get_context("spawn").Pipe(duplex=False)
     try:
         child.close()
-        assert parent.poll() is True
-        with pytest.raises(EOFError):
-            parent.recv()
+        try:
+            polled: object = parent.poll()
+        except OSError as error:  # Windows: PeekNamedPipe raises instead of answering
+            polled = error
+        assert polled is True or isinstance(polled, OSError), (
+            f"poll() returned {polled!r} at end-of-file, so the guard this replaced could "
+            "have worked after all and the change needs rethinking"
+        )
     finally:
         parent.close()
 
@@ -283,6 +300,26 @@ def test_a_worker_that_sent_nothing_is_reported_rather_than_raised() -> None:
     assert result.readable is False
     assert result.timed_out is False
     assert result.extraction_confidence is Confidence.LOW
+    assert any("worker returned no result" in warning for warning in result.parser_warnings)
+
+
+def test_a_read_that_fails_at_the_pipe_layer_is_also_reported_rather_than_raised() -> None:
+    """The catch is not `EOFError` alone, because the platforms do not agree.
+
+    CPython converts `ERROR_BROKEN_PIPE` to `EOFError` inside `PipeConnection._recv_bytes`,
+    so Windows currently reaches the same branch -- but it reports the same dead pipe as a
+    `BrokenPipeError` one function earlier (see the poll test above), and the whole point of
+    this function is that a pipe's failure mode costs one document rather than the run. A
+    narrow catch here would be the same bet that produced the bug.
+    """
+
+    class BrokenConnection:
+        def recv(self) -> object:
+            raise BrokenPipeError(109, "The pipe has been ended")
+
+    result = pdf_inspector._receive_inspection(BrokenConnection())
+
+    assert result.readable is False
     assert any("worker returned no result" in warning for warning in result.parser_warnings)
 
 

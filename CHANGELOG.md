@@ -22,19 +22,26 @@ never been published anywhere, so nothing here supersedes a released version.
 - **Fixed: one killed inspection worker ended the whole run.** `inspect_pdf`
   runs each PDF in a spawned process and guarded the read with
   `if not parent_connection.poll(): return <worker returned no result>`. That
-  branch could never run. `Connection.poll()` answers "is this readable", and a
-  pipe whose only writer has gone *is* readable — it yields end-of-file.
-  Measured 2026-09-07 against a spawned worker that exited without sending,
-  both after closing its end and after `os._exit` mid-flight: `is_alive()` was
-  `False` and `poll()` was `True` in both cases. So `recv()` raised `EOFError`
-  where the guard was meant to catch the case, nothing caught it, and it
-  propagated out of `inspect_pdf`, through `checker._inspect_documents`, and out
-  of the command. A worker the OS killed — out of memory, a container limit, a
-  failure inside spawn's re-import before the worker's own `try` was entered —
-  cost the entire package's report rather than one document's inspection.
+  branch could never produce that result on any platform. On POSIX,
+  `Connection.poll()` answers "is this readable", and a pipe whose only writer
+  has gone *is* readable — it yields end-of-file. Measured 2026-09-07 against a
+  spawned worker that exited without sending, both after closing its end and
+  after `os._exit` mid-flight: `is_alive()` was `False` and `poll()` was `True`
+  in both cases, so `recv()` raised `EOFError` where the guard was meant to
+  catch the case. On Windows it was worse than unreachable: measured the same
+  day on windows-latest, `Connection._poll` raises
+  `BrokenPipeError: [WinError 109] The pipe has been ended` out of
+  `_winapi.PeekNamedPipe`, at the guard line itself, before any read. Nothing
+  caught either, and it propagated out of `inspect_pdf`, through
+  `checker._inspect_documents`, and out of the command. A worker the OS killed —
+  out of memory, a container limit, a failure inside spawn's re-import before
+  the worker's own `try` was entered — cost the entire package's report rather
+  than one document's inspection.
   CI's own coverage report had been naming both of those return statements as
   unexecuted lines for as long as they have existed.
   - The read moves into `_receive_inspection`, which catches `EOFError` and
+    `OSError` — the platforms demonstrably disagree about how a dead pipe is
+    reported, and betting on one spelling of it is what produced the bug — and
     returns the disclosure the dead branch was written to produce:
     `readable=False`, low confidence, and "PDF inspection worker returned no
     result; manual review recommended". The rule pack already routes
