@@ -19,6 +19,42 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Added: a source-currency watch that asks whether the source still *says*
+  what the corpus retained.** `make audit-sources` checks that a citation URL
+  resolves; a URL that returns 200 can be serving a reissued edition the corpus
+  no longer matches, and a rule explained from a superseded checklist is exactly
+  the confident staleness this project exists to catch.
+  `scripts/watch_sources.py` re-fetches every document in
+  `corpus/manifest.json`, re-derives its text through the same extraction
+  `scripts/build_corpus.py` used, and writes a dated record to
+  `docs/audits/source-watch-YYYY-MM-DD.json`. Maintainer-run and networked: not
+  in `make verify`, not in the CLI, not in CI, and it adopts nothing -- it
+  rebuilds no corpus, edits no rule, and changes nothing `check` reports.
+  - **Three verdicts, and the third is not a quieter version of the first.**
+    `unchanged` when the re-derived text hashes to `text_sha256`; `changed`
+    when it does not, with every retained passage checked for verbatim survival
+    and the rules bound to the document named; and `unverifiable` when the
+    source could not be read at all, which claims nothing about its content and
+    marks no passage lost.
+  - **`unverifiable` carries a `failure_kind`,** because the ways to fail are
+    evidence about different things and none of them is evidence about the law:
+    `not_found` (404/410, a fact about the address), `transport` (timeout or
+    reset, a fact about the network), `not_checked` (absent from an offline
+    cache, a fact about the cache), and `extraction` (fetched, but no passage
+    could be re-derived -- an extractor that no longer understands the page,
+    reported as unread rather than as a document that lost every passage).
+  - **`null`, never `[]`.** An unverifiable document has no
+    `passages_surviving`, `passages_lost` or `rules_with_lost_passages`, and the
+    summary counts `passages_examined` and `passages_not_examined` separately,
+    because adding them would present unread passages as passages that
+    survived. Exit `0` only when every document was unchanged; `1` when any is
+    not *known* to be unchanged, unverifiable included.
+  - `--offline-cache DIR` replays a recorded crawl, and the whole classifier is
+    tested over synthetic fixtures. No test in `tests/test_watch_sources.py`
+    opens a socket.
+  - `corpus/README.md` records what a person does with a `changed` verdict, and
+    states that a `changed` verdict is not by itself a reason to change a rule.
+
 - **Added: per-rule precision, reviewer agreement and calibration in
   `pilot summarize`.** The pilot's exit criteria are stated per rule -- two
   qualified reviewers, 90% precision -- and one pooled precision figure cannot

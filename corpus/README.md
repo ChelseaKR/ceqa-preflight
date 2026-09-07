@@ -110,3 +110,77 @@ identifier in `KNOWN_SOURCE_IDS`; the script refuses to invent one.
 `Corpus.load()` verifies every text file against the manifest hash and every
 passage against its document text, so an edited corpus fails to load rather
 than passing as the official source.
+
+## When a source changes
+
+`make audit-sources` asks whether a citation URL still resolves. That is not
+the question a stale citation raises: LCI republishes its checklist and
+common-mistakes PDFs each year, the CCR is amended between registers, and a URL
+that still returns 200 can be serving text this corpus no longer matches.
+
+    make watch-sources                                       # every document
+    uv run python scripts/watch_sources.py --document lci-sch-faq
+    uv run python scripts/watch_sources.py --offline-cache DIR   # replay a crawl
+
+The watch re-fetches each document, re-derives its text through the same
+extraction `build_corpus.py` used, and writes
+`docs/audits/source-watch-YYYY-MM-DD.json`. It is a maintainer tool: it makes
+network requests, and it is not part of `make verify`, the CLI, or CI.
+
+**It adopts nothing.** It rebuilds no corpus, edits no rule, and changes
+nothing about what `check` reports. The record is evidence for a person to act
+on.
+
+### The three verdicts, and why the third is not a fourth kind of "fine"
+
+| Verdict | What it means |
+| --- | --- |
+| `unchanged` | The re-derived text hashes to the `text_sha256` in `manifest.json`. |
+| `changed` | It does not. Every retained passage is then checked for verbatim survival, and the record names the ones lost and the rules bound to the document. |
+| `unverifiable` | The source could **not be read**. Nothing is claimed about its content, and no passage is marked lost. |
+
+`unverifiable` carries a `failure_kind`, because the three ways to fail are
+evidence about three different things and none of them is evidence about the
+law:
+
+- `not_found` — the address answered 404 or 410. A fact about the address.
+- `transport` — a timeout, a reset, a DNS failure. A fact about the network.
+- `not_checked` — the document was absent from an offline cache. A fact about
+  the cache.
+- `extraction` — it was fetched, but no passage could be re-derived from the
+  response. Almost always an extractor that no longer understands the page, and
+  reported as unread rather than as a document that lost every passage.
+
+An `unverifiable` document has `null` in `passages_surviving`, `passages_lost`
+and `rules_with_lost_passages` — never `[]`. An empty list of lost passages
+reads as a clean bill of health, and a source nobody could read has not earned
+one. For the same reason the summary counts `passages_examined` and
+`passages_not_examined` separately: adding them together would present unread
+passages as passages that survived.
+
+The exit code follows: `0` only when every document was unchanged, `1` when any
+document is *not known to be unchanged* — changed **or** unverifiable — and `2`
+when the watch could not run at all.
+
+### Adopting a changed source
+
+Nothing is automatic. When the watch reports `changed`:
+
+1. **Read the source.** Open the URL and the record's `passages_lost` together.
+   A passage can stop occurring verbatim because the publisher reworded it,
+   because a year's edition was reissued, or because the page's markup moved —
+   and those are different findings.
+2. **Check what stands on it.** `rules_bound` names every rule citing the
+   document, and `rules_with_lost_passages` names them when a passage was lost.
+   Review each rule's wording against the new text before anything is rebuilt.
+3. **Re-retrieve.** `uv run python scripts/build_corpus.py` (see "Rebuilding"
+   above). A new citation URL needs a stable identifier in `KNOWN_SOURCE_IDS`
+   first; the script refuses to invent one.
+4. **Review the diff of `text/` and `passages.json`** like any other source
+   change, and re-run the citation-grounding eval, since passage identifiers a
+   published eval quoted may no longer exist.
+5. **Commit the corpus, the watch record, and the source review together**, so
+   a reader can see what changed, when it was noticed, and what was decided.
+
+A `changed` verdict is not by itself a reason to change a rule. It is a reason
+for a person to read the source.
