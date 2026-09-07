@@ -76,9 +76,25 @@ that could not read the file has not failed to detect anything, and folding the
 two together would publish a loaded machine as a weaker ruleset.
 
 `undetermined_reads` is zero in any record worth publishing. This is not
-hypothetical — an early run of the test suite on a heavily loaded machine
-recorded 3 detections of 4 for one defect, and that run was a degraded read, not
-a regression. A non-zero value means: measure again, do not publish.
+hypothetical, and it is not only a loaded-laptop problem: it reproduces on all
+three CI runners while the same command over the same corpus is clean on a
+developer machine. Roughly one PDF inspection in eighty on a two-core runner
+comes back with the worker having never answered.
+
+So an incomplete read is **taken again**, up to three attempts per package,
+before it is recorded. That is not a relaxed assertion. The corpus is
+deterministic, so a rule that could not read a file it read a moment ago is
+reporting a fact about the machine, and `undetermined` is the tool saying "ask
+again", not "no". A read that stays incomplete after every attempt is still
+counted, `undetermined_reads == 0` is still required, and the failure names which
+defect and rule went undetermined rather than sending the reader back to re-run
+the corpus.
+
+Every retry is announced on stderr. A run that needs one every time is a broken
+environment, and hiding that would trade one silent wrong number for another.
+The retry count is deliberately **not** in the record, for the same reason wall
+clock is not: it is a property of the machine that ran the measurement, not of
+the ruleset the record describes.
 
 ## Relationship to `pilot summarize`
 
