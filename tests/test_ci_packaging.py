@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from typer.main import get_command
 from typer.testing import CliRunner
 
 from ceqa_preflight.checker import check_package
@@ -42,10 +43,25 @@ def _action() -> dict[str, object]:
     return yaml.safe_load(_ACTION.read_text(encoding="utf-8"))
 
 
-def _cli_help(*command: str) -> str:
-    result = runner.invoke(app, [*command, "--help"])
-    assert result.exit_code == 0, result.output
-    return result.output
+def _option_names(*path: str) -> set[str]:
+    """The option strings a command really accepts, read off the command object.
+
+    Not off `--help`. Rich wraps and colours that output at the terminal's width, so an
+    assertion over it passes on a wide developer terminal and fails on an 80-column CI
+    runner with `--filing-type` split across two lines -- a test measuring the runner
+    rather than the code. It did exactly that on all three platforms before this.
+    """
+
+    command = get_command(app)
+    for name in path:
+        found = command.commands.get(name)  # type: ignore[attr-defined]
+        assert found is not None, f"no `{name}` command on the CLI"
+        command = found
+    return {option for parameter in command.params for option in parameter.opts}
+
+
+def _command_names() -> set[str]:
+    return set(get_command(app).commands)  # type: ignore[attr-defined]
 
 
 def test_the_action_declares_exactly_the_outputs_the_summary_module_writes() -> None:
@@ -64,11 +80,12 @@ def test_every_flag_the_action_passes_still_exists_on_the_cli() -> None:
         for step in _action()["runs"]["steps"]
         if "run" in step  # type: ignore[index,call-overload]
     )
-    check_help = _cli_help("check")
+    check_options = _option_names("check")
     for flag in ("--filing-type", "--include-experimental", "--rules", "--format", "--output"):
         assert flag in script, f"the action no longer passes {flag}"
-        assert flag in check_help, f"`check` no longer accepts {flag}"
-    assert "--locale" in script and "--locale" in _cli_help()
+        assert flag in check_options, f"`check` no longer accepts {flag}"
+    assert "--locale" in script
+    assert "--locale" in _option_names(), "`--locale` is no longer a root option"
 
 
 def test_the_action_pins_its_release_and_refuses_a_mismatched_wheel() -> None:
@@ -107,7 +124,8 @@ def test_the_hook_passes_filenames_and_matches_the_files_a_check_reads() -> None
     hook = hooks[0]
     assert hook["entry"] == "ceqa-preflight pre-commit"
     assert hook["pass_filenames"] is True
-    assert "pre-commit" in _cli_help(), "the hook's entry command is not on the CLI"
+    assert "pre-commit" in _command_names(), "the hook's entry command is not on the CLI"
+    assert "--package" in _option_names("pre-commit")
 
 
 def test_the_example_workflow_grants_the_permission_the_action_needs() -> None:
