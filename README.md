@@ -34,7 +34,7 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 677 tests under a
+whole tool understated it. `make verify` is the merge gate: 694 tests under a
 90% branch-coverage floor, `strict = true` mypy over 43 source files, bandit,
 and an i18n gate holding 245 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
@@ -232,6 +232,16 @@ framing; that review is
 one of the conditions on a first tagged release. Until it is done the English
 wording is authoritative, and every non-English run says so. See
 [docs/I18N.md](docs/I18N.md).
+
+`make i18n` holds both catalogs at key and placeholder parity, refuses an empty
+or fuzzy message, and — since 2026-09-07 — refuses a Spanish `msgstr` that is
+verbatim English, which until then satisfied every other check it had.
+Legitimately identical strings are exempted structurally when no letter survives
+removing their placeholders, and otherwise one at a time in
+`IDENTICAL_BY_DESIGN` with a written reason; that mapping is empty today because
+all 245 shipped Spanish messages differ from their source. The gate can see that
+a string was changed. It cannot see whether it was changed well, which is what
+#49 is for.
 
 The `synth` command generates plainly fictional synthetic packages, optionally
 seeded with objective defects (scanned pages, fillable forms, encrypted or
