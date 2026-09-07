@@ -36,9 +36,9 @@
       <p>{{ report.disclaimer }}</p>
       <p><strong>{{ _("Summary") }}:</strong>
         {{ _("{failure} failure(s), {warning} warning(s), {passed} passed check(s), {manual} manual-review item(s), {not_run} check(s) not run.").format(failure=counts["failure"], warning=counts["warning"], passed=counts["pass"], manual=counts["manual"], not_run=counts["not_run"]) }}</p>
-      {% if report.not_run %}
+      {% if scope %}
       <p class="scope"><strong>{{ _("Scope") }}:</strong>
-        {{ _("{count} applicable check(s) did not run. This report makes no statement about what they cover.").format(count=report.not_run | length) }}</p>
+        {{ scope }}</p>
       {% else %}
       <p class="scope">{{ _("Every check that applies to this filing type ran.") }}</p>
       {% endif %}
@@ -92,6 +92,11 @@
         {% endfor %}
         </tbody>
       </table>
+      {% elif scope %}
+      {# not_run is empty but the run still did not cover everything: a check threw. The
+         completeness sentence below would be false here, and it is the sentence a reader
+         skims for. #}
+      <p>{{ scope }}</p>
       {% else %}
       <p>{{ _("Every check that applies to this filing type ran.") }}</p>
       {% endif %}

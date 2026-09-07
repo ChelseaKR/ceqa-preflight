@@ -63,9 +63,11 @@ LETTER = re.compile(r"[^\W\d_]")
 #: Messages a translator may leave identical to their English source, each mapped to the
 #: reason it is the same in both languages.
 #:
-#: **This is deliberately empty, and that is a measurement, not an oversight.** All 245
-#: shipped `es` messages differ from their `msgid` today, so the identity check below
-#: costs nothing to satisfy and no exemption has yet had to be argued for.
+#: **This is deliberately empty, and that is a measurement, not an oversight.** Every
+#: shipped `es` message differs from its `msgid`, so the identity check below costs
+#: nothing to satisfy and no exemption has yet had to be argued for. Deliberately not a
+#: count: a number here would be one more hand-maintained figure to keep in step, and
+#: `make i18n` proves the property itself on every run.
 #:
 #: An entry here is a claim about a string, so it carries the reason as a value rather
 #: than living in a bare list. Adding one is meant to be a small, deliberate, reviewable

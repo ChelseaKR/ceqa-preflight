@@ -75,16 +75,62 @@ def all_checks_ran() -> str:
     return _("Every check that applies to this filing type ran.")
 
 
+def incomplete_checks(report: InspectionReport) -> list[Finding]:
+    """Findings from rules that started and threw, so concluded nothing about the package.
+
+    The second way a rule reaches a report having evaluated nothing. ``SkippedCheck`` is
+    the first, and ``not_run`` counts those; nothing counted these.
+    """
+
+    return [
+        finding
+        for finding in (*report.findings, *report.manual_review)
+        if not finding.check_completed
+    ]
+
+
+def scope_sentence(report: InspectionReport) -> str | None:
+    """What this report owes the reader about its own coverage, or ``None`` when it is full.
+
+    Until now this asked only ``if not report.not_run``, and answered "Every check that
+    applies to this filing type ran." whenever the skip list was empty -- **including on a
+    run where a check started, threw, and concluded nothing.** The summary line beside it
+    says "0 check(s) not run" on that same run, which is true and reads as complete
+    coverage. Both statements were about the wrong set: `not_run` counts checks that never
+    started, and a check that crashed is not one of them.
+
+    Three whole sentences rather than one assembled from clauses, because
+    ``docs/I18N.md`` forbids building a message by concatenating fragments: a translator
+    needs the sentence, not its pieces.
+    """
+
+    not_run = len(report.not_run)
+    incomplete = len(incomplete_checks(report))
+    if not not_run and not incomplete:
+        return None
+    if not_run and incomplete:
+        return _(
+            "{not_run} applicable check(s) did not run and {incomplete} could not "
+            "complete. This report makes no statement about what they cover."
+        ).format(not_run=not_run, incomplete=incomplete)
+    if not_run:
+        return _(
+            "{count} applicable check(s) did not run. This report makes no statement "
+            "about what they cover."
+        ).format(count=not_run)
+    return _(
+        "{count} applicable check(s) could not complete. This report makes no statement "
+        "about what they cover."
+    ).format(count=incomplete)
+
+
 def _scope_line(report: InspectionReport) -> str:
     """State the run's coverage so a clean result can never be mistaken for a full one."""
 
-    if not report.not_run:
+    sentence = scope_sentence(report)
+    if sentence is None:
         return all_checks_ran()
-    counted = _(
-        "{count} applicable check(s) did not run. This report makes no statement "
-        "about what they cover."
-    ).format(count=len(report.not_run))
-    return f"{_('Scope')}: {counted}"
+    return f"{_('Scope')}: {sentence}"
 
 
 def _summary_line(report: InspectionReport) -> str:
@@ -154,6 +200,7 @@ def render_html(report: InspectionReport) -> str:
     return _TEMPLATES.get_template("report.html.j2").render(
         report=report,
         counts=summarize_counts(report),
+        scope=scope_sentence(report),
         source_labels=source_labels(),
         source_notes=source_notes(),
         lang=active_locale(),

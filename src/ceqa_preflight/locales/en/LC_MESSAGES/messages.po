@@ -1051,3 +1051,19 @@ msgstr ""
 #, python-brace-format
 msgid "Checking {package} as {filing_type}, per {manifest}"
 msgstr "Checking {package} as {filing_type}, per {manifest}"
+
+#, python-brace-format
+msgid ""
+"{not_run} applicable check(s) did not run and {incomplete} could not "
+"complete. This report makes no statement about what they cover."
+msgstr ""
+"{not_run} applicable check(s) did not run and {incomplete} could not "
+"complete. This report makes no statement about what they cover."
+
+#, python-brace-format
+msgid ""
+"{count} applicable check(s) could not complete. This report makes no "
+"statement about what they cover."
+msgstr ""
+"{count} applicable check(s) could not complete. This report makes no "
+"statement about what they cover."
