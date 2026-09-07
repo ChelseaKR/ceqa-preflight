@@ -216,6 +216,11 @@ def _run_package(
         manifest=manifest,
         include_experimental=include_experimental,
     )
+    # Belt and braces. A skipped rule emits no finding at all, so this
+    # subtraction currently removes nothing -- a control deleting it stayed
+    # green. The report property it rests on is pinned by a test instead, so a
+    # change that made a skipped rule report would fail there rather than
+    # crediting it here with a clean record it did not earn.
     skipped = {skipped_check.rule_id for skipped_check in report.not_run}
     statuses: dict[str, set[str]] = {}
     for finding in (*report.findings, *report.manual_review):

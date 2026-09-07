@@ -13,12 +13,16 @@ from ceqa_preflight.calibration import (
     FALSE_POSITIVE_RATE_REASON,
     REVIEWER_SECONDS_REASON,
     SyntheticCalibration,
+    _count_package,
     _rate,
+    _Tally,
     run_synthetic_calibration,
 )
+from ceqa_preflight.checker import check_package
+from ceqa_preflight.manifest import load_manifest
 from ceqa_preflight.models import FilingType
 from ceqa_preflight.rule_registry import default_catalog
-from ceqa_preflight.synth import SyntheticDefect
+from ceqa_preflight.synth import SyntheticDefect, write_synthetic_package
 
 COMMITTED_RECORD = Path(__file__).parent.parent / "evals" / "synthetic-calibration.json"
 
@@ -235,3 +239,67 @@ def test_a_single_filing_type_run_reports_only_that_filing_type() -> None:
     assert one.packages == 2
     assert one.control_packages == 1
     assert [row.seeded_packages for row in one.detection] == [1]
+
+
+# --- The two accounting rules no corpus run can exercise ----------------
+#
+# Both of these were found by a negative control that did not fire. The corpus
+# is deterministic and healthy, so it never produces an undetermined read and
+# never produces a finding for a rule that did not run -- which means the code
+# handling those two cases had no test that could fail. These reach them
+# directly.
+
+
+def test_an_undetermined_owner_is_counted_apart_from_a_miss() -> None:
+    # The case the loaded-machine run hit: the owning rule routed to a human
+    # because its facts were unavailable. That is not a detection and it is not
+    # a miss, and folding it into the second would publish a degraded read as a
+    # weaker ruleset.
+    tally = _Tally(
+        detected={SyntheticDefect.SCANNED: 0},
+        undetermined={SyntheticDefect.SCANNED: 0},
+        seeded_packages={SyntheticDefect.SCANNED: 0},
+        fired_without={"PDF-003": 0},
+        packages_without={"PDF-003": 0},
+        statuses_observed={},
+        total_packages=0,
+        control_packages=0,
+    )
+    _count_package(
+        tally,
+        {SyntheticDefect.SCANNED},
+        fired=set(),
+        statuses={"PDF-003": {"manual"}},
+    )
+    assert tally.seeded_packages[SyntheticDefect.SCANNED] == 1
+    assert tally.detected[SyntheticDefect.SCANNED] == 0
+    assert tally.undetermined[SyntheticDefect.SCANNED] == 1
+
+    # And a genuine silence is still a miss, not an undetermined read.
+    _count_package(
+        tally,
+        {SyntheticDefect.SCANNED},
+        fired=set(),
+        statuses={"PDF-003": {"pass"}},
+    )
+    assert tally.detected[SyntheticDefect.SCANNED] == 0
+    assert tally.undetermined[SyntheticDefect.SCANNED] == 1
+
+
+def test_a_rule_that_did_not_run_emits_no_finding_to_count(tmp_path: Path) -> None:
+    # `_run_package` subtracts `not_run` rule ids before counting. A control
+    # deleting that subtraction stayed green, because a skipped rule emits no
+    # finding in the first place -- so the subtraction is belt and braces, and
+    # this pins the brace: the report property it rests on. If a skipped rule
+    # ever started emitting a finding, this fails here rather than silently
+    # crediting it with a clean record.
+    directory = tmp_path / "pkg"
+    write_synthetic_package(directory, FilingType.NOE, [])
+    manifest = load_manifest(directory / "package.yaml")
+    report, _exit_code = check_package(
+        directory, FilingType.NOE, manifest=manifest, include_experimental=False
+    )
+    skipped = {row.rule_id for row in report.not_run}
+    assert skipped, "the fixture premise: experimental rules are skipped by default"
+    reported = {finding.rule_id for finding in (*report.findings, *report.manual_review)}
+    assert not skipped & reported
