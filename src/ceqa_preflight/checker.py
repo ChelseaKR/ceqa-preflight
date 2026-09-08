@@ -10,6 +10,7 @@ from pathlib import Path
 
 from ceqa_preflight import __version__
 from ceqa_preflight.i18n import gettext as _
+from ceqa_preflight.limits import DEFAULT_PACKAGE_LIMITS, PackageLimits
 from ceqa_preflight.models import (
     FilingType,
     FindingStatus,
@@ -55,7 +56,11 @@ def _has_pdf_signature(path: Path) -> bool:
         return source.read(5) == b"%PDF-"
 
 
-def _inspect_documents(documents: list[dict[str, object]], targets: list[tuple[int, Path]]) -> None:
+def _inspect_documents(
+    documents: list[dict[str, object]],
+    targets: list[tuple[int, Path]],
+    limits: PackageLimits,
+) -> None:
     """Inspect PDFs concurrently; each inspection still runs in its own isolated process."""
 
     if not targets:
@@ -64,7 +69,7 @@ def _inspect_documents(documents: list[dict[str, object]], targets: list[tuple[i
     event("pdf_inspection_started", total=len(targets))
     completed = 0
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures = {executor.submit(inspect_pdf, path): index for index, path in targets}
+        futures = {executor.submit(inspect_pdf, path, limits): index for index, path in targets}
         for future in as_completed(futures):
             documents[futures[future]]["inspection"] = future.result()
             completed += 1
@@ -122,11 +127,21 @@ def check_package(
     include_experimental: bool = False,
     rule_ids: set[str] | None = None,
     exclude_rule_ids: set[str] | None = None,
+    limits: PackageLimits = DEFAULT_PACKAGE_LIMITS,
 ) -> tuple[InspectionReport, int]:
     """Inspect a local package and return a source-cited advisory report.
 
     Filing-specific rules remain excluded unless the caller explicitly opts into
     experimental checks while they complete the permissioned practitioner pilot.
+
+    ``limits`` bounds both package expansion and per-document inspection. It is a
+    parameter rather than a constant because the wall-clock bound decides whether an
+    inspection *completes*, and a caller that needs a deterministic answer -- a test
+    asserting which rule fires, most of all -- must be able to set that bound rather
+    than inherit one sized for a hundred-megabyte filing on a shared runner. An
+    inspection that runs out of clock is reported as one that could not be read,
+    correctly, and a caller who cannot move the bound has no way to tell that apart
+    from a document that really is unreadable (issue #113).
     """
 
     if manifest is not None and manifest.filing_type is not filing_type:
@@ -134,7 +149,7 @@ def check_package(
     declarations = _manifest_documents(manifest)
     documents: list[dict[str, object]] = []
     fingerprint_lines: list[str] = []
-    with open_package(source) as root:
+    with open_package(source, limits) as root:
         paths = sorted(
             (path for path in root.rglob("*") if path.is_file()), key=lambda path: path.as_posix()
         )
@@ -158,7 +173,7 @@ def check_package(
                 inspection_targets.append((len(documents), path))
             documents.append(document)
             fingerprint_lines.append(f"{relative_path}\0{checksum}")
-        _inspect_documents(documents, inspection_targets)
+        _inspect_documents(documents, inspection_targets, limits)
 
     full_catalog = default_catalog(filing_type)
     catalog, deselected = _filter_catalog(full_catalog, filing_type, rule_ids, exclude_rule_ids)
