@@ -17,7 +17,20 @@ concurrency:
 
 jobs:
   authorize:
-    uses: ChelseaKR/portfolio-standards/.github/workflows/release-authorize.yml@3692aa5270d673f91f8571b4fc0ce1c622bf67e5
+    # ChelseaKR/.github, not ChelseaKR/portfolio-standards. A *public* repository cannot
+    # call a reusable workflow that lives in a *private* one, and GitHub reports that as a
+    # missing file rather than as a permission error, so it read as a typo. Dispatching
+    # this workflow on main returned, verbatim:
+    #
+    #   HTTP 422: failed to parse workflow: error parsing called workflow
+    #   "ChelseaKR/portfolio-standards/.github/workflows/release-authorize.yml@3692aa52..."
+    #   : workflow was not found
+    #
+    # while that commit exists, the file exists at it, and the standards repository's
+    # Actions access level is already `user`. ChelseaKR/.github is public and carries the
+    # same workflow. See tests/test_supply_chain.py, which keeps the pin out of the
+    # private repository.
+    uses: ChelseaKR/.github/.github/workflows/release-authorize.yml@7be4c3e44e2acf20e8a98eeea4351c1e5d2789bc
     permissions:
       contents: read
     with:

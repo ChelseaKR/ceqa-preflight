@@ -19,6 +19,34 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Fixed: the release workflow could never run.** `release.yml` called its
+  reusable authorize workflow from `ChelseaKR/portfolio-standards`, which is
+  **private**. A *public* repository cannot call a reusable workflow that lives
+  in a private one, and GitHub reports that as a missing file rather than as a
+  permission error — so it read as a typo rather than as a broken release path.
+  Measured 2026-09-07 by dispatching `release.yml` on `main`:
+  `HTTP 422 ... error parsing called workflow ".../release-authorize.yml@3692aa52..."
+  : workflow was not found`, while that commit existed, the file existed at it,
+  and the standards repository's Actions access level was already `user`. Not
+  one job ran; not one step.
+  - The pin now names the public mirror,
+    `ChelseaKR/.github/.github/workflows/release-authorize.yml@7be4c3e4` — which
+    is that repository's `v1.0.0` tag, so the SHA is evidence of membership
+    rather than a hash that merely resolves. Changing that one line and nothing
+    else made the same dispatch succeed: the `authorize` job ran and correctly
+    refused a non-SemVer tag, with `build-and-attest` and `publish-release`
+    skipped and nothing published.
+  - **This is a tightening as well as a fix.** The public copy adds
+    `timeout-minutes: 30` to the `authorize` job — the job that verifies the
+    signed tag — which the pinned private commit did not carry. That is the only
+    difference between the two files.
+  - The Dependabot `ignore` entry that existed *because* the callee was private
+    is gone, and automatic updates with it are restored. A readable dependency
+    suppressed by an entry whose stated reason has stopped being true is not
+    protection. `tests/test_supply_chain.py` now fails on a pin held in a private
+    repository, rather than assuming the target was fine and guarding only the
+    Dependabot workaround around it.
+
 - **Fixed: a PDF inspection that never answered was published as a verdict on
   the filer's document.** `PdfInspection` reports `readable=False` for four
   different things: a genuinely corrupt or encrypted file, an inspection that
