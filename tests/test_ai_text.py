@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import multiprocessing
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,7 @@ from ceqa_preflight.ai.text import (
     DocumentText,
     PageText,
     _extract_in_worker,
+    _receive_text,
     extract_document_text,
 )
 from ceqa_preflight.limits import PackageLimits
@@ -131,12 +133,27 @@ def test_timeout_terminates_worker(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
 
 
 def test_worker_without_result_is_reported(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """One dead worker costs one document, not the whole extraction.
+
+    This test is why the defect survived. Its fixture used to declare
+    ``def poll(self) -> bool: return False`` and assert the branch behind that guard --
+    a state a real dead worker cannot produce, on any platform (see the poll test at the
+    end of this module). So the unreachable branch had a passing test over it, the
+    coverage report showed the line executed, and the guard read as covered while the
+    path a killed worker actually takes had never been driven at all.
+
+    The fixture now raises ``EOFError`` from ``recv()``, which is what CPython does on a
+    pipe whose only writer has gone. ``ai/cli.py`` extracts every PDF in a package in one
+    loop with no handler around it, so this is the difference between losing one
+    document's text and ending the command with a traceback.
+    """
+
     class Connection:
         def close(self) -> None:
             return None
 
-        def poll(self) -> bool:
-            return False
+        def recv(self) -> object:
+            raise EOFError
 
     class Process:
         def __init__(self, **_: object) -> None:
@@ -163,7 +180,7 @@ def test_worker_without_result_is_reported(monkeypatch: pytest.MonkeyPatch, tmp_
     text = extract_document_text(tmp_path / "gone.pdf")
 
     assert text.readable is False
-    assert text.note == "text extraction worker failed"
+    assert text.note == "text extraction worker returned no result"
 
 
 def test_worker_main_reports_internal_failures() -> None:
@@ -187,3 +204,85 @@ def test_worker_main_reports_internal_failures() -> None:
         ).character_count
         == 2
     )
+
+
+# --------------------------------------------------------------------------------------
+#
+# `extract_document_text` used to guard the read with
+# `parent.recv() if parent.poll() else {"error": "no result"}`. That is the same defect
+# `pdf_inspector` carried, and the fix for it (PR #115) reached one of this project's two
+# readers of a spawned worker's pipe and not the other. These mirror
+# `tests/test_pdf_inspector.py`'s, because the failure and the reasoning are the same.
+
+
+def test_poll_could_not_have_guarded_this_read_either() -> None:
+    """The premise the old guard rested on, measured rather than assumed.
+
+    On POSIX a pipe whose only writer has gone is *readable*, so `poll()` returns `True`,
+    control falls through to `recv()`, and `recv()` raises `EOFError`. On Windows
+    `Connection._poll` raises `BrokenPipeError: [WinError 109]` out of
+    `_winapi.PeekNamedPipe` at the guard line itself, before any read.
+
+    What both platforms share is what the guard needed and never had: `poll()` never
+    reports `False` for a worker that sent nothing, so it cannot distinguish "nothing was
+    sent" from "something is waiting".
+    """
+
+    parent, child = multiprocessing.get_context("spawn").Pipe(duplex=False)
+    try:
+        child.close()
+        try:
+            polled: object = parent.poll()
+        except OSError as error:  # Windows: PeekNamedPipe raises instead of answering
+            polled = error
+        assert polled is True or isinstance(polled, OSError), (
+            f"poll() returned {polled!r} at end-of-file, so the guard this replaced could "
+            "have worked after all and the change needs rethinking"
+        )
+    finally:
+        parent.close()
+
+
+def test_a_worker_that_sent_nothing_is_reported_rather_than_raised() -> None:
+    parent, child = multiprocessing.get_context("spawn").Pipe(duplex=False)
+    try:
+        child.close()
+        result = _receive_text(parent, Path("notice.pdf"))
+    finally:
+        parent.close()
+
+    assert result.readable is False
+    assert result.timed_out is False
+    assert result.note == "text extraction worker returned no result"
+
+
+def test_a_read_that_fails_at_the_pipe_layer_is_also_reported_rather_than_raised() -> None:
+    """The catch is not `EOFError` alone, for the reason its sibling gives: the platforms
+    disagree about how a dead pipe is spelled, and betting on one spelling is what produced
+    the bug."""
+
+    class BrokenConnection:
+        def recv(self) -> object:
+            raise BrokenPipeError(109, "The pipe has been ended")
+
+    result = _receive_text(BrokenConnection(), Path("notice.pdf"))
+
+    assert result.readable is False
+    assert result.note == "text extraction worker returned no result"
+
+
+def test_a_worker_error_payload_is_still_reported_as_a_failed_extraction() -> None:
+    """The two no-answer states stay distinguishable: a worker that reported its own
+    failure is not the same fact as one that never answered, and merging them would hide
+    which of the two an operator is looking at."""
+
+    parent, child = multiprocessing.get_context("spawn").Pipe(duplex=False)
+    try:
+        child.send({"error": "text extraction worker failed"})
+        child.close()
+        result = _receive_text(parent, Path("notice.pdf"))
+    finally:
+        parent.close()
+
+    assert result.readable is False
+    assert result.note == "text extraction worker failed"
