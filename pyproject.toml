@@ -97,7 +97,16 @@ line-length = 100
 # does ship, and would silently stop git from seeing new files added there.
 # `force-exclude` is deliberately not set, so a path passed to ruff
 # explicitly is still linted.
-extend-exclude = ["work", "STANDARDS"]
+#
+# `docs/standards` is the vendored, pinned copy of the documents this project
+# ships from that repository, and ruff 0.16 began formatting Python code blocks
+# inside Markdown. Its scope went from 93 files to 144 across that bump, and four
+# of the newly-visible files were vendored standards, which it wanted to rewrite:
+# a formatter upgrade quietly acquired the power to edit documents this project
+# copies verbatim and compares against an upstream manifest. This project's own
+# Markdown stays in scope deliberately -- having its examples formatted is a gain;
+# rewriting someone else's pinned document is drift.
+extend-exclude = ["work", "STANDARDS", "docs/standards"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "S", "UP", "SIM", "C90", "RUF"]
