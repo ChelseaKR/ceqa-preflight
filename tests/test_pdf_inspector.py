@@ -551,6 +551,7 @@ def test_worker_main_sends_success_or_generic_failure(monkeypatch: pytest.Monkey
                 "parser_warnings": [],
                 "extraction_confidence": "high",
                 "timed_out": False,
+                "completed": True,
             }
         }
     ]

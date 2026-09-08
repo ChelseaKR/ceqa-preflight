@@ -52,6 +52,17 @@ class PdfInspection(StrictModel):
     parser_warnings: list[str] = Field(default_factory=list)
     extraction_confidence: Confidence = Confidence.LOW
     timed_out: bool = False
+    # Did the inspection itself run to a conclusion about this document?
+    #
+    # False on the three results the parent constructs when the worker did not answer: a
+    # timeout, a worker that produced no result, and a worker that reported its own
+    # failure. All three carry `readable=False`, and so does a document that was fully
+    # parsed and found genuinely corrupt or encrypted -- but only the last is a
+    # *measurement*. Without this flag they are the same value, and PDF-002 and the
+    # primary-form rule both read that value as "this PDF is unreadable or encrypted",
+    # which is a claim about the filer's document made on the strength of a fact about the
+    # machine that ran the check. `timed_out` says which of the three; this says whether.
+    completed: bool = True
 
 
 def select_sample_pages(page_count: int) -> list[int]:
@@ -380,6 +391,7 @@ def _timeout_result() -> PdfInspection:
         parser_warnings=[_warning_label("PDF inspection timed out")],
         extraction_confidence=Confidence.LOW,
         timed_out=True,
+        completed=False,
     )
 
 
@@ -388,6 +400,7 @@ def _no_result_from_worker() -> PdfInspection:
         readable=False,
         parser_warnings=[_warning_label("PDF inspection worker returned no result")],
         extraction_confidence=Confidence.LOW,
+        completed=False,
     )
 
 
@@ -431,6 +444,7 @@ def _receive_inspection(connection: Any) -> PdfInspection:
         readable=False,
         parser_warnings=[_warning_label("PDF inspection worker failed")],
         extraction_confidence=Confidence.LOW,
+        completed=False,
     )
 
 

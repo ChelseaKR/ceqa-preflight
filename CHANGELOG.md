@@ -19,6 +19,29 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Fixed: a PDF inspection that never answered was published as a verdict on
+  the filer's document.** `PdfInspection` reports `readable=False` for four
+  different things: a genuinely corrupt or encrypted file, an inspection that
+  timed out, a worker that produced no result, and a worker that reported its
+  own failure. Only the first is a measurement. `timed_out` separated one of the
+  three gaps; the other two fell straight through to the branch below it, and
+  PDF-002 published *"This PDF is unreadable or encrypted."* — byte-identical to
+  what it says about a real corrupt file — about a document nothing had read.
+  The primary-form rule (`NOD-002` / `NOE-002`) had the same shape, on the one
+  document the whole filing check rests on. A failing exit code and a specific
+  accusation about a filer's file, produced by a fact about the machine that ran
+  the check.
+  - `PdfInspection.completed` is `False` on all three results the parent builds
+    when the worker does not answer. `timed_out` still says *which*; this says
+    *whether*. Both rules now report an inspection that did not complete as
+    manual review, naming the gap rather than the document.
+  - `_inspectable()` keeps testing `timed_out` beside `completed` rather than
+    folding one into the other. Every producer sets both, but the model does not
+    enforce that, and a check that excludes a document from an "all documents"
+    claim is the wrong place to rely on one flag implying another. An existing
+    test caught exactly that during this change.
+  - Two new messages, English and Spanish at enforced parity.
+
 - **Fixed: a check that crashed was reported as a run that covered everything.**
   Every report ends on a scope line, and `_scope_line` asked only
   `if not report.not_run`. So on a run where every applicable rule was selected

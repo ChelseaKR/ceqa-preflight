@@ -103,6 +103,24 @@ def check_primary_readable(
                 confidence=Confidence.LOW,
             )
         ]
+    if not form.inspection.completed:
+        # Same gap as PDF-002's: an inspection that never answered arrives with
+        # `readable=False`, and the branch below would call the filer's primary form
+        # unreadable on the strength of a worker this machine could not run.
+        return [
+            RuleOutcome(
+                status=RuleOutcomeStatus.INDETERMINATE,
+                message=_(
+                    "The primary form was not inspected: the inspection did not complete, so "
+                    "this report makes no statement about it."
+                ),
+                document=form.path,
+                remediation=_(
+                    "Review the primary form manually and provide a readable PDF if needed."
+                ),
+                confidence=Confidence.LOW,
+            )
+        ]
     if not form.inspection.readable or form.inspection.encrypted:
         return [
             RuleOutcome(

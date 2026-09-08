@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from ceqa_preflight import pdf_inspector
 from ceqa_preflight.models import Confidence, FilingType, Finding
 from ceqa_preflight.pdf_inspector import PdfInspection
 from ceqa_preflight.rule_catalog import load_rule_catalog
@@ -186,6 +187,74 @@ def test_an_encrypted_pdf_is_excluded_from_absence_claims_not_folded_into_a_pass
         # not read is reported rather than silently absorbed.
         assert statuses[rule_id] == {"pass", "manual"}, rule_id
         assert "1 " in findings[rule_id].message, findings[rule_id].message
+
+
+def test_an_inspection_that_never_answered_is_not_a_verdict_about_the_document() -> None:
+    """The three `readable=False` states are not one state, and one of them is not evidence.
+
+    A timeout, a worker that produced no result, and a worker that reported its own failure
+    all arrive carrying `readable=False` -- and so does a document that was fully parsed and
+    found genuinely corrupt or encrypted. Only the last is a measurement. Before
+    `PdfInspection.completed` existed, the first two fell past the `timed_out` guard into
+    the branch below it and PDF-002 published *"This PDF is unreadable or encrypted."*
+    about a document nothing had read: a claim about the filer's file made on the strength
+    of a fact about the machine that ran the check.
+    """
+
+    corrupt = _run([_document("notice.pdf", inspection=_inspection(readable=False))])
+    never_answered = _run(
+        [_document("notice.pdf", inspection=_inspection(readable=False, completed=False))]
+    )
+    timed_out = _run(
+        [
+            _document(
+                "notice.pdf",
+                inspection=_inspection(readable=False, completed=False, timed_out=True),
+            )
+        ]
+    )
+
+    assert corrupt["PDF-002"].status.value == "failure"
+    assert "unreadable or encrypted" in corrupt["PDF-002"].message
+
+    assert never_answered["PDF-002"].status.value == "manual"
+    assert "the inspection did not complete" in never_answered["PDF-002"].message
+    assert "unreadable or encrypted" not in never_answered["PDF-002"].message
+
+    # And the two gaps stay apart from each other: a timeout says which limit was hit.
+    assert timed_out["PDF-002"].status.value == "manual"
+    assert "within the safe limit" in timed_out["PDF-002"].message
+
+
+def test_an_inspection_that_never_answered_produces_no_pass_anywhere() -> None:
+    """The same rule the timeout case already holds, for the state that had escaped it."""
+
+    statuses = _statuses(
+        [_document("notice.pdf", inspection=_inspection(readable=False, completed=False))]
+    )
+
+    for rule_id in _INSPECTION_DERIVED_RULES:
+        assert statuses[rule_id] == {"manual"}, rule_id
+
+
+def test_the_real_inspector_results_carry_the_flag_the_rules_read() -> None:
+    """The coupling. Every case above builds its inspection by hand.
+
+    If `pdf_inspector` stopped setting `completed=False` on the results it constructs when
+    the worker does not answer, every assertion above would stay green while PDF-002 went
+    back to calling an uninspected document unreadable. These are the three producers.
+    """
+
+    assert pdf_inspector._timeout_result().completed is False
+    assert pdf_inspector._no_result_from_worker().completed is False
+    assert pdf_inspector._receive_inspection(_BrokenConnection()).completed is False
+
+
+class _BrokenConnection:
+    """A worker that reported its own failure, which is the third producer."""
+
+    def recv(self) -> object:
+        return {"error": "PDF inspection worker failed"}
 
 
 def test_a_package_with_no_pdfs_passes_no_pdf_check() -> None:
