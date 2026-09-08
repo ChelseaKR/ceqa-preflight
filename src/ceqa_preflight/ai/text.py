@@ -130,6 +130,48 @@ def _worker_main(
         connection.close()
 
 
+def _receive_text(connection: Any, path: Path) -> DocumentText:
+    """Read the worker's payload, or say plainly that it produced none.
+
+    The guard this replaces was ``parent.recv() if parent.poll() else <no result>``,
+    and it could never produce that result on any platform. This is the same defect
+    ``pdf_inspector._receive_inspection`` documents; the fix reached one of the two
+    places this project reads a spawned worker's pipe and not the other.
+
+    On POSIX ``Connection.poll()`` reports that a connection is *readable*, and a pipe
+    whose only writer has gone is readable -- it yields end-of-file. Measured again
+    here, against a spawned worker that exited without sending, both after closing its
+    end and after ``os._exit`` mid-flight: ``is_alive()`` was ``False`` and ``poll()``
+    was ``True`` in both cases, so the ``no result`` branch was unreachable and
+    ``recv()`` raised ``EOFError``.
+
+    On Windows it is worse than unreachable: ``Connection._poll`` raises
+    ``BrokenPipeError: [WinError 109] The pipe has been ended`` out of
+    ``_winapi.PeekNamedPipe``, at the guard line itself, before any read.
+
+    Nothing caught either, and ``ai/cli.py`` extracts every PDF in a package in one
+    loop with no handler around it. So a worker the OS killed -- out of memory, a
+    container limit, a failure inside spawn's re-import before the worker's own
+    ``try`` was entered -- took the whole extraction down with a traceback rather
+    than reporting that this one document could not be read.
+
+    ``OSError`` is caught alongside ``EOFError`` because the platforms demonstrably
+    disagree about how a dead pipe is spelled, and betting on one spelling is what
+    produced the bug. Every way this read can fail is the same fact: the worker
+    produced no result.
+    """
+
+    try:
+        payload = connection.recv()
+    except (EOFError, OSError):
+        return DocumentText(
+            path=path.name, readable=False, note="text extraction worker returned no result"
+        )
+    if "text" in payload:
+        return DocumentText.model_validate(payload["text"])
+    return DocumentText(path=path.name, readable=False, note="text extraction worker failed")
+
+
 def extract_document_text(
     path: Path,
     *,
@@ -157,12 +199,9 @@ def extract_document_text(
             return DocumentText(
                 path=path.name, readable=False, timed_out=True, note="extraction timed out"
             )
-        payload = parent.recv() if parent.poll() else {"error": "no result"}
+        return _receive_text(parent, path)
     finally:
         parent.close()
         if process.is_alive():
             process.terminate()
             process.join()
-    if "text" in payload:
-        return DocumentText.model_validate(payload["text"])
-    return DocumentText(path=path.name, readable=False, note="text extraction worker failed")
