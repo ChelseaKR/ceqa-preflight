@@ -231,14 +231,6 @@ msgstr "No action is needed for this check."
 msgid "Review this item manually after a complete package inventory is available."
 msgstr "Review this item manually after a complete package inventory is available."
 
-#, python-brace-format
-msgid ""
-"{count} PDF document(s) could not be inspected and were excluded from this check, "
-"which therefore makes no statement about them."
-msgstr ""
-"{count} PDF document(s) could not be inspected and were excluded from this check, "
-"which therefore makes no statement about them."
-
 msgid "The package inventory is unavailable or incomplete."
 msgstr "The package inventory is unavailable or incomplete."
 
@@ -1081,3 +1073,78 @@ msgid ""
 msgstr ""
 "The primary form was not inspected: the inspection did not complete, so "
 "this report makes no statement about it."
+
+#, python-brace-format
+msgid ""
+"{count} PDF document(s) were never inspected, so this check makes no "
+"statement about them."
+msgstr ""
+"{count} PDF document(s) were never inspected, so this check makes no "
+"statement about them."
+
+msgid ""
+"A file whose leading bytes are not a PDF signature is never opened as a "
+"PDF. Read the PDF signature finding for those files first."
+msgstr ""
+"A file whose leading bytes are not a PDF signature is never opened as a "
+"PDF. Read the PDF signature finding for those files first."
+
+#, python-brace-format
+msgid ""
+"The inspection of {count} PDF document(s) did not finish, so this check "
+"makes no statement about them."
+msgstr ""
+"The inspection of {count} PDF document(s) did not finish, so this check "
+"makes no statement about them."
+
+msgid ""
+"This records what this run did, not what the document contains. Run the "
+"check again; if it does not finish again, inspect those documents on their "
+"own."
+msgstr ""
+"This records what this run did, not what the document contains. Run the "
+"check again; if it does not finish again, inspect those documents on their "
+"own."
+
+#, python-brace-format
+msgid ""
+"{count} PDF document(s) were read and could not be opened, so this check "
+"makes no statement about them."
+msgstr ""
+"{count} PDF document(s) were read and could not be opened, so this check "
+"makes no statement about them."
+
+msgid ""
+"Replace each file with an undamaged, unencrypted PDF exported from the "
+"source document, then run the check again."
+msgstr ""
+"Replace each file with an undamaged, unencrypted PDF exported from the "
+"source document, then run the check again."
+
+#, python-brace-format
+msgid ""
+"{count} PDF document(s) were inspected, but the signal this check needs "
+"could not be read from them, so this check makes no statement about them."
+msgstr ""
+"{count} PDF document(s) were inspected, but the signal this check needs "
+"could not be read from them, so this check makes no statement about them."
+
+msgid ""
+"The document opened and this part of it did not. Review those documents "
+"manually for this check."
+msgstr ""
+"The document opened and this part of it did not. Review those documents "
+"manually for this check."
+
+#, python-brace-format
+msgid ""
+"The inventory recorded no PDF signature for {count} document(s), so this "
+"check makes no statement about them."
+msgstr ""
+"The inventory recorded no PDF signature for {count} document(s), so this "
+"check makes no statement about them."
+
+msgid ""
+"Run the check over the package again so the inventory records those files."
+msgstr ""
+"Run the check over the package again so the inventory records those files."
