@@ -83,6 +83,12 @@ def _excluded_message(reason: NotExamined, count: int) -> tuple[str, str]:
     sees what a reader sees. The trailing "makes no statement about them" is common to all
     five on purpose: the *disclosure* is identical, and only the cause and the remedy
     differ.
+
+    Every member is matched by name and an unmatched reason raises. A trailing ``return``
+    standing in for the last member reads identically to a match, so a sixth member added
+    later would be published under the fifth one's sentence and the fifth one's remedy --
+    the same "absence rendered as a value" this enum exists to end, one level inside the
+    function that ends it.
     """
 
     if reason is NotExamined.NOT_INSPECTED:
@@ -130,13 +136,15 @@ def _excluded_message(reason: NotExamined, count: int) -> tuple[str, str]:
                 "manually for this check."
             ),
         )
-    return (
-        _(
-            "The inventory recorded no PDF signature for {count} document(s), so this check "
-            "makes no statement about them."
-        ).format(count=count),
-        _("Run the check over the package again so the inventory records those files."),
-    )
+    if reason is NotExamined.SIGNATURE_NOT_RECORDED:
+        return (
+            _(
+                "The inventory recorded no PDF signature for {count} document(s), so this "
+                "check makes no statement about them."
+            ).format(count=count),
+            _("Run the check over the package again so the inventory records those files."),
+        )
+    raise ValueError(f"no disclosure sentence is written for exclusion reason {reason!r}")
 
 
 def _examined(document: DocumentFact) -> PdfInspection | NotExamined:
