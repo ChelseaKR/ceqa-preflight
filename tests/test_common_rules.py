@@ -2,14 +2,25 @@
 
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 
+import pytest
+
 from ceqa_preflight import pdf_inspector
+from ceqa_preflight.checker import check_package
 from ceqa_preflight.models import Confidence, FilingType, Finding
 from ceqa_preflight.pdf_inspector import PdfInspection
 from ceqa_preflight.rule_catalog import load_rule_catalog
 from ceqa_preflight.rule_engine import RuleContext, RuleEngine
-from ceqa_preflight.rules.common import COMMON_RULES
+from ceqa_preflight.rules.common import (
+    COMMON_RULES,
+    DocumentFact,
+    NotExamined,
+    _examined,
+    _excluded_message,
+)
+from ceqa_preflight.synth import SyntheticDefect, write_synthetic_package
 
 
 def _all_findings(documents: object) -> list[Finding]:
@@ -548,3 +559,248 @@ def test_a_file_with_no_checksum_is_disclosed_not_folded_into_the_duplicate_pass
     )
 
     assert statuses["FILE-002"] == {"pass", "manual"}
+
+
+# --------------------------------------------------------------------------------------
+# Why a document was left out of a check
+# --------------------------------------------------------------------------------------
+#
+# Measured on `origin/main` before this change, over the synthetic NOE package seeded with
+# `encrypted`, `unreadable` and `bad-signature` (three documents left out for three
+# different reasons):
+#
+#   PDF-003 | 3 PDF document(s) could not be inspected and were excluded from this check,
+#   PDF-006 |   which therefore makes no statement about them.
+#   PDF-007 | (same sentence)
+#   PDF-008 | (same sentence)
+#   PDF-002 | A PDF could not be fully inspected within the safe limit.
+#
+# Four rules published one sentence about three different facts, and PDF-002 published a
+# timeout about a file nothing had opened: the checker inspects a `.pdf` only once its
+# leading bytes carry a PDF signature (`checker.py`, `if is_pdf and signature_is_pdf`), so
+# the bad-signature file never reached a clock to run out of. No test and no document in
+# the repository asserted either sentence, which is why splitting them turned nothing red.
+
+
+def _messages(documents: object) -> dict[str, list[str]]:
+    """Every message each rule emitted, in the order it emitted them."""
+
+    messages: dict[str, list[str]] = {}
+    for finding in _all_findings(documents):
+        messages.setdefault(finding.rule_id, []).append(finding.message)
+    return messages
+
+
+# One document per reason, and the reason each one must be reported under. The mapping is
+# checked for completeness against `NotExamined` below, so a sixth reason cannot be added
+# without a case that produces it.
+_EXCLUSION_CASES: dict[NotExamined, dict[str, object]] = {
+    # A `.pdf` whose leading bytes are not a PDF signature. The checker never opens it, so
+    # it carries no inspection at all.
+    NotExamined.NOT_INSPECTED: _document(
+        "NOE_not_really_a_pdf.pdf", signature_is_pdf=False, inspection=None
+    ),
+    # The worker died, timed out, or reported its own failure. A fact about this machine.
+    NotExamined.INSPECTION_UNFINISHED: _document(
+        "NOE_worker_never_answered.pdf", inspection=_inspection(readable=False, completed=False)
+    ),
+    # Opened and refused. A measurement about the filer's file.
+    NotExamined.DOCUMENT_UNREADABLE: _document(
+        "NOE_locked_appendix.pdf", inspection=_inspection(readable=False)
+    ),
+    # Opened, and the part this check needs did not resolve. All four per-signal flags are
+    # set at once so every inspection-derived rule reaches the same reason from one case.
+    NotExamined.SIGNAL_UNREADABLE: _document(
+        "NOE_corrupt_xref.pdf",
+        inspection=_inspection(
+            text_coverage=None,
+            active_content_readable=False,
+            form_fields_readable=False,
+            structure_tree_present=None,
+        ),
+    ),
+    # Facts that reached the rules without a signature reading. `checker.py` always records
+    # one for a `.pdf`, so this arrives from another producer of the `documents` fact --
+    # a rule pack, a replayed report, a caller of the public rule engine.
+    NotExamined.SIGNATURE_NOT_RECORDED: _document(
+        "NOE_signature_unrecorded.pdf", signature_is_pdf=None
+    ),
+}
+
+
+def test_every_exclusion_reason_has_a_case_that_produces_it() -> None:
+    """The self-limiting half: a reason nothing produces is a sentence nobody has read.
+
+    Without this, `NotExamined` can grow a member whose sentence is never rendered by any
+    test, and the first reader to meet it is a filer.
+    """
+
+    assert set(_EXCLUSION_CASES) == set(NotExamined)
+
+
+def test_each_reason_a_document_is_left_out_is_disclosed_in_its_own_words() -> None:
+    """Five facts, five sentences, five remedies -- not one sentence five times.
+
+    "N PDF document(s) could not be inspected" was true of a file the tool never opened, a
+    file it opened and could not read, a file it read where one signal did not resolve, and
+    a run where the inspection worker died. Those have four different remedies and one of
+    them is not about the package at all.
+    """
+
+    seen: dict[NotExamined, tuple[str, str]] = {}
+    for reason in NotExamined:
+        message, remediation = _excluded_message(reason, 1)
+        assert message.strip(), reason
+        assert remediation.strip(), reason
+        seen[reason] = (message, remediation)
+
+    assert len(set(seen.values())) == len(NotExamined), (
+        f"two exclusion reasons share a sentence or a remedy: {seen}"
+    )
+    assert len({message for message, _remediation in seen.values()}) == len(NotExamined)
+    assert len({remediation for _message, remediation in seen.values()}) == len(NotExamined)
+
+
+def test_an_exclusion_reason_with_no_sentence_is_refused_not_given_the_last_one() -> None:
+    """The trailing-`return` trap, asserted rather than described.
+
+    A final unconditional `return` reads exactly like a match for the last member, so a new
+    reason would be published under the previous one's sentence *and* its remedy -- telling
+    a filer to re-run the check so the inventory records a signature, about a document
+    whose signature was recorded. `_excluded_message` matches every member by name.
+    """
+
+    with pytest.raises(ValueError, match="no disclosure sentence"):
+        _excluded_message("a reason added without a sentence", 1)  # type: ignore[arg-type]
+
+
+def test_the_four_absence_rules_report_each_reason_separately_in_one_package() -> None:
+    """The whole package at once, which is how a filer meets it.
+
+    One document per reason, so each inspection-derived rule must emit one manual-review
+    line per reason rather than a single count over all of them.
+    """
+
+    package = list(_EXCLUSION_CASES.values())
+    messages = _messages(package)
+    sentence = {reason: _excluded_message(reason, 1)[0] for reason in NotExamined}
+
+    # SIGNATURE_NOT_RECORDED is PDF-001's alone: no other rule reads that field. The one
+    # healthy document in the package is the signature case, so each rule also passes for
+    # exactly that one, and the pass has to stand beside the gaps rather than absorb them.
+    inspection_reasons = [
+        reason for reason in NotExamined if reason is not NotExamined.SIGNATURE_NOT_RECORDED
+    ]
+    for rule_id in _INSPECTION_DERIVED_RULES:
+        emitted = messages[rule_id]
+        disclosed = [reason for reason in NotExamined if sentence[reason] in emitted]
+        assert disclosed == inspection_reasons, f"{rule_id}: {emitted}"
+        # Nothing else was said: one pass for the one examined document, four gaps.
+        assert len(emitted) == len(inspection_reasons) + 1, emitted
+        assert " 1 inspected PDF(s)" in emitted[0], emitted[0]
+
+    assert sentence[NotExamined.SIGNATURE_NOT_RECORDED] in messages["PDF-001"]
+
+
+def test_a_document_that_was_never_opened_is_not_reported_as_a_timeout() -> None:
+    """The live wrong claim this replaces, in the rule that published it.
+
+    PDF-002 said *"A PDF could not be fully inspected within the safe limit."* about a file
+    with no inspection at all. Nothing ran out of clock: `checker.py` opens a `.pdf` as a
+    PDF only once its leading bytes carry a PDF signature, so a bad-signature file is one
+    the tool declined to open, and the remedy is PDF-001's, not a longer timeout.
+    """
+
+    never_opened = _messages([_EXCLUSION_CASES[NotExamined.NOT_INSPECTED]])["PDF-002"]
+    timed_out = _messages([_document("NOE_slow.pdf", inspection=_inspection(timed_out=True))])[
+        "PDF-002"
+    ]
+
+    assert "within the safe limit" not in " ".join(never_opened), never_opened
+    assert _excluded_message(NotExamined.NOT_INSPECTED, 1)[0] in never_opened
+    # And the sentence that is about a clock still belongs to the case that has one.
+    assert any("within the safe limit" in message for message in timed_out), timed_out
+
+
+def test_the_reason_a_document_is_left_out_is_read_off_the_inspection_not_guessed() -> None:
+    """The coupling test. Every case above builds its `DocumentFact` by hand.
+
+    Three of the five reasons are decided in one place, `_examined`, and this pins that
+    mapping directly: if it stopped separating "the worker never answered" from "the
+    document is damaged", every assertion above would still pass through whichever branch
+    absorbed the other.
+
+    The other two are decided elsewhere on purpose and are named here so the split is
+    written down rather than inferred: `SIGNAL_UNREADABLE` belongs to the rule that
+    consumes the signal (a document can be perfectly readable and still have an
+    unresolvable form dictionary), and `SIGNATURE_NOT_RECORDED` is an inventory fact
+    PDF-001 reads without an inspection at all.
+    """
+
+    decided_by_examined = {
+        NotExamined.NOT_INSPECTED,
+        NotExamined.INSPECTION_UNFINISHED,
+        NotExamined.DOCUMENT_UNREADABLE,
+    }
+    decided_elsewhere = {NotExamined.SIGNAL_UNREADABLE, NotExamined.SIGNATURE_NOT_RECORDED}
+    assert decided_by_examined | decided_elsewhere == set(NotExamined)
+
+    for reason in decided_by_examined:
+        fact = DocumentFact.model_validate(_EXCLUSION_CASES[reason])
+        assert _examined(fact) is reason, (fact.path, reason)
+
+    # A complete, readable inspection is not a reason at all -- it is the inspection, and
+    # that is exactly why the per-signal cases have to be caught by their own rules.
+    for reason in decided_elsewhere:
+        fact = DocumentFact.model_validate(_EXCLUSION_CASES[reason])
+        assert isinstance(_examined(fact), PdfInspection), (fact.path, reason)
+    assert isinstance(
+        _examined(DocumentFact.model_validate(_document("NOE_fine.pdf"))), PdfInspection
+    )
+
+
+def test_the_real_inspector_produces_the_state_each_reason_is_read_from() -> None:
+    """The other half of the coupling: these are `pdf_inspector`'s own results.
+
+    `INSPECTION_UNFINISHED` is only ever correct if the producers really do set
+    `completed=False`; `DOCUMENT_UNREADABLE` is only ever correct if a completed inspection
+    of a locked file really does come back readable=False with completed=True.
+    """
+
+    assert (
+        _examined(
+            DocumentFact.model_validate(
+                _document("x.pdf", inspection=pdf_inspector._timeout_result())
+            )
+        )
+        is NotExamined.INSPECTION_UNFINISHED
+    )
+    assert (
+        _examined(
+            DocumentFact.model_validate(
+                _document("x.pdf", inspection=pdf_inspector._no_result_from_worker())
+            )
+        )
+        is NotExamined.INSPECTION_UNFINISHED
+    )
+
+
+def test_the_end_to_end_check_of_a_bad_signature_package_names_the_right_gap() -> None:
+    """The production path, not a hand-built fact.
+
+    `synth --defect bad-signature` writes a `.pdf` whose leading bytes are not a PDF
+    signature -- the one input that reaches `inspection is None` through `checker.py`. This
+    is what makes the reason reachable in a real run rather than only in this module.
+    """
+
+    with tempfile.TemporaryDirectory() as scratch:
+        package = Path(scratch) / "package"
+        write_synthetic_package(package, FilingType.NOE, [SyntheticDefect.BAD_SIGNATURE])
+        report, _exit_code = check_package(package, FilingType.NOE)
+
+    manual = [finding for finding in report.manual_review if finding.rule_id == "PDF-002"]
+    assert manual, [finding.rule_id for finding in report.manual_review]
+    assert all("within the safe limit" not in finding.message for finding in manual), manual
+    assert any(
+        finding.message == _excluded_message(NotExamined.NOT_INSPECTED, 1)[0] for finding in manual
+    ), [finding.message for finding in manual]

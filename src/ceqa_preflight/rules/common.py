@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
-from collections.abc import Iterable
+from collections import Counter, defaultdict
+from collections.abc import Iterable, Mapping
+from enum import StrEnum
 from pathlib import PurePosixPath
 
 from pydantic import Field, ValidationError
@@ -42,21 +43,112 @@ def _no_action_needed() -> str:
     return _("No action is needed for this check.")
 
 
-def _indeterminate(message: str) -> list[RuleOutcome]:
+def _indeterminate(message: str, remediation: str | None = None) -> list[RuleOutcome]:
     return [
         RuleOutcome(
             status=RuleOutcomeStatus.INDETERMINATE,
             message=message,
-            remediation=_(
-                "Review this item manually after a complete package inventory is available."
-            ),
+            remediation=remediation
+            or _("Review this item manually after a complete package inventory is available."),
             confidence=Confidence.LOW,
         )
     ]
 
 
-def _examined(document: DocumentFact) -> PdfInspection | None:
-    """The completed inspection a check may draw a conclusion from, or ``None``.
+class NotExamined(StrEnum):
+    """Why a document sits outside a check's denominator.
+
+    These are five different facts, and until this enum existed a reader met all five as
+    one sentence: *"N PDF document(s) could not be inspected"*. Measured on the synthetic
+    package seeded with ``encrypted``, ``unreadable`` and ``bad-signature``, four rules each
+    reported exactly that about three documents -- one the tool deliberately never opened,
+    one it read and found encrypted, and one it read and found damaged. Only
+    ``INSPECTION_UNFINISHED`` is a fact about the machine that ran the check; the rest are
+    facts about the package, and they have different remedies. Merging them is this
+    project's named worst failure mode -- "absence rendered as a value" -- reached from the
+    disclosure side rather than the data side.
+    """
+
+    NOT_INSPECTED = "not_inspected"
+    INSPECTION_UNFINISHED = "inspection_unfinished"
+    DOCUMENT_UNREADABLE = "document_unreadable"
+    SIGNAL_UNREADABLE = "signal_unreadable"
+    SIGNATURE_NOT_RECORDED = "signature_not_recorded"
+
+
+def _excluded_message(reason: NotExamined, count: int) -> tuple[str, str]:
+    """The sentence and the remedy for one kind of exclusion.
+
+    Written as whole sentences rather than clauses assembled at runtime, so a translator
+    sees what a reader sees. The trailing "makes no statement about them" is common to all
+    five on purpose: the *disclosure* is identical, and only the cause and the remedy
+    differ.
+
+    Every member is matched by name and an unmatched reason raises. A trailing ``return``
+    standing in for the last member reads identically to a match, so a sixth member added
+    later would be published under the fifth one's sentence and the fifth one's remedy --
+    the same "absence rendered as a value" this enum exists to end, one level inside the
+    function that ends it.
+    """
+
+    if reason is NotExamined.NOT_INSPECTED:
+        return (
+            _(
+                "{count} PDF document(s) were never inspected, so this check makes no "
+                "statement about them."
+            ).format(count=count),
+            _(
+                "A file whose leading bytes are not a PDF signature is never opened as a "
+                "PDF. Read the PDF signature finding for those files first."
+            ),
+        )
+    if reason is NotExamined.INSPECTION_UNFINISHED:
+        return (
+            _(
+                "The inspection of {count} PDF document(s) did not finish, so this check "
+                "makes no statement about them."
+            ).format(count=count),
+            _(
+                "This records what this run did, not what the document contains. Run the "
+                "check again; if it does not finish again, inspect those documents on their "
+                "own."
+            ),
+        )
+    if reason is NotExamined.DOCUMENT_UNREADABLE:
+        return (
+            _(
+                "{count} PDF document(s) were read and could not be opened, so this check "
+                "makes no statement about them."
+            ).format(count=count),
+            _(
+                "Replace each file with an undamaged, unencrypted PDF exported from the "
+                "source document, then run the check again."
+            ),
+        )
+    if reason is NotExamined.SIGNAL_UNREADABLE:
+        return (
+            _(
+                "{count} PDF document(s) were inspected, but the signal this check needs "
+                "could not be read from them, so this check makes no statement about them."
+            ).format(count=count),
+            _(
+                "The document opened and this part of it did not. Review those documents "
+                "manually for this check."
+            ),
+        )
+    if reason is NotExamined.SIGNATURE_NOT_RECORDED:
+        return (
+            _(
+                "The inventory recorded no PDF signature for {count} document(s), so this "
+                "check makes no statement about them."
+            ).format(count=count),
+            _("Run the check over the package again so the inventory records those files."),
+        )
+    raise ValueError(f"no disclosure sentence is written for exclusion reason {reason!r}")
+
+
+def _examined(document: DocumentFact) -> PdfInspection | NotExamined:
+    """The completed inspection a check may draw a conclusion from, or why there is none.
 
     A PDF that timed out, failed to parse, or is encrypted still yields a ``PdfInspection``,
     but every absence signal on it (form-field count, embedded-file count, the JavaScript
@@ -68,21 +160,23 @@ def _examined(document: DocumentFact) -> PdfInspection | None:
     parsed but some signal within it did not, is not visible here: the inspection carries a
     per-signal flag for each such case (``form_fields_readable``, ``active_content_readable``,
     and ``structure_tree_present is None``), and the check that consumes that signal is
-    responsible for excluding the document. Every caller below does.
+    responsible for excluding the document under ``SIGNAL_UNREADABLE``. Every caller below
+    does.
     """
 
     inspection = document.inspection
-    if (
-        inspection is None
-        or inspection.timed_out
-        or not inspection.completed
-        or not inspection.readable
-    ):
-        # `timed_out` is kept beside `completed` rather than folded into it. Every result
-        # this module's producers build sets both, but the invariant is not enforced by the
-        # model, and a check that excludes a document from an absence claim is the wrong
-        # place to rely on one flag implying another.
-        return None
+    if inspection is None:
+        return NotExamined.NOT_INSPECTED
+    # `timed_out` is kept beside `completed` rather than folded into it. Every result this
+    # module's producers build sets both, but the invariant is not enforced by the model,
+    # and a check that excludes a document from an absence claim is the wrong place to rely
+    # on one flag implying another.
+    if inspection.timed_out or not inspection.completed:
+        return NotExamined.INSPECTION_UNFINISHED
+    if not inspection.readable:
+        # `completed` is what separates this from the branch above: the document was opened
+        # and refused. That is a measurement about the filer's file.
+        return NotExamined.DOCUMENT_UNREADABLE
     return inspection
 
 
@@ -90,7 +184,7 @@ def _conclude(
     findings: list[RuleOutcome],
     *,
     examined: int,
-    excluded: int,
+    excluded: Mapping[NotExamined, int] | None = None,
     pass_message: str,
     nothing_examined_message: str,
 ) -> list[RuleOutcome]:
@@ -100,7 +194,9 @@ def _conclude(
     when at least one document was examined and nothing was wrong with it, and the pass
     message states how many documents that was, so an "all clear" can never be read off a
     denominator of zero. Documents the check could not examine are surfaced for manual
-    review instead of being silently absorbed into the pass.
+    review instead of being silently absorbed into the pass -- one outcome per *reason*,
+    in a fixed order, because a reader needs to know whether the machine failed or the
+    document did.
     """
 
     outcomes: list[RuleOutcome] = list(findings)
@@ -112,16 +208,15 @@ def _conclude(
                 remediation=_no_action_needed(),
             )
         )
-    if excluded:
-        outcomes.extend(
-            _indeterminate(
-                _(
-                    "{count} PDF document(s) could not be inspected and were excluded from "
-                    "this check, which therefore makes no statement about them."
-                ).format(count=excluded)
-            )
-        )
-    elif not examined and not findings:
+    counts = excluded or {}
+    reported = False
+    for reason in NotExamined:
+        count = counts.get(reason, 0)
+        if not count:
+            continue
+        reported = True
+        outcomes.extend(_indeterminate(*_excluded_message(reason, count)))
+    if not reported and not examined and not findings:
         # Nothing was examined and the check has not already said why.
         outcomes.extend(_indeterminate(nothing_examined_message))
     return outcomes
@@ -155,12 +250,12 @@ def check_pdf_signature(context: RuleContext, _rule: RuleDefinition) -> Iterable
         return _indeterminate(_("PDF signature facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
-    excluded = 0
+    excluded: Counter[NotExamined] = Counter()
     for document in documents:
         if not document.is_pdf:
             continue
         if document.signature_is_pdf is None:
-            excluded += 1
+            excluded[NotExamined.SIGNATURE_NOT_RECORDED] += 1
             continue
         examined += 1
         if not document.signature_is_pdf:
@@ -195,7 +290,15 @@ def check_pdf_readable(context: RuleContext, _rule: RuleDefinition) -> Iterable[
         if not document.is_pdf:
             continue
         inspection = document.inspection
-        if inspection is None or inspection.timed_out:
+        if inspection is None:
+            # Never inspected at all. The checker opens a file as a PDF only once its
+            # leading bytes carry a PDF signature, so this is the file PDF-001 has already
+            # failed -- nothing ran out of clock and nothing died. Saying it "could not be
+            # fully inspected within the safe limit" described a timeout that never
+            # happened.
+            outcomes.extend(_indeterminate(*_excluded_message(NotExamined.NOT_INSPECTED, 1)))
+            continue
+        if inspection.timed_out:
             outcomes.extend(
                 _indeterminate(_("A PDF could not be fully inspected within the safe limit."))
             )
@@ -231,7 +334,7 @@ def check_pdf_readable(context: RuleContext, _rule: RuleDefinition) -> Iterable[
     return _conclude(
         outcomes,
         examined=examined,
-        excluded=0,  # documents that could not be inspected are already reported above
+        excluded=None,  # documents that could not be inspected are already reported above
         pass_message=_("All {count} inspected PDF(s) are readable and unencrypted.").format(
             count=examined
         ),
@@ -246,13 +349,16 @@ def check_text_coverage(context: RuleContext, rule: RuleDefinition) -> Iterable[
         return _indeterminate(_("Searchable-text coverage facts or threshold are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
-    excluded = 0
+    excluded: Counter[NotExamined] = Counter()
     for document in documents:
         if not document.is_pdf:
             continue
         inspection = _examined(document)
-        if inspection is None or inspection.text_coverage is None:
-            excluded += 1
+        if isinstance(inspection, NotExamined):
+            excluded[inspection] += 1
+            continue
+        if inspection.text_coverage is None:
+            excluded[NotExamined.SIGNAL_UNREADABLE] += 1
             continue
         examined += 1
         if inspection.text_coverage < threshold:
@@ -308,18 +414,21 @@ def check_active_content(context: RuleContext, _rule: RuleDefinition) -> Iterabl
         return _indeterminate(_("PDF active-content facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
-    excluded = 0
+    excluded: Counter[NotExamined] = Counter()
     for document in documents:
         if not document.is_pdf:
             continue
         inspection = _examined(document)
+        if isinstance(inspection, NotExamined):
+            excluded[inspection] += 1
+            continue
         # An object graph that did not resolve reports no JavaScript, no launch action and
         # no embedded files; those three defaults are the absence of a reading, not the
         # absence of active content. This is the one rule in the catalog whose purpose is
         # catching a crafted or corrupt document, and an unresolvable /Root, /Names or
         # /OpenAction is precisely what such a document looks like (issue #54).
-        if inspection is None or not inspection.active_content_readable:
-            excluded += 1
+        if not inspection.active_content_readable:
+            excluded[NotExamined.SIGNAL_UNREADABLE] += 1
             continue
         examined += 1
         suspicious = inspection.javascript_present or inspection.launch_action_present
@@ -362,15 +471,18 @@ def check_flattened_forms(context: RuleContext, _rule: RuleDefinition) -> Iterab
         return _indeterminate(_("PDF form-field facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
-    excluded = 0
+    excluded: Counter[NotExamined] = Counter()
     for document in documents:
         if not document.is_pdf:
             continue
         inspection = _examined(document)
+        if isinstance(inspection, NotExamined):
+            excluded[inspection] += 1
+            continue
         # A form dictionary that could not be parsed reports zero fields; that zero is the
         # absence of a reading, not the absence of fields.
-        if inspection is None or not inspection.form_fields_readable:
-            excluded += 1
+        if not inspection.form_fields_readable:
+            excluded[NotExamined.SIGNAL_UNREADABLE] += 1
             continue
         examined += 1
         if inspection.active_form_field_count:
@@ -411,13 +523,16 @@ def check_structure_tags(context: RuleContext, _rule: RuleDefinition) -> Iterabl
         return _indeterminate(_("PDF structure-tree facts are unavailable."))
     outcomes: list[RuleOutcome] = []
     examined = 0
-    excluded = 0
+    excluded: Counter[NotExamined] = Counter()
     for document in documents:
         if not document.is_pdf:
             continue
         inspection = _examined(document)
-        if inspection is None or inspection.structure_tree_present is None:
-            excluded += 1
+        if isinstance(inspection, NotExamined):
+            excluded[inspection] += 1
+            continue
+        if inspection.structure_tree_present is None:
+            excluded[NotExamined.SIGNAL_UNREADABLE] += 1
             continue
         examined += 1
         if not inspection.structure_tree_present:
@@ -494,7 +609,7 @@ def check_file_size(context: RuleContext, rule: RuleDefinition) -> Iterable[Rule
     return _conclude(
         outcomes,
         examined=examined,
-        excluded=0,  # a file whose size could not be read is already reported above
+        excluded=None,  # a file whose size could not be read is already reported above
         pass_message=_(
             "All {count} inventoried file(s) are within the advisory size threshold."
         ).format(count=examined),
@@ -556,7 +671,7 @@ def check_non_pdf_documents(context: RuleContext, _rule: RuleDefinition) -> Iter
     return _conclude(
         outcomes,
         examined=len(documents),
-        excluded=0,
+        excluded=None,
         pass_message=_(
             "None of the {count} inventoried file(s) are in a convertible non-PDF format."
         ).format(count=len(documents)),
@@ -608,7 +723,7 @@ def check_filename_portability(
     return _conclude(
         outcomes,
         examined=len(documents),
-        excluded=0,
+        excluded=None,
         pass_message=_(
             "All {count} inventoried filename(s) use portable characters and lengths."
         ).format(count=len(documents)),
@@ -643,7 +758,7 @@ def check_duplicate_hashes(context: RuleContext, _rule: RuleDefinition) -> Itera
     examined = sum(len(paths) for paths in groups.values())
     result = _conclude(
         outcomes,
-        excluded=0,  # a file with no checksum is disclosed below, in its own words
+        excluded=None,  # a file with no checksum is disclosed below, in its own words
         examined=examined,
         pass_message=_(
             "No duplicate file hashes were detected among {count} checksummed file(s)."
@@ -690,7 +805,7 @@ def check_document_categories(context: RuleContext, _rule: RuleDefinition) -> It
     return _conclude(
         outcomes,
         examined=pdf_count,
-        excluded=0,
+        excluded=None,
         pass_message=_("All {count} inventoried PDF(s) have a declared document category.").format(
             count=pdf_count
         ),
@@ -730,7 +845,7 @@ def check_manifest_references(context: RuleContext, _rule: RuleDefinition) -> It
     return _conclude(
         outcomes,
         examined=len(declared_paths),
-        excluded=0,
+        excluded=None,
         pass_message=_("All {count} manifest document reference(s) exist in the package.").format(
             count=len(declared_paths)
         ),
@@ -776,7 +891,7 @@ def check_descriptive_filenames(
     return _conclude(
         outcomes,
         examined=examined,
-        excluded=0,
+        excluded=None,
         pass_message=_(
             "All {count} inventoried PDF filename(s) meet the basic descriptive-name convention."
         ).format(count=examined),
