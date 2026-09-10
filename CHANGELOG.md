@@ -19,6 +19,40 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Added: a census of which rules the suite actually exercises.** The suite was
+  thorough about *what a rule says* and had nothing measuring *which rules it ever
+  ran*. Those are different questions, and only the second decays silently: a rule
+  added to a pack, or a rule whose only test is dropped in a refactor, leaves a
+  green suite that has never executed it.
+  - Measured before the gate existed: **26 of 26 catalog rules exercised**, and every
+    one reaches every status its check can produce. So it refuses nothing today.
+    That is the result, not a reason to skip it — the run before the first
+    regression looks exactly like this one, and a coverage figure nobody prints is a
+    figure that can fall without anyone noticing.
+  - Three refusals, all structural, none of them a number a person maintains: a rule
+    the run never executed; a rule whose check can do more than defer to a person but
+    was observed only passing or deferring; a rule whose check does nothing but defer
+    to a person, observed doing something else. `rules/filing.py` already stated why
+    the second matters — *"A check with no reachable failure adds a green line to the
+    report and nothing else"* — and nothing had been holding the rest of the catalog
+    to it.
+  - **Manual-only is derived from the code, not from the rule id.** The `-M` in
+    `NOE-M001` is a naming convention, and a convention is not a declaration. A check
+    counts as manual-only when every `return` in its own body calls
+    `manual_confirmation`, so the day one grows a real failure branch it stops being
+    exempt without anyone editing a list.
+  - The census runs only over a whole, unfiltered, non-`--collect-only` run, and every
+    pytest option it reads goes through `getattr`: `-p no:cacheprovider` **deletes
+    `--lf` from the parser**, and this repository has a test that shells out with
+    exactly that flag to count the suite.
+  - **The verdict rides `session.exitstatus`, so "N passed" is not this suite's
+    verdict** — read the process exit code. A test cannot assert what a run emitted
+    while the run is still emitting.
+  - Also measured on the way: **five of the catalog's decided statuses come from
+    exactly one test each** (`CORE-001` warning, `FILE-004` warning, `PDF-006`
+    warning, `NOD-003` failure, `NOE-003` failure). Nothing is wrong with any of them;
+    it is the depth behind those five that the census now makes visible.
+
 - **Fixed: the release workflow could never run.** `release.yml` called its
   reusable authorize workflow from `ChelseaKR/portfolio-standards`, which is
   **private**. A *public* repository cannot call a reusable workflow that lives
