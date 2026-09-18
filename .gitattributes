@@ -14,7 +14,7 @@
 # byte, so Git classifies them as text, and a CRLF checkout rewrote 109 of the 1478 bytes
 # of Fictional_Example_Project_fillable_form.pdf. Measured 2026-08-29 on the windows-latest
 # job and reproduced locally with `git -c core.autocrlf=true clone`: the comparison saw a
-# 1587-byte "committed" file against 1478 freshly synthesised bytes.
+# 1587-byte "committed" file against 1478 freshly synthesized bytes.
 *.pdf  binary
 
 # The example package is hashed into the report's input fingerprint, which the committed

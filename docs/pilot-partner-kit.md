@@ -111,7 +111,7 @@ only the specified controlled labels.
 A rule is not eligible for activation until two qualified reviewers independently
 select **Approve** for its wording and scope, and the aggregate pilot metrics
 meet the documented thresholds. `ceqa-preflight pilot summarize` reports how many
-distinct reviewers labelled each rule's findings, which is labelling *coverage*:
+distinct reviewers labeled each rule's findings, which is labeling *coverage*:
 it is necessary for two independent approvals and is not a record of them. The
 approve/revise decision itself stays in the private register, so the coordinator
 must confirm it there rather than reading it off the summary. A disagreement, unclear scope, privacy concern,

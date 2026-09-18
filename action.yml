@@ -134,7 +134,7 @@ runs:
         echo "exit-code=${worst}" >> "${GITHUB_OUTPUT}"
         exit 0
 
-    - name: Summarise the findings
+    - name: Summarize the findings
       id: summary
       shell: bash
       env:

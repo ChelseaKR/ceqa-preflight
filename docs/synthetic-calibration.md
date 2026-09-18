@@ -29,7 +29,7 @@ estimate invites reading a sample of four as certainty.
 **It is not a false-positive rate**, and the record carries
 `false_positive_rate: null` with a written reason rather than a number. A
 false-positive rate is a rate against *real filings*, and it needs qualified
-CEQA reviewers labelling real findings — that is issue #81. A finding on a
+CEQA reviewers labeling real findings — that is issue #81. A finding on a
 synthetic package that the generator did not seed is not thereby wrong; it may
 be a correct observation about the generator's own output. Counting those as
 false positives would publish a number with no referent.
@@ -102,4 +102,4 @@ Different inputs, different questions. `pilot summarize` aggregates controlled
 labels a qualified reviewer produced, and answers the precision and agreement
 questions. This command needs no reviewer and answers only what the machine can
 establish alone. Neither substitutes for the other, and the synthetic figure
-must be labelled as the synthetic figure wherever it appears.
+must be labeled as the synthetic figure wherever it appears.

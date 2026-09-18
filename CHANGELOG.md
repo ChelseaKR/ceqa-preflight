@@ -276,12 +276,12 @@ never been published anywhere, so nothing here supersedes a released version.
   qualified reviewers, 90% precision -- and one pooled precision figure cannot
   say which rule fails them. The summary now reports, for each rule, precision
   with a 95% Wilson confidence interval and the sample size behind it; how many
-  distinct reviewers labelled it, against the two-reviewer requirement; percent
-  agreement and Cohen's kappa for every reviewer pair that labelled the same
+  distinct reviewers labeled it, against the two-reviewer requirement; percent
+  agreement and Cohen's kappa for every reviewer pair that labeled the same
   findings; and, for synthetic packages, how many seeded defects each reviewer
   identified and missed. Three figures that no data supports are now refused
   rather than rounded to one: a rate with a zero denominator prints *not
-  measurable* and serialises as `null`, never 0%; a two-of-two rule carries an
+  measurable* and serializes as `null`, never 0%; a two-of-two rule carries an
   interval reaching down to 34% rather than a bare 100%; and kappa is *not
   defined* -- not zero, not one -- when both reviewers used a single identical
   label throughout and chance agreement is total. Calibration rows are excluded
@@ -292,7 +292,7 @@ never been published anywhere, so nothing here supersedes a released version.
   refused with a message naming what to add. What the summary does **not**
   claim is approval: `docs/pilot-partner-kit.md` keeps the rubric's
   approve/revise decision in the participant's private register, so the counts
-  reported are labelling coverage, and both documents now say so.
+  reported are labeling coverage, and both documents now say so.
   ([#98](https://github.com/ChelseaKR/ceqa-preflight/issues/98))
 - **Fixed: the two CI formats reported a check that crashed as one that passed.**
   A rule whose check raises contributes a single warning finding — "This check
@@ -392,7 +392,7 @@ never been published anywhere, so nothing here supersedes a released version.
   - `README.md` said the merge gate runs 414 tests. It runs 442. The other five
     figures in that paragraph, the two restated in the standards-conformance
     table, and `docs/I18N.md`'s second copy of the message count were correct
-    and are now pinned to the catalogue, the tracked source files,
+    and are now pinned to the catalog, the tracked source files,
     `messages.pot`, and `pyproject.toml`. Each is located by the one paragraph
     or the one line that states it, asserting exactly one match, so a figure
     that moved elsewhere cannot keep its gate green.
@@ -407,7 +407,7 @@ never been published anywhere, so nothing here supersedes a released version.
     reordering survives. The manifest, the text directory and the passage keys
     are now required to name the same documents, each document's text must be
     exactly the `\n\n`-join of its passages, `cited_by` may not credit a rule
-    the catalogue no longer defines, and the one self-cited document is
+    the catalog no longer defines, and the one self-cited document is
     re-derived from the committed markdown it is built from. All four hold
     today and need no network.
 

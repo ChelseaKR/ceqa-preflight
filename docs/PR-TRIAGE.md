@@ -70,7 +70,7 @@ reachable. Each was checked against the code rather than the description.
 | Eval provenance guard | Yes | The old assertion was `{"refusal"} <= suites` derived from the result files themselves, which is circular. The new `SUITE_DIRECTORIES` is derived from `EVALS.glob("*/run.py")` and both directions are asserted. This is exactly the glob-matching-nothing shape, so it was checked against the tree: `evals/extraction/run.py`, `evals/grounding/run.py` and `evals/refusal/run.py` all exist, and all three have a `results/` directory with a committed JSON. The glob matches, and if it ever matched nothing the first assertion fails loudly rather than passing vacuously. |
 
 Seven of seven verified reachable. No test in this PR pins a defect as correct
-behaviour, and no assertion was found that would pass in both the buggy and the
+behavior, and no assertion was found that would pass in both the buggy and the
 fixed state.
 
 ### Correctness verdict
@@ -493,7 +493,7 @@ among them only matters in that each merge makes the next one behind.
   The order of magnitude is consistent with the diff, but the exact count was
   not derived by running the extractor.
 - **That Dependabot's `uv` ecosystem will in fact open a lockfile-updating pull
-  request for `anthropic`.** This follows from the documented behaviour of that
+  request for `anthropic`.** This follows from the documented behavior of that
   ecosystem, but it cannot be confirmed until a weekly run happens after #61
   lands.
 - **Whether `anthropic` 1.x or 2.x introduces a breaking change** that the

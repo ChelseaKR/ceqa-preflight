@@ -953,7 +953,7 @@ msgstr ""
 "  {rule}: {precision}; {reviewers} de {required} revisores independientes"
 
 msgid ""
-"Reviewer counts above are labelling coverage. Approval of a rule's wording "
+"Reviewer counts above are labeling coverage. Approval of a rule's wording "
 "is the private rubric's decision and is deliberately not an evidence-file "
 "field."
 msgstr ""

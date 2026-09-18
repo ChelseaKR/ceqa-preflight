@@ -172,7 +172,7 @@ def check_primary_category(
     """Report a primary form whose declared category contradicts the filing being checked.
 
     Before this had a failure branch the check could only pass or go indeterminate: its
-    candidates were *defined* as the documents whose category already equalled the expected
+    candidates were *defined* as the documents whose category already equaled the expected
     one, so "the primary form is categorized as X" was true by construction and no input
     could make the rule report otherwise. A check with no reachable failure adds a green
     line to the report and nothing else.

@@ -224,7 +224,7 @@ def test_unusable_inventory_facts_produce_no_conclusion_either_way(
     """Facts the check cannot parse must yield "cannot say", never a pass and never a failure.
 
     The new mismatch branch reads the inventory itself, so it needs the same fail-closed
-    behaviour as the rest: an unparseable document list gives it an empty mismatch list,
+    behavior as the rest: an unparseable document list gives it an empty mismatch list,
     and that emptiness must not be mistaken for "no mismatch found".
     """
     findings = _run(filing_type, [{"path": "form.pdf", "is_pdf": "not a boolean"}])

@@ -94,9 +94,9 @@ msgid "  {rule}: {precision}; {reviewers} of {required} independent reviewers"
 msgstr ""
 
 msgid ""
-"Reviewer counts above are labelling coverage. Approval of a rule's "
-"wording is the private rubric's decision and is deliberately not an "
-"evidence-file field."
+"Reviewer counts above are labeling coverage. Approval of a rule's wording"
+" is the private rubric's decision and is deliberately not an evidence-"
+"file field."
 msgstr ""
 
 msgid "Inter-reviewer agreement:"

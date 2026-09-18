@@ -139,7 +139,7 @@ def _refusals(observed: dict[str, set[str]]) -> Iterator[str]:
         if not statuses:
             yield (
                 f"{rule_id}: no test in this run executed it. A rule the suite never "
-                f"runs is a rule whose behaviour is unmeasured, however green the run is."
+                f"runs is a rule whose behavior is unmeasured, however green the run is."
             )
             continue
         if manual_only.get(check, False):

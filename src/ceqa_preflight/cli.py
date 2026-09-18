@@ -756,7 +756,7 @@ def _rule_lines(summary: PilotSummary) -> list[str]:
     )
     lines.append(
         _(
-            "Reviewer counts above are labelling coverage. Approval of a rule's wording is "
+            "Reviewer counts above are labeling coverage. Approval of a rule's wording is "
             "the private rubric's decision and is deliberately not an evidence-file field."
         )
     )

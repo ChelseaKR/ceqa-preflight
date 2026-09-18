@@ -46,7 +46,7 @@ def _action() -> dict[str, object]:
 def _option_names(*path: str) -> set[str]:
     """The option strings a command really accepts, read off the command object.
 
-    Not off `--help`. Rich wraps and colours that output at the terminal's width, so an
+    Not off `--help`. Rich wraps and colors that output at the terminal's width, so an
     assertion over it passes on a wide developer terminal and fails on an 80-column CI
     runner with `--filing-type` split across two lines -- a test measuring the runner
     rather than the code. It did exactly that on all three platforms before this.

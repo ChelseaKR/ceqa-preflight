@@ -145,7 +145,7 @@ def test_two_reviewers_disagreeing_on_one_of_ten_findings_report_the_hand_comput
     assert pair.kappa_undefined is False
 
 
-def test_a_reviewer_pair_that_never_labelled_the_same_finding_produces_no_agreement_row(
+def test_a_reviewer_pair_that_never_labeled_the_same_finding_produces_no_agreement_row(
     tmp_path: Path,
 ) -> None:
     review_path, baseline_path = write_pilot_templates(tmp_path)

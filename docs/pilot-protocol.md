@@ -47,7 +47,7 @@ spreadsheet-formula-like cells.
 
 `reviewer_id` is required on every row and is an opaque identifier assigned in
 the private pilot register, never a name or an email address. Two reviewers
-labelling the same finding are two rows that differ only in that column; the
+labeling the same finding are two rows that differ only in that column; the
 summarizer refuses two rows that agree on package, rule, finding status **and**
 reviewer.
 
@@ -64,13 +64,13 @@ real-package row.
   time, as before, plus a 95% Wilson confidence interval and the sample size
   behind the precision figure.
 * Per-rule precision with the same interval and `n`, and the number of distinct
-  reviewers who labelled that rule against the two-reviewer requirement.
-  **This is labelling coverage, not approval.** Approval of a rule's wording is
+  reviewers who labeled that rule against the two-reviewer requirement.
+  **This is labeling coverage, not approval.** Approval of a rule's wording is
   the private rubric's "Approve / revise / do not activate" decision, which
   stays with the participant and is deliberately not an evidence-file field.
   Coverage is necessary for two approvals and is not the same as having them.
 * Inter-reviewer agreement: percent agreement and Cohen's kappa for every pair
-  of reviewers who labelled the same findings of a rule. Kappa is reported as
+  of reviewers who labeled the same findings of a rule. Kappa is reported as
   *not defined* — never as zero and never as one — when both reviewers used a
   single identical label throughout and chance agreement is therefore total.
 * Reviewer calibration: for each reviewer and seeded defect, how many of the

@@ -4,7 +4,7 @@ The interesting cases here are all the same shape: a delta the tool could comput
 guessing, which it declines to. Two findings that share a pairing key, a rule that did not
 run in one report and is simply absent from the other, a later report produced against a
 different ruleset — each is a place where an ordinary diff would report a clean result that
-means nothing, and each is asserted here to come out labelled instead.
+means nothing, and each is asserted here to come out labeled instead.
 """
 
 from __future__ import annotations

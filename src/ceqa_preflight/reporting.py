@@ -551,7 +551,7 @@ def _sarif_notification(skipped: SkippedCheck) -> dict[str, object]:
 def _sarif_error_notification(finding: Finding) -> dict[str, object]:
     """A rule whose check threw, as an error-level SARIF notification.
 
-    SARIF puts "the tool could not analyse this" in `toolExecutionNotifications`,
+    SARIF puts "the tool could not analyze this" in `toolExecutionNotifications`,
     not in `results`, which is where a *finding* goes. This one is both: the
     warning stays in `results` so nothing disappears, and the notification is
     what makes `executionSuccessful: false` diagnosable rather than bare.
