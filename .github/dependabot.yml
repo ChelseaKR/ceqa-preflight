@@ -51,3 +51,11 @@ updates:
     # updates that can in fact be made, behind a comment whose stated reason had stopped
     # being true. `tests/test_supply_chain.py` fails on an `ignore` entry that names no
     # pinned workflow, so a stale one cannot come back unnoticed.
+
+# Not covered by any entry above, because Dependabot has no ecosystem for these
+# pins. Renovate's default `pyenv` and `github-actions` managers proposed bumps to
+# them until renovate.json was scoped to the standards bump (#131). They are now a
+# manual check, done when adopting a new Python minor:
+#   - `.python-version` (the local / uv interpreter)
+#   - the `python-version:` inputs to actions/setup-python in .github/workflows/,
+#     including the version list in ci.yml's matrix
