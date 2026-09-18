@@ -26,7 +26,7 @@ import pytest
 from ceqa_preflight.rule_registry import default_catalog, default_registry
 
 
-def test_a_check_that_only_defers_to_a_person_is_recognised_as_manual_only() -> None:
+def test_a_check_that_only_defers_to_a_person_is_recognized_as_manual_only() -> None:
     """And one that delegates to a check with a reachable failure is not.
 
     `noe_primary_form` returns `check_primary_form(...)`, which can fail. Following the

@@ -1,6 +1,6 @@
 """Every committed artifact that stands in for a computation, checked against its producer.
 
-`scripts/check_i18n.py` already applies the rule this file generalises: regenerate in a
+`scripts/check_i18n.py` already applies the rule this file generalizes: regenerate in a
 scratch buffer, compare byte for byte, write nothing, so `make verify` can never quietly
 repair the drift it exists to report. Several other committed artifacts had no such
 comparison at all:
@@ -24,7 +24,7 @@ comparison at all:
 * `docs/standards/` is vendored and pinned. Renovate bumps `.standards-version` with a
   regex that touches one line; it cannot add or remove a vendored document, so the version
   and the directory can disagree.
-* The README states seven figures about the catalogue, the suite and the gates. Six are
+* The README states seven figures about the catalog, the suite and the gates. Six are
   derivable here. `tests/test_ai_evals.py` already does this for `evals/README.md`, after
   the numbers there drifted for two commits.
 
@@ -168,7 +168,7 @@ def test_example_package_matches_a_fresh_synth(tmp_path: Path) -> None:
     committed = {path.name for path in _PACKAGE.iterdir() if path.is_file()}
     assert committed == fresh, (
         "examples/noe-fictional-package/ and a fresh synth disagree about which files "
-        f"exist: only committed {sorted(committed - fresh)}, only synthesised "
+        f"exist: only committed {sorted(committed - fresh)}, only synthesized "
         f"{sorted(fresh - committed)}"
     )
     for name in sorted(fresh):
@@ -230,8 +230,8 @@ def test_corpus_text_is_exactly_the_join_of_its_passages() -> None:
     )
 
 
-def test_corpus_cited_by_names_only_rules_the_catalogue_still_defines() -> None:
-    """The catalogue-to-manifest direction is already asserted in `tests/test_corpus.py`.
+def test_corpus_cited_by_names_only_rules_the_catalog_still_defines() -> None:
+    """The catalog-to-manifest direction is already asserted in `tests/test_corpus.py`.
 
     This is the other one: a rule deleted from a rulepack leaves its identifier in
     `corpus/manifest.json` forever, and nothing notices.
@@ -240,7 +240,7 @@ def test_corpus_cited_by_names_only_rules_the_catalogue_still_defines() -> None:
     cited = {rule_id for document in _corpus().manifest.documents for rule_id in document.cited_by}
     assert cited, "no document records a citing rule; this check would be vacuous"
     assert cited <= rule_ids, (
-        "corpus/manifest.json credits rule(s) the catalogue no longer defines: "
+        "corpus/manifest.json credits rule(s) the catalog no longer defines: "
         f"{sorted(cited - rule_ids)}"
     )
 
@@ -341,19 +341,19 @@ def _assert_states(text: str, pattern: str, expected: object, where: str = "READ
         )
 
 
-_CATALOGUE_MARKER = "registered rules"
+_CATALOG_MARKER = "registered rules"
 _GATES_MARKER = "is the merge gate: "
 _CONFORMANCE_MARKER = "| Code Quality | Applies |"
 
 
-def test_readme_rule_counts_match_the_catalogue() -> None:
+def test_readme_rule_counts_match_the_catalog() -> None:
     rules = default_catalog().rules
     active = [rule for rule in rules if rule.lifecycle is RuleLifecycle.ACTIVE]
     experimental = [rule for rule in rules if rule.lifecycle is RuleLifecycle.EXPERIMENTAL]
     assert len(active) + len(experimental) == len(rules), (
         "a rule has a lifecycle this check does not count; the README's split would be unverifiable"
     )
-    paragraph = _readme_paragraph(_CATALOGUE_MARKER)
+    paragraph = _readme_paragraph(_CATALOG_MARKER)
     _assert_states(paragraph, r"reports (\d+) registered rules", len(rules))
     _assert_states(paragraph, r"of which (\d+) are active", len(active))
     _assert_states(paragraph, r"and (\d+) are experimental", len(experimental))
@@ -372,7 +372,7 @@ def test_readme_source_file_count_matches_the_tree() -> None:
     _assert_states(_readme_paragraph(_GATES_MARKER), r"mypy over (\d+) source files", len(tracked))
 
 
-def test_readme_message_count_matches_the_catalogue_template() -> None:
+def test_readme_message_count_matches_the_catalog_template() -> None:
     template = _ROOT / "src" / "ceqa_preflight" / "locales" / "messages.pot"
     messages = sum(
         1 for line in template.read_text(encoding="utf-8").splitlines() if line.startswith("msgid ")
@@ -433,7 +433,7 @@ def test_readme_conformance_table_restates_the_same_gate_thresholds() -> None:
 _I18N_DOC = _ROOT / "docs" / "I18N.md"
 
 
-def test_i18n_doc_message_count_matches_the_catalogue_template() -> None:
+def test_i18n_doc_message_count_matches_the_catalog_template() -> None:
     """`docs/I18N.md` restates the README's message count, a second uncoupled copy."""
     template = _ROOT / "src" / "ceqa_preflight" / "locales" / "messages.pot"
     messages = sum(

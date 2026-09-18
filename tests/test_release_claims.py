@@ -517,7 +517,7 @@ def test_the_changelog_patterns_tell_a_dated_section_from_an_unreleased_one() ->
     assert not _UNRELEASED_SECTION.search(dated)
 
 
-def test_a_version_tag_is_recognised_however_it_is_written() -> None:
+def test_a_version_tag_is_recognized_however_it_is_written() -> None:
     """The comparison is on versions, not on how a tag spells one."""
     assert _tag_version("v0.1.0") == "0.1.0"
     assert _tag_version("0.1.0") == "0.1.0"

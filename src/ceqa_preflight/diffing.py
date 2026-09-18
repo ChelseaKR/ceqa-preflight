@@ -22,7 +22,7 @@ as ``not_comparable`` and counted separately, so the reader knows the tool decli
 ``tool_version``, ``ruleset_version``, ``filing_type`` or ``input_fingerprint`` is stated
 before any delta: a rule that "cleared" because the ruleset dropped it, or because the
 package being checked is a different package, is not a correction. The comparison still
-runs — comparing across versions is a legitimate thing to want — but it is labelled.
+runs — comparing across versions is a legitimate thing to want — but it is labeled.
 """
 
 from __future__ import annotations
@@ -309,7 +309,7 @@ def _is_regression(before: Finding | None, after: Finding | None) -> bool:
     """A new failure, or a finding that became a failure. Nothing else is claimed.
 
     Deliberately narrow. "Warning became manual review" is a change a reader should see,
-    and the diff shows it, but calling it a regression would put a number on a judgement
+    and the diff shows it, but calling it a regression would put a number on a judgment
     this tool is not entitled to make.
     """
 

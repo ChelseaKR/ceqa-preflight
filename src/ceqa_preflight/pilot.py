@@ -26,7 +26,7 @@ _MAX_REVIEWERS = 64
 
 # `docs/pilot-partner-kit.md`: "Each filing-specific rule needs two independent qualified
 # CEQA reviewers before it can be activated." This counts *coverage* -- how many distinct
-# reviewers labelled the rule's findings -- and never claims approval. Approval is the
+# reviewers labeled the rule's findings -- and never claims approval. Approval is the
 # rubric's "Approve / revise / do not activate", which the same document keeps in the
 # participant's private register and out of the evidence file on purpose.
 REVIEWER_COVERAGE_THRESHOLD = 2
@@ -43,7 +43,7 @@ REVIEW_HEADERS = (
     "synth_seed",
     "expected_defect",
 )
-# The header set before per-reviewer evidence existed. Recognised only so an operator
+# The header set before per-reviewer evidence existed. Recognized only so an operator
 # holding a template from an earlier version gets told what changed rather than a bare
 # list of ten column names.
 LEGACY_REVIEW_HEADERS = REVIEW_HEADERS[:7]
@@ -155,10 +155,11 @@ class RulePrecision(StrictModel):
 
     ``precision`` and the interval bounds are ``None`` together, and only when
     ``labelled_findings`` is zero. Nothing here is ever rendered as ``0`` for absent data:
-    a rule nobody labelled has no precision, which is not the same as a precision of zero.
+    a rule nobody labeled has no precision, which is not the same as a precision of zero.
     """
 
     rule_id: str
+    # British field name kept: it is part of `pilot summarize --format json` output.
     labelled_findings: int = Field(ge=0)
     true_positives: int = Field(ge=0)
     false_positives: int = Field(ge=0)
@@ -331,16 +332,16 @@ def _rule_precisions(reviews: list[FindingReview]) -> list[RulePrecision]:
         false_positives = sum(
             1 for row in rows if row.disposition is ReviewDisposition.FALSE_POSITIVE
         )
-        labelled = true_positives + false_positives
-        interval = wilson_interval(true_positives, labelled)
+        labeled = true_positives + false_positives
+        interval = wilson_interval(true_positives, labeled)
         reviewers = {row.reviewer_id for row in rows}
         results.append(
             RulePrecision(
                 rule_id=rule_id,
-                labelled_findings=labelled,
+                labelled_findings=labeled,
                 true_positives=true_positives,
                 false_positives=false_positives,
-                precision=proportion(true_positives, labelled),
+                precision=proportion(true_positives, labeled),
                 precision_interval_low=None if interval is None else interval.low,
                 precision_interval_high=None if interval is None else interval.high,
                 independent_reviewers=len(reviewers),

@@ -18,7 +18,7 @@ Both exist to stop a number being published that the evidence does not support:
 The confidence level is a published claim, so it is a named literal here and pinned by a
 test against its own literal. A property test cannot catch this: every property of an
 interval holds just as well for the 68% quantile as for the 95% one, and an interval
-labelled 95% that carries 1.0 is simply narrower and wrong.
+labeled 95% that carries 1.0 is simply narrower and wrong.
 """
 
 from __future__ import annotations
@@ -69,11 +69,11 @@ def wilson_interval(
     p = successes / n
     z_squared = z * z
     denominator = 1.0 + z_squared / n
-    centre = (p + z_squared / (2.0 * n)) / denominator
+    center = (p + z_squared / (2.0 * n)) / denominator
     spread = (z / denominator) * sqrt(p * (1.0 - p) / n + z_squared / (4.0 * n * n))
     return Interval(
-        low=max(0.0, centre - spread),
-        high=min(1.0, centre + spread),
+        low=max(0.0, center - spread),
+        high=min(1.0, center + spread),
         confidence_level=level,
     )
 

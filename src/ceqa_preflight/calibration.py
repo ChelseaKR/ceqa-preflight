@@ -14,7 +14,7 @@ any rule fires at all -- an *unseeded-finding rate*.
 What this does not measure, and must never be read as
 -----------------------------------------------------
 **A false-positive rate.** That is a rate against real filings, and it requires
-qualified CEQA reviewers labelling real findings; that is issue #81. A finding on
+qualified CEQA reviewers labeling real findings; that is issue #81. A finding on
 a synthetic package that the generator did not seed is not necessarily wrong --
 it may be a correct observation about the generator's own output -- so counting
 those as false positives would publish a number with no referent. Both figures
@@ -97,13 +97,13 @@ _FIRED = frozenset({FindingStatus.WARNING, FindingStatus.FAILURE})
 
 FALSE_POSITIVE_RATE_REASON = (
     "not measurable here: a false-positive rate is a rate against real filings and "
-    "needs qualified CEQA reviewers labelling real findings (issue #81). A finding on "
+    "needs qualified CEQA reviewers labeling real findings (issue #81). A finding on "
     "a synthetic package that the generator did not seed is not thereby wrong, so the "
     "unseeded-finding rate below is not a substitute for it."
 )
 
 REVIEWER_SECONDS_REASON = (
-    "not measurable here: no reviewer labelled these packages. The wall clock of an "
+    "not measurable here: no reviewer labeled these packages. The wall clock of an "
     "automated run is a property of the machine that ran it and is not recorded as a "
     "stand-in for reviewer time."
 )
@@ -159,7 +159,7 @@ class UnseededFindings(StrictModel):
 
 
 class UnexercisedRule(StrictModel):
-    """A rule in the catalogue that no synthetic defect targets.
+    """A rule in the catalog that no synthetic defect targets.
 
     Listed rather than omitted. A calibration record that names only the rules it
     exercised cannot be told apart from one that exercised everything, and the

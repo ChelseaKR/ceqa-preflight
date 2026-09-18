@@ -98,7 +98,7 @@ def test_four_of_four_is_published_as_its_interval_not_as_one_hundred_percent(
 ) -> None:
     # A bare 1.0 invites reading a sample of four as certainty. The interval is
     # pinned to its literal, not to a property: every property of an interval
-    # holds equally for the 68% one, and a 68% interval labelled 95% is simply
+    # holds equally for the 68% one, and a 68% interval labeled 95% is simply
     # narrower and wrong.
     assert calibration.interval_confidence_level == 0.95
     row = next(row for row in calibration.detection if row.defect is SyntheticDefect.ENCRYPTED)
@@ -175,7 +175,7 @@ def test_a_manual_only_rule_shows_why_its_zero_is_structural(
     manual_only = [
         rule_id for rule_id, row in by_rule.items() if row.statuses_observed == ["manual"]
     ]
-    assert manual_only, "the catalogue has manual-only rules; this pins that they are marked"
+    assert manual_only, "the catalog has manual-only rules; this pins that they are marked"
     for rule_id in manual_only:
         assert by_rule[rule_id].packages_where_it_fired == 0
 
@@ -189,9 +189,9 @@ def test_every_seedable_defect_has_a_declared_owning_rule() -> None:
     assert set(DEFECT_RULES) == set(SyntheticDefect)
 
 
-def test_every_owning_rule_exists_in_the_catalogue() -> None:
-    catalogue = {rule.id for rule in default_catalog().rules}
-    assert set(DEFECT_RULES.values()) <= catalogue
+def test_every_owning_rule_exists_in_the_catalog() -> None:
+    catalog = {rule.id for rule in default_catalog().rules}
+    assert set(DEFECT_RULES.values()) <= catalog
 
 
 def test_the_calibration_schema_version_is_its_own_sequence(

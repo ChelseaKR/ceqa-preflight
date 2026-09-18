@@ -28,7 +28,7 @@
   built-in rules against the generator's seeded defects and publishes the record
   at `evals/synthetic-calibration.json`, with the method in
   [synthetic calibration](synthetic-calibration.md). It is explicitly *not* a
-  false-positive rate — that needs qualified reviewers labelling real findings —
+  false-positive rate — that needs qualified reviewers labeling real findings —
   and the record carries `false_positive_rate: null` and
   `reviewer_seconds_median: null` with written reasons rather than numbers. The
   corpus exercises 8 of the 26 built-in rules and none of the filing-specific

@@ -520,7 +520,7 @@
   ],
   "undetermined_reads": 0,
   "false_positive_rate": null,
-  "false_positive_rate_reason": "not measurable here: a false-positive rate is a rate against real filings and needs qualified CEQA reviewers labelling real findings (issue #81). A finding on a synthetic package that the generator did not seed is not thereby wrong, so the unseeded-finding rate below is not a substitute for it.",
+  "false_positive_rate_reason": "not measurable here: a false-positive rate is a rate against real filings and needs qualified CEQA reviewers labeling real findings (issue #81). A finding on a synthetic package that the generator did not seed is not thereby wrong, so the unseeded-finding rate below is not a substitute for it.",
   "reviewer_seconds_median": null,
-  "reviewer_seconds_reason": "not measurable here: no reviewer labelled these packages. The wall clock of an automated run is a property of the machine that ran it and is not recorded as a stand-in for reviewer time."
+  "reviewer_seconds_reason": "not measurable here: no reviewer labeled these packages. The wall clock of an automated run is a property of the machine that ran it and is not recorded as a stand-in for reviewer time."
 }

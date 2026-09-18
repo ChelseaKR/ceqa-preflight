@@ -3,7 +3,7 @@
 Every published figure here is pinned to a literal computed by hand, not to a property.
 A property test cannot catch a wrong constant: "the interval contains the point estimate"
 and "the interval lies in [0, 1]" hold exactly as well for the 68% quantile as for the
-95% one, so an interval labelled 95% that carried 1.0 would pass every property and be
+95% one, so an interval labeled 95% that carried 1.0 would pass every property and be
 narrower than the truth by a third.
 """
 
@@ -45,7 +45,7 @@ def test_two_of_two_is_reported_as_an_interval_that_reaches_down_to_a_third() ->
     """Hand computation, so the digits are checked and not merely the shape.
 
     p = 1, n = 2, z = 1.959963984540054:
-        centre = (1 + z**2/4) / (1 + z**2/2)      = 0.6711901...
+        center = (1 + z**2/4) / (1 + z**2/2)      = 0.6711901...
         spread = z / (1 + z**2/2) * sqrt(z**2/16) = 0.3288098...
 
     The point of the assertion is the lower bound. Two of two is not 100% precision with
