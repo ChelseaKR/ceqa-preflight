@@ -1,6 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "helpers:pinGitHubActionDigestsToSemver"],
+  "description": "Renovate only bumps the vendored portfolio-standards pin in docs/standards/.standards-version. Dependabot (.github/dependabot.yml) owns every dependency and GitHub Actions update.",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["custom.regex"],
   "minimumReleaseAge": "72 hours",
   "customManagers": [
     {
