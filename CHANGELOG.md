@@ -19,6 +19,12 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Changed: the vendored standards move to portfolio-standards v3.0.1.**
+  `docs/standards/` is replaced as one set from the signed `v3.0.1` tag with
+  upstream's `automation/vendor-standards.sh`, and every file matches the release
+  archive byte for byte. v3.0.1 is a patch release (re-verified stamps, text
+  corrections, and tooling fixes) with no control, threshold, or gate change.
+
 - **Added: a census of which rules the suite actually exercises.** The suite was
   thorough about *what a rule says* and had nothing measuring *which rules it ever
   ran*. Those are different questions, and only the second decays silently: a rule
