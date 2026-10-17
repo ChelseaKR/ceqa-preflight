@@ -4,20 +4,28 @@ All notable changes to this project will be documented in this file. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and releases
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [Unreleased]
 
-Everything below was prepared as `0.1.0` in #76 under the heading
-`## [0.1.0] - 2026-09-02`, opening "First tagged release". The tag was never
-cut. `git tag --list` is empty on this repository and on `origin`, the GitHub
-tags and releases endpoints both return zero, and `docs/ROADMAP.md` and
-`docs/RESPONSIBLE-TECH-AUDITS.md` said "no tagged release yet" in the same
-tree. Nothing has been released, so these notes sit here rather than under a
-dated heading that would date a release that did not happen.
+Nothing yet beyond the `0.1.0` section below, which is prepared and not tagged.
 
+## [0.1.0] - Unreleased
+
+The first release, prepared and **not tagged**: no `v0.1.0` tag exists and
+nothing has been released. `Unreleased` stands where the date goes. The commit
+the signed `v0.1.0` tag points at replaces it with the UTC date of that tag and
+adds the same date to `CITATION.cff` as `date-released`; the
+[release checklist](docs/RELEASE-CHECKLIST.md) has the steps.
+`tests/test_release_claims.py` reads `git tag --list` and refuses a date on this
+heading until a tag names the version, and requires one from the moment it does.
+`release.yml` requires this heading to exist at the tagged commit.
+
+These notes were first written in #76 under `## [0.1.0] - 2026-09-02`,
+"First tagged release", and no tag followed: `git tag --list` was empty on this
+repository and on `origin`, and the GitHub tags and releases endpoints both
+returned zero. They were moved under `## Unreleased` until a release could be
+cut, and are back under a version heading now that one is being prepared.
 `0.1.0` has been the in-development baseline since the first commit and has
 never been published anywhere, so nothing here supersedes a released version.
-`tests/test_release_claims.py` reads `git tag --list` and asks for the dated
-`## [0.1.0]` heading back the moment a tag names that version.
 
 - **Added: the release checklist.** `DEFINITION_OF_DONE.md` and the roadmap
   both required "the release checklist" and no such file existed.

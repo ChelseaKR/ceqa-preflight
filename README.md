@@ -17,7 +17,10 @@ draft corrections; it never produces a finding and is never invoked by
 
 ## Status
 
-**Status:** In build
+**Status:** In build. `0.1.0` is prepared as the first release and is not
+tagged: no tag has been cut, and nothing has been released. What stands
+between it and a signed `v0.1.0` tag is in the
+[release checklist](docs/RELEASE-CHECKLIST.md).
 
 CEQA Preflight is pre-alpha software. The repository includes safe local package loading, bounded PDF
 technical inspection, a source-cited declarative rule engine, a common
@@ -373,7 +376,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with a 90% branch-coverage floor, and complexity <= 10), `uv.lock`, and `.python-version` |
 | Security & Supply-Chain | Applies | [Security policy](SECURITY.md); bandit, pip-audit, gitleaks, and CodeQL in CI; SHA-pinned actions and a committed lockfile |
 | CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
-| Release & Versioning | Applies -- not met | `0.1.0` is declared in `pyproject.toml` and `CITATION.cff` and no tag has been cut, so nothing has been released: no signed tag, no GitHub Release, no SBOM or provenance attached to anything, no package-registry publication. `release.yml` is committed and is not triggered by a tag push: a maintainer pushes an annotated, SSH-signed `vX.Y.Z` tag on `main` and then dispatches it (`gh workflow run release.yml --ref main -f tag=vX.Y.Z`), which authorizes the tag against `.github/allowed_signers`, re-runs `make verify` at the tagged commit, and publishes the Release with its SBOM and provenance. It has never published anything. `tests/test_release_claims.py` derives this row's state from `git tag --list` rather than restating it |
+| Release & Versioning | Applies -- not met | `0.1.0` is declared in `pyproject.toml` and `CITATION.cff` and no tag has been cut, so nothing has been released: no signed tag, no GitHub Release, no SBOM or provenance attached to anything, no package-registry publication. `release.yml` is committed and is not triggered by a tag push: a maintainer pushes an annotated, SSH-signed `vX.Y.Z` tag on `main` and then dispatches it (`gh workflow run release.yml --ref main -f tag=vX.Y.Z`), which authorizes the tag against `.github/allowed_signers`, re-runs `make verify` at the tagged commit, and publishes the Release with its SBOM and provenance. It has never published anything. The steps, and the gates still open before the first tag, are in the [release checklist](docs/RELEASE-CHECKLIST.md). `tests/test_release_claims.py` derives this row's state from `git tag --list` rather than restating it |
 | Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |

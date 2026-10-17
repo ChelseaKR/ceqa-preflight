@@ -22,5 +22,9 @@ license: "Apache-2.0"
 # stopped being true. tests/test_release_claims.py ties this field to `git tag --list`
 # instead, in both directions: it may not appear without a tag naming the declared
 # version, and it may not be missing once one exists.
+#
+# So `0.1.0` is prepared and stays undated here. The commit the signed `v0.1.0` tag
+# points at adds `date-released` with the UTC date of that tag, the same date it puts on
+# CHANGELOG.md's `## [0.1.0]` heading. docs/RELEASE-CHECKLIST.md, section 2.
 version: "0.1.0"
 abstract: "A local, source-cited advisory preflight checker for CEQA Submit filing packages."
