@@ -9,7 +9,7 @@ and that command cannot be run safely against this repository. Measured on Babel
 2026-09-01, against the committed catalogs:
 
 * with `--omit-header`, `pybabel update` deletes the header entry outright. The `es`
-  catalog's header is where it states that it is a maintainer draft awaiting the reviewer
+  catalog's header is where it states that it is an unreviewed draft awaiting the reviewer
   in issue #49, and it is also where `POT-Creation-Date` is pinned -- which
   `docs/I18N.md` pins deliberately, because `scripts/check_i18n.py` recompiles each
   catalog and compares it to the committed `.mo` byte for byte, and Babel invents that

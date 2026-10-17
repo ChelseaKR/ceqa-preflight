@@ -45,12 +45,20 @@
 - Complete the [internationalization release gate](I18N.md). The seam,
   the English and Spanish catalogs, the parity checks, and deterministic CLI
   locale selection are done ([ADR 0003](adr/0003-explicit-locale-selection-with-no-inference.md));
-  what remains is a qualified Spanish-language reviewer for the CEQA
-  terminology and advisory framing, and the central applicability registry
-  entry.
+  what remains before the first tag is the central applicability registry
+  entry. The Spanish catalog ships labelled as an unreviewed machine draft
+  ([ADR 0004](adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)).
 - Publish a residual-risk review, SBOM, provenance, and release notes.
 - Exit criteria: all CI/security checks green, [release checklist](RELEASE-CHECKLIST.md) signed,
   no open critical vulnerability, and the release remains advisory-only.
+
+## Before 1.0
+
+- A qualified Spanish-language reviewer approves the CEQA terminology and
+  advisory framing ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)).
+  Until then the unreviewed-draft label stays on every Spanish run and report.
+  [ADR 0004](adr/0004-ship-spanish-as-labelled-unreviewed-draft.md) moved this
+  from the first tag to 1.0 on 2026-10-17.
 
 ## Now — Opt-in AI layer (ADR 0002)
 
@@ -102,7 +110,7 @@ by the owning standard.
 | Secret leaks | 0 | gitleaks in the security workflow | AUTO | Maintainer |
 | SHA-pinned workflow `uses:` | 100% | portfolio conformance tripwire (weekly) plus PR review | REVIEW | Maintainer |
 | EN/ES catalog parity | 100% keys and placeholders | `make i18n` in `make verify` (`scripts/check_i18n.py`) | AUTO | Maintainer |
-| Qualified Spanish terminology review | Named reviewer before first public tag | [i18n release gate](I18N.md) item 3; not yet done ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)) | REVIEW | Maintainer |
+| Qualified Spanish terminology review | Named reviewer before 1.0 ([ADR 0004](adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)) | [i18n release gate](I18N.md) item 3; not yet done ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)) | REVIEW | Maintainer |
 | Accessibility review of console/HTML output | Recorded assistive-technology evidence per release | [Release checklist](RELEASE-CHECKLIST.md); no tagged release yet | REVIEW | Maintainer |
 | Pilot false-positive rate | Measured on permissioned packages; aggregate results only | `pilot summarize` evidence kit | REVIEW | Maintainer |
 | Synthetic detection against seeded defects | Published record, regenerable, with intervals | `tests/test_calibration.py` re-measures and compares the committed record in `make test`; `pilot calibrate --check` does the same from the CLI | AUTO | Maintainer |

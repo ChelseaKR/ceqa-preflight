@@ -37,9 +37,9 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 732 tests under a
+whole tool understated it. `make verify` is the merge gate: 733 tests under a
 90% branch-coverage floor, `strict = true` mypy over 43 source files, bandit,
-and an i18n gate holding 258 English and Spanish messages at enforced parity.
+and an i18n gate holding 259 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
 than asserted. None of that makes the tool production-ready: `0.1.0` is a
@@ -232,13 +232,15 @@ source citations, and the exit code are identical in every locale, so a
 pipeline that gates on the report does not care which language a person reads
 it in.
 
-**The Spanish catalog is a maintainer draft.** A qualified Spanish-language
-CEQA reviewer has not yet approved its terminology or its advisory, non-legal
-framing; that review is
+**The Spanish catalog is an unreviewed machine draft.** A qualified
+Spanish-language CEQA reviewer has not yet approved its terminology or its
+advisory, non-legal framing; that review is
 [issue #49](https://github.com/ChelseaKR/ceqa-preflight/issues/49) and it is
-one of the conditions on a first tagged release. Until it is done the English
-wording is authoritative, and every non-English run says so. See
-[docs/I18N.md](docs/I18N.md).
+required before 1.0. The first tag ships the catalog labelled as a draft rather
+than waiting on it ([ADR 0004](docs/adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)).
+Until the review is done the English wording is authoritative, every
+non-English run says so on stderr, and every Spanish report says so in its
+disclaimer. See [docs/I18N.md](docs/I18N.md).
 
 `make i18n` holds both catalogs at key and placeholder parity, refuses an empty
 or fuzzy message, and — since 2026-09-07 — refuses a Spanish `msgstr` that is
@@ -344,7 +346,8 @@ before merge; AI-assisted development measurement is tracked in the
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the
 architecture decisions
 ([ADR 0001](docs/decisions/0001-local-first-deterministic-cli.md),
-[ADR 0002](docs/adr/0002-ai-at-the-edges.md)).
+[ADR 0002](docs/adr/0002-ai-at-the-edges.md),
+[ADR 0004](docs/adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)).
 The project also documents its [pilot protocol](docs/pilot-protocol.md),
 [pilot partner kit](docs/pilot-partner-kit.md),
 [accessibility boundaries](docs/accessibility.md), and
@@ -380,7 +383,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
-| Internationalization | Applies — seam merged, review outstanding | [Scope and release gate](docs/I18N.md); EN and ES catalogs ship at enforced parity (`make i18n`), and the Spanish draft still needs qualified CEQA terminology review before a public tag ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)) |
+| Internationalization | Applies — seam merged, review outstanding | [Scope and release gate](docs/I18N.md); EN and ES catalogs ship at enforced parity (`make i18n`), and the Spanish catalog ships labelled as an unreviewed machine draft; qualified CEQA terminology review is required before 1.0 ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49), [ADR 0004](docs/adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)) |
 | AI Evaluation | Applies | [ADR 0002](docs/adr/0002-ai-at-the-edges.md); the committed [`evals/`](evals/README.md) harnesses (legal-sufficiency refusal, real-filing extraction vs. CEQAnet metadata, citation grounding) with provenance-stamped results; a test rejects any result file without provenance |
 | Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), and the [definition of done](DEFINITION_OF_DONE.md) |
 | Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |

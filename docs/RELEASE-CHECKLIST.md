@@ -2,24 +2,28 @@
 
 This is the release checklist that [DEFINITION_OF_DONE.md](../DEFINITION_OF_DONE.md)
 asks a maintainer to review and that the [roadmap](ROADMAP.md#before-first-tagged-release)
-requires to be signed before a tag. Every item below comes from one of four places,
+requires to be signed before a tag. Every item comes from one of these sources,
 named in brackets: `release.yml` ([.github/workflows/release.yml](../.github/workflows/release.yml)
 and the reusable `release-authorize.yml` it pins), `claims`
 ([tests/test_release_claims.py](../tests/test_release_claims.py)), `roadmap`
-([docs/ROADMAP.md](ROADMAP.md)), and `DoD`. Nothing here is a new requirement.
+([docs/ROADMAP.md](ROADMAP.md)), `DoD`, and `ADR 0004`
+([the Spanish-catalog decision](adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)).
+Nothing here is a new requirement.
 
 Copy the sign-off table at the end into the release pull request or the release
 record, and fill it in there. Do not tick boxes in this file.
 
 ## 1. Gates that must be closed before the tag
 
-These are decisions or reviews by people. No commit can close them.
+All but the first are decisions or reviews by people that no commit can close.
 
-- [ ] **Spanish/CEQA terminology review, [#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49).**
-      A qualified Spanish-language reviewer approves the CEQA terminology and the
-      advisory, non-legal framing of the `es` catalog, the Spanish refusal
-      phrasings, and the `ai` prompts. [I18N.md](I18N.md) release gate item 3.
-      **Open, and the owner's decision.** \[roadmap]
+- [ ] **The Spanish catalog is labelled as an unreviewed machine draft** in
+      every place [ADR 0004](adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)
+      lists: each Spanish report's disclaimer, the stderr note on every
+      non-English run, the catalog header, the README, I18N.md, and the
+      composite action's `locale` input. `tests/test_i18n.py` holds the first
+      two. On 2026-10-17 this replaced the #49 review as a first-tag condition.
+      \[ADR 0004]
 - [ ] **Central applicability registry** marks CEQA Preflight as I18N `applies`.
       [I18N.md](I18N.md) release gate item 5; outside this repository. \[roadmap]
 - [ ] **Accessibility review of console and HTML output with recorded
@@ -41,6 +45,15 @@ These are decisions or reviews by people. No commit can close them.
 - [ ] **All CI and security checks green** on the commit to be tagged. \[roadmap]
 - [ ] **The release remains advisory-only**: no wording in the README, reports,
       or release notes implies a legal determination. \[roadmap]
+
+## Gates before 1.0, not before this tag
+
+- **Spanish/CEQA terminology review, [#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49).**
+  A qualified Spanish-language reviewer approves the CEQA terminology and the
+  advisory, non-legal framing of the `es` catalog, the Spanish refusal
+  phrasings, and the `ai` prompts ([I18N.md](I18N.md) release gate item 3).
+  Required before `1.0.0`; until it closes, the unreviewed-draft label stays.
+  \[roadmap, ADR 0004]
 
 ## 2. The release commit
 

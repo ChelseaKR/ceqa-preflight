@@ -156,6 +156,12 @@ msgstr ""
 msgid "that file is not a check report this tool can read: {error}"
 msgstr ""
 
+msgid ""
+"This translation is an unreviewed machine draft: no qualified CEQA "
+"terminology reviewer has approved it yet. The English wording is "
+"authoritative."
+msgstr ""
+
 msgid "Every check that applies to this filing type ran."
 msgstr ""
 

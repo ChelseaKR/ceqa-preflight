@@ -27,6 +27,25 @@ cut, and are back under a version heading now that one is being prepared.
 `0.1.0` has been the in-development baseline since the first commit and has
 never been published anywhere, so nothing here supersedes a released version.
 
+- **Changed: the Spanish terminology review gates 1.0, not the first tag
+  ([ADR 0004](docs/adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)).**
+  Decided by the owner on 2026-10-17. `v0.1.0` may be tagged while
+  [#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49) is open, so the
+  composite action and tagged installs can run, and the `es` catalog ships
+  labelled as an unreviewed machine draft. The review itself is still required,
+  before `1.0.0`. The `ai` prose stays outside the catalog until it is done.
+  - **Added: the label travels inside the report.** Until now the only
+    in-output signal was a stderr line, which a saved HTML report or a printed
+    checklist does not carry. Every non-English report and comparison now
+    appends one sentence to its disclaimer, in the report language, saying the
+    translation is an unreviewed machine draft and English is authoritative. It
+    reaches the console, HTML, checklist, JSON and SARIF formats, which already
+    carry the disclaimer. English output is unchanged. One new message; the
+    catalog is at 259.
+  - The stderr note, the catalog header, the README, I18N.md, the roadmap, the
+    release checklist, and the composite action's `locale` description now say
+    "unreviewed machine draft" and name the 1.0 gate.
+
 - **Added: the release checklist.** `DEFINITION_OF_DONE.md` and the roadmap
   both required "the release checklist" and no such file existed.
   [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md) collects what
