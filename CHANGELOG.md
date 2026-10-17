@@ -6,6 +6,12 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Changed
+
+- **The repository takes no money, on purpose.** A committed `.github/FUNDING.yml` with every
+  key empty overrides the account-wide Ko-fi default, which this repository had inherited
+  without any document saying so (owner decision 2026-10-17).
+
 Everything below was prepared as `0.1.0` in #76 under the heading
 `## [0.1.0] - 2026-09-02`, opening "First tagged release". The tag was never
 cut. `git tag --list` is empty on this repository and on `origin`, the GitHub
