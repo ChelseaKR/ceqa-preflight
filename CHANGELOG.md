@@ -19,6 +19,12 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Fixed: the README said a pushed tag starts the release.** It does not.
+  `release.yml` has only a `workflow_dispatch` trigger with a required `tag`
+  input, so the README now describes the flow that exists: push an annotated,
+  SSH-signed `vX.Y.Z` tag on `main`, then
+  `gh workflow run release.yml --ref main -f tag=vX.Y.Z`.
+
 - **Changed: the vendored standards move to portfolio-standards v3.0.1.**
   `docs/standards/` is replaced as one set from the signed `v3.0.1` tag with
   upstream's `automation/vendor-standards.sh`, and every file matches the release

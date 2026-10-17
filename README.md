@@ -88,10 +88,14 @@ Without a local checkout, run the CLI straight from the default branch with
 
 Both track `main` rather than a fixed point, because no tag has been cut. These
 two commands read `@v0.1.0` until 2026-09-06 and failed for everyone who ran
-them: no such tag exists. `release.yml` is committed and will attach a built
-wheel and sdist, a CycloneDX SBOM and build provenance to a GitHub Release when
-a signed `v*` tag is pushed, and nothing is attached to anything yet. There is
-no package-registry publication either, so plain `uvx ceqa-preflight` will not
+them: no such tag exists. `release.yml` is committed, and pushing a tag does
+not start it: it runs only when a maintainer dispatches it by hand for an
+annotated, SSH-signed `vX.Y.Z` tag that is already on `main`
+(`gh workflow run release.yml --ref main -f tag=v0.1.0`). It then verifies the
+tag against `.github/allowed_signers`, re-runs `make verify` at the tagged
+commit, and attaches a built wheel and sdist, a CycloneDX SBOM and build
+provenance to a GitHub Release. It has never done that, and nothing is attached
+to anything yet. There is no package-registry publication either, so plain `uvx ceqa-preflight` will not
 find it. From a clone, `uvx --from /path/to/ceqa-preflight ceqa-preflight
 --help` still works.
 
@@ -369,7 +373,7 @@ control exists; release-only evidence is collected before a tagged release.
 | Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with a 90% branch-coverage floor, and complexity <= 10), `uv.lock`, and `.python-version` |
 | Security & Supply-Chain | Applies | [Security policy](SECURITY.md); bandit, pip-audit, gitleaks, and CodeQL in CI; SHA-pinned actions and a committed lockfile |
 | CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
-| Release & Versioning | Applies -- not met | `0.1.0` is declared in `pyproject.toml` and `CITATION.cff` and no tag has been cut, so nothing has been released: no signed tag, no GitHub Release, no SBOM or provenance attached to anything, no package-registry publication. The signed-tag `release.yml` is committed and will do all of that when a `v*` tag is pushed, authorized against `.github/allowed_signers` with `make verify` re-run at the tagged commit; it has never run. `tests/test_release_claims.py` derives this row's state from `git tag --list` rather than restating it |
+| Release & Versioning | Applies -- not met | `0.1.0` is declared in `pyproject.toml` and `CITATION.cff` and no tag has been cut, so nothing has been released: no signed tag, no GitHub Release, no SBOM or provenance attached to anything, no package-registry publication. `release.yml` is committed and is not triggered by a tag push: a maintainer pushes an annotated, SSH-signed `vX.Y.Z` tag on `main` and then dispatches it (`gh workflow run release.yml --ref main -f tag=vX.Y.Z`), which authorizes the tag against `.github/allowed_signers`, re-runs `make verify` at the tagged commit, and publishes the Release with its SBOM and provenance. It has never published anything. `tests/test_release_claims.py` derives this row's state from `git tag --list` rather than restating it |
 | Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
