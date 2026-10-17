@@ -20,6 +20,7 @@ nothing else made the same dispatch succeed.
 
 import re
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -172,3 +173,46 @@ def test_every_workflow_install_asserts_the_lockfile_is_current() -> None:
             f"{name} runs `uv sync` without --locked, so a lockfile that no longer matches "
             f"pyproject.toml would install and the job would go green. Offending step: {command}"
         )
+
+
+def _jobs_running_make_verify(root: Path) -> list[tuple[str, str, list[dict[str, Any]]]]:
+    """Every workflow job with a step that runs `make verify`, with that job's steps."""
+    found: list[tuple[str, str, list[dict[str, Any]]]] = []
+    for workflow in sorted((root / ".github/workflows").glob("*.yml")):
+        document = yaml.safe_load(workflow.read_text(encoding="utf-8"))
+        for job_name, job in (document.get("jobs") or {}).items():
+            steps = job.get("steps") or []
+            if any("make verify" in str(step.get("run", "")) for step in steps):
+                found.append((workflow.name, job_name, steps))
+    return found
+
+
+def test_every_job_that_runs_make_verify_checks_out_full_history() -> None:
+    """`make verify` reads `git tag --list`, which a shallow checkout cannot answer.
+
+    tests/test_release_claims.py refuses to run from a shallow clone, and
+    `actions/checkout` is shallow by default. ci.yml set `fetch-depth: 0` for that
+    reason; release.yml's build job did not, so the one run that matters -- `make
+    verify` at the tagged commit, before anything is built or published -- would have
+    failed on its first dispatch. This keeps every job that runs the gate in step.
+    """
+    root = Path(__file__).parents[1]
+    jobs = _jobs_running_make_verify(root)
+    names = {workflow for workflow, _, _ in jobs}
+    assert {"ci.yml", "release.yml"} <= names, (
+        f"expected ci.yml and release.yml to run `make verify`; found {sorted(names)}"
+    )
+    shallow: list[str] = []
+    for workflow, job_name, steps in jobs:
+        checkouts = [
+            step for step in steps if str(step.get("uses", "")).startswith("actions/checkout@")
+        ]
+        assert checkouts, f"{workflow} job {job_name!r} runs `make verify` without a checkout"
+        for step in checkouts:
+            depth = (step.get("with") or {}).get("fetch-depth")
+            if depth != 0:
+                shallow.append(f"{workflow} job {job_name!r} (fetch-depth: {depth!r})")
+    assert not shallow, (
+        "these jobs run `make verify` from a shallow checkout, where the release-claims "
+        f"tests refuse to read the tag list: {shallow}"
+    )

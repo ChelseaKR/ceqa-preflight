@@ -19,6 +19,14 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Fixed: `release.yml` would have failed its own `make verify`.** The
+  `build-and-attest` job checked the tagged commit out at the default depth of
+  1, and `tests/test_release_claims.py` refuses to read the tag list of a
+  shallow clone, so the first dispatch would have stopped at the gate before
+  building anything. It now checks out with `fetch-depth: 0`, as the CI verify
+  job already did, and `tests/test_supply_chain.py` requires full history for
+  every workflow job that runs `make verify`.
+
 - **Fixed: the README said a pushed tag starts the release.** It does not.
   `release.yml` has only a `workflow_dispatch` trigger with a required `tag`
   input, so the README now describes the flow that exists: push an annotated,
