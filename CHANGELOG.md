@@ -6,7 +6,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet beyond the `0.1.0` section below, which is prepared and not tagged.
+### Changed
+
+- **The repository takes no money, on purpose.** A committed `.github/FUNDING.yml` with every
+  key empty overrides the account-wide Ko-fi default, which this repository had inherited
+  without any document saying so (owner decision 2026-10-17).
 
 ## [0.1.0] - Unreleased
 
