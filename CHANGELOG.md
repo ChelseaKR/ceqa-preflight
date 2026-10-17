@@ -19,6 +19,14 @@ never been published anywhere, so nothing here supersedes a released version.
 `tests/test_release_claims.py` reads `git tag --list` and asks for the dated
 `## [0.1.0]` heading back the moment a tag names that version.
 
+- **Added: the release checklist.** `DEFINITION_OF_DONE.md` and the roadmap
+  both required "the release checklist" and no such file existed.
+  [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md) collects what
+  `release.yml`, `tests/test_release_claims.py`, the roadmap, and the definition
+  of done already require, in the order a maintainer meets them: the human
+  gates, the release commit, the signed tag and dispatch, and the checks after
+  the Release exists. It adds no requirement of its own.
+
 - **Fixed: `release.yml` would have failed its own `make verify`.** The
   `build-and-attest` job checked the tagged commit out at the default depth of
   1, and `tests/test_release_claims.py` refuses to read the tag list of a

@@ -49,7 +49,7 @@
   terminology and advisory framing, and the central applicability registry
   entry.
 - Publish a residual-risk review, SBOM, provenance, and release notes.
-- Exit criteria: all CI/security checks green, release checklist signed,
+- Exit criteria: all CI/security checks green, [release checklist](RELEASE-CHECKLIST.md) signed,
   no open critical vulnerability, and the release remains advisory-only.
 
 ## Now — Opt-in AI layer (ADR 0002)
@@ -103,7 +103,7 @@ by the owning standard.
 | SHA-pinned workflow `uses:` | 100% | portfolio conformance tripwire (weekly) plus PR review | REVIEW | Maintainer |
 | EN/ES catalog parity | 100% keys and placeholders | `make i18n` in `make verify` (`scripts/check_i18n.py`) | AUTO | Maintainer |
 | Qualified Spanish terminology review | Named reviewer before first public tag | [i18n release gate](I18N.md) item 3; not yet done ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)) | REVIEW | Maintainer |
-| Accessibility review of console/HTML output | Recorded assistive-technology evidence per release | Release checklist; no tagged release yet | REVIEW | Maintainer |
+| Accessibility review of console/HTML output | Recorded assistive-technology evidence per release | [Release checklist](RELEASE-CHECKLIST.md); no tagged release yet | REVIEW | Maintainer |
 | Pilot false-positive rate | Measured on permissioned packages; aggregate results only | `pilot summarize` evidence kit | REVIEW | Maintainer |
 | Synthetic detection against seeded defects | Published record, regenerable, with intervals | `tests/test_calibration.py` re-measures and compares the committed record in `make test`; `pilot calibrate --check` does the same from the CLI | AUTO | Maintainer |
 
