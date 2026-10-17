@@ -143,3 +143,27 @@ def ngettext(singular: str, plural: str, count: int) -> str:
     """Translate a countable message, using the active catalog's plural rule."""
 
     return _translation(active_locale()).ngettext(singular, plural, count)
+
+
+def translation_status() -> str:
+    """Say, inside the output itself, that a non-English catalog has not been reviewed.
+
+    ADR 0004 ships the Spanish catalog as an unreviewed machine draft. The stderr note
+    printed at the command-line boundary does not travel with a saved report, so every
+    report and comparison carries this sentence in its disclaimer as well. English is
+    the authoritative wording and gets an empty string.
+    """
+
+    if active_locale() == DEFAULT_LOCALE:
+        return ""
+    return gettext(
+        "This translation is an unreviewed machine draft: no qualified CEQA terminology "
+        "reviewer has approved it yet. The English wording is authoritative."
+    )
+
+
+def with_translation_status(text: str) -> str:
+    """Append :func:`translation_status` to a disclaimer when one is due."""
+
+    status = translation_status()
+    return f"{text} {status}" if status else text

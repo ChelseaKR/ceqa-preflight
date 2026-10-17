@@ -37,6 +37,7 @@ from pydantic import Field, ValidationError
 
 from ceqa_preflight import __version__
 from ceqa_preflight.i18n import gettext as _
+from ceqa_preflight.i18n import with_translation_status
 from ceqa_preflight.models import (
     Confidence,
     FilingType,
@@ -226,13 +227,16 @@ def diff_disclaimer() -> str:
     """The advisory framing every comparison carries, in the active locale.
 
     Held to the same limit `docs/I18N.md` puts on the report disclaimer: no wording may
-    imply that a cleared finding is a legal determination, because it is not one.
+    imply that a cleared finding is a legal determination, because it is not one. Outside
+    English it also states that the translation is unreviewed (ADR 0004).
     """
 
-    return _(
-        "This comparison describes what two advisory technical reports say. It is not "
-        "legal advice, and a finding that no longer appears has not been determined "
-        "compliant."
+    return with_translation_status(
+        _(
+            "This comparison describes what two advisory technical reports say. It is not "
+            "legal advice, and a finding that no longer appears has not been determined "
+            "compliant."
+        )
     )
 
 

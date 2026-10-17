@@ -1,9 +1,9 @@
-# CEQA Preflight message catalog: Spanish (maintainer draft, review pending).
+# CEQA Preflight message catalog: Spanish (unreviewed machine draft, review pending).
 #
-# Drafted by the maintainer. A qualified Spanish-language CEQA reviewer has NOT yet
+# An unreviewed machine draft. A qualified Spanish-language CEQA reviewer has NOT yet
 # approved this terminology or its advisory, non-legal framing; that is item 3 of the
-# release gate in docs/I18N.md and it is still open. The English wording is authoritative
-# until it closes.
+# gate in docs/I18N.md, required before 1.0 (ADR 0004) and still open. The English wording
+# is authoritative until it closes.
 #
 # Two rules govern any edit here: no wording may imply that an advisory finding is a
 # legal determination, and no filing-package text ever enters this file.
@@ -1216,3 +1216,12 @@ msgid ""
 msgstr ""
 "Vuelva a ejecutar la comprobación sobre el paquete para que el inventario "
 "registre esos archivos."
+
+msgid ""
+"This translation is an unreviewed machine draft: no qualified CEQA "
+"terminology reviewer has approved it yet. The English wording is "
+"authoritative."
+msgstr ""
+"Esta traducción es un borrador automático sin revisar: ningún revisor "
+"cualificado de la terminología de CEQA la ha aprobado todavía. Prevalece la "
+"redacción en inglés."

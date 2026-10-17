@@ -30,7 +30,7 @@ inputs:
   locale:
     description: >-
       BCP 47 tag for report prose (en, es). Nothing is inferred from the runner's
-      environment. The Spanish catalog is a maintainer draft; English is authoritative.
+      environment. The Spanish catalog is an unreviewed machine draft; English is authoritative.
     required: false
     default: 'en'
   version:

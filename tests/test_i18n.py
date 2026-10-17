@@ -27,8 +27,9 @@ from typer.testing import CliRunner
 from ceqa_preflight import i18n
 from ceqa_preflight.checker import check_package
 from ceqa_preflight.cli import app
+from ceqa_preflight.diffing import diff_reports
 from ceqa_preflight.models import FilingType
-from ceqa_preflight.reporting import render_console, render_html, render_json
+from ceqa_preflight.reporting import render_checklist, render_console, render_html, render_json
 
 SCRIPTS = str(Path(__file__).resolve().parent.parent / "scripts")
 if SCRIPTS not in sys.path:  # pragma: no cover - import bookkeeping
@@ -238,6 +239,42 @@ def test_the_spanish_report_never_claims_a_legal_determination(tmp_path: Path) -
     assert "determinación de cumplimiento de CEQA" in report.disclaimer
 
 
+_DRAFT_LABEL_ES = "borrador automático sin revisar"
+_DRAFT_LABEL_EN = "unreviewed machine draft"
+
+
+def test_a_spanish_report_carries_its_draft_label_in_every_prose_format(tmp_path: Path) -> None:
+    """ADR 0004: the label travels inside the report, not only on stderr.
+
+    A saved HTML report or printed checklist is read without the terminal session that
+    produced it, so the stderr note alone would leave a shared Spanish report silent about
+    its review status. English output carries no such sentence.
+    """
+
+    package = _package(tmp_path)
+    with i18n.use_locale("es"):
+        report, _ = check_package(package, FilingType.NOE)
+        outputs = {
+            "console": render_console(report),
+            "html": render_html(report),
+            "checklist": render_checklist(report),
+            "json": json.loads(render_json(report))["disclaimer"],
+        }
+        comparison = diff_reports(report, report).disclaimer
+    for name, rendered in outputs.items():
+        assert _DRAFT_LABEL_ES in rendered, name
+    assert _DRAFT_LABEL_ES in comparison
+    assert "no constituye asesoramiento legal" in report.disclaimer
+
+    with i18n.use_locale("en"):
+        english, _ = check_package(package, FilingType.NOE)
+        english_comparison = diff_reports(english, english).disclaimer
+    assert _DRAFT_LABEL_EN not in english.disclaimer
+    assert _DRAFT_LABEL_ES not in english.disclaimer
+    assert _DRAFT_LABEL_EN not in english_comparison
+    assert i18n.with_translation_status("x") == "x"
+
+
 # --------------------------------------------------------------------------------------
 # The command-line boundary
 # --------------------------------------------------------------------------------------
@@ -277,6 +314,8 @@ def test_a_spanish_run_says_the_translation_is_not_yet_reviewed(tmp_path: Path) 
     result = runner.invoke(app, ["--locale", "es", "check", str(package), "--filing-type", "NOE"])
     assert "has not yet approved its terminology" in result.output
     assert "English wording is authoritative" in result.output
+    assert "unreviewed machine draft" in result.output
+    assert "required before 1.0" in result.output
 
 
 def test_locale_does_not_change_the_exit_code(tmp_path: Path) -> None:

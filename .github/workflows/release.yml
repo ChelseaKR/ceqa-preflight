@@ -48,6 +48,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.authorize.outputs.release-commit }}
+          # `make verify` below runs tests/test_release_claims.py, which refuses to read
+          # the tag list of a shallow clone, and the default depth of 1 is one. Without
+          # full history and tags the release would fail at its own gate, and the tests
+          # that require a dated CHANGELOG section and a CITATION date-released once the
+          # tag exists could not see the tag. Same reason as the verify job in ci.yml.
+          fetch-depth: 0
           persist-credentials: false
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:

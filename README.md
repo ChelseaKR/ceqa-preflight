@@ -17,7 +17,10 @@ draft corrections; it never produces a finding and is never invoked by
 
 ## Status
 
-**Status:** In build
+**Status:** In build. `0.1.0` is prepared as the first release and is not
+tagged: no tag has been cut, and nothing has been released. What stands
+between it and a signed `v0.1.0` tag is in the
+[release checklist](docs/RELEASE-CHECKLIST.md).
 
 CEQA Preflight is pre-alpha software. The repository includes safe local package loading, bounded PDF
 technical inspection, a source-cited declarative rule engine, a common
@@ -34,9 +37,9 @@ and 12 are experimental, and the 12 experimental ones are exactly the NOD- and
 NOE-specific rules. The domain half of the catalog is the unfinished half.
 
 The engineering around it is not at that stage, and saying "early-stage" of the
-whole tool understated it. `make verify` is the merge gate: 731 tests under a
+whole tool understated it. `make verify` is the merge gate: 733 tests under a
 90% branch-coverage floor, `strict = true` mypy over 43 source files, bandit,
-and an i18n gate holding 258 English and Spanish messages at enforced parity.
+and an i18n gate holding 259 English and Spanish messages at enforced parity.
 The suite runs with sockets disabled (`--disable-socket` in `addopts`), so the
 "no network requests" promise of the default `check` path is enforced rather
 than asserted. None of that makes the tool production-ready: `0.1.0` is a
@@ -88,10 +91,14 @@ Without a local checkout, run the CLI straight from the default branch with
 
 Both track `main` rather than a fixed point, because no tag has been cut. These
 two commands read `@v0.1.0` until 2026-09-06 and failed for everyone who ran
-them: no such tag exists. `release.yml` is committed and will attach a built
-wheel and sdist, a CycloneDX SBOM and build provenance to a GitHub Release when
-a signed `v*` tag is pushed, and nothing is attached to anything yet. There is
-no package-registry publication either, so plain `uvx ceqa-preflight` will not
+them: no such tag exists. `release.yml` is committed, and pushing a tag does
+not start it: it runs only when a maintainer dispatches it by hand for an
+annotated, SSH-signed `vX.Y.Z` tag that is already on `main`
+(`gh workflow run release.yml --ref main -f tag=v0.1.0`). It then verifies the
+tag against `.github/allowed_signers`, re-runs `make verify` at the tagged
+commit, and attaches a built wheel and sdist, a CycloneDX SBOM and build
+provenance to a GitHub Release. It has never done that, and nothing is attached
+to anything yet. There is no package-registry publication either, so plain `uvx ceqa-preflight` will not
 find it. From a clone, `uvx --from /path/to/ceqa-preflight ceqa-preflight
 --help` still works.
 
@@ -225,13 +232,15 @@ source citations, and the exit code are identical in every locale, so a
 pipeline that gates on the report does not care which language a person reads
 it in.
 
-**The Spanish catalog is a maintainer draft.** A qualified Spanish-language
-CEQA reviewer has not yet approved its terminology or its advisory, non-legal
-framing; that review is
+**The Spanish catalog is an unreviewed machine draft.** A qualified
+Spanish-language CEQA reviewer has not yet approved its terminology or its
+advisory, non-legal framing; that review is
 [issue #49](https://github.com/ChelseaKR/ceqa-preflight/issues/49) and it is
-one of the conditions on a first tagged release. Until it is done the English
-wording is authoritative, and every non-English run says so. See
-[docs/I18N.md](docs/I18N.md).
+required before 1.0. The first tag ships the catalog labelled as a draft rather
+than waiting on it ([ADR 0004](docs/adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)).
+Until the review is done the English wording is authoritative, every
+non-English run says so on stderr, and every Spanish report says so in its
+disclaimer. See [docs/I18N.md](docs/I18N.md).
 
 `make i18n` holds both catalogs at key and placeholder parity, refuses an empty
 or fuzzy message, and — since 2026-09-07 — refuses a Spanish `msgstr` that is
@@ -337,7 +346,8 @@ before merge; AI-assisted development measurement is tracked in the
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the
 architecture decisions
 ([ADR 0001](docs/decisions/0001-local-first-deterministic-cli.md),
-[ADR 0002](docs/adr/0002-ai-at-the-edges.md)).
+[ADR 0002](docs/adr/0002-ai-at-the-edges.md),
+[ADR 0004](docs/adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)).
 The project also documents its [pilot protocol](docs/pilot-protocol.md),
 [pilot partner kit](docs/pilot-partner-kit.md),
 [accessibility boundaries](docs/accessibility.md), and
@@ -369,11 +379,11 @@ control exists; release-only evidence is collected before a tagged release.
 | Code Quality | Applies | `Makefile` gates (ruff, mypy `--strict`, pytest with a 90% branch-coverage floor, and complexity <= 10), `uv.lock`, and `.python-version` |
 | Security & Supply-Chain | Applies | [Security policy](SECURITY.md); bandit, pip-audit, gitleaks, and CodeQL in CI; SHA-pinned actions and a committed lockfile |
 | CI/CD | Applies | SHA-pinned, permission-scoped workflows; CI runs the same `make verify` gate as local development |
-| Release & Versioning | Applies -- not met | `0.1.0` is declared in `pyproject.toml` and `CITATION.cff` and no tag has been cut, so nothing has been released: no signed tag, no GitHub Release, no SBOM or provenance attached to anything, no package-registry publication. The signed-tag `release.yml` is committed and will do all of that when a `v*` tag is pushed, authorized against `.github/allowed_signers` with `make verify` re-run at the tagged commit; it has never run. `tests/test_release_claims.py` derives this row's state from `git tag --list` rather than restating it |
+| Release & Versioning | Applies -- not met | `0.1.0` is declared in `pyproject.toml` and `CITATION.cff` and no tag has been cut, so nothing has been released: no signed tag, no GitHub Release, no SBOM or provenance attached to anything, no package-registry publication. `release.yml` is committed and is not triggered by a tag push: a maintainer pushes an annotated, SSH-signed `vX.Y.Z` tag on `main` and then dispatches it (`gh workflow run release.yml --ref main -f tag=vX.Y.Z`), which authorizes the tag against `.github/allowed_signers`, re-runs `make verify` at the tagged commit, and publishes the Release with its SBOM and provenance. It has never published anything. The steps, and the gates still open before the first tag, are in the [release checklist](docs/RELEASE-CHECKLIST.md). `tests/test_release_claims.py` derives this row's state from `git tag --list` rather than restating it |
 | Observability | N/A (no hosted telemetry) | Stateless local CLI; opt-in JSON operational events only, with no package contents |
 | Performance | N/A (no service SLO) | No hosted service; bounded PDF/ZIP parsing is covered by the threat model |
 | Accessibility | Applies | [Accessibility boundaries](docs/accessibility.md); release review pending the first tag |
-| Internationalization | Applies — seam merged, review outstanding | [Scope and release gate](docs/I18N.md); EN and ES catalogs ship at enforced parity (`make i18n`), and the Spanish draft still needs qualified CEQA terminology review before a public tag ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49)) |
+| Internationalization | Applies — seam merged, review outstanding | [Scope and release gate](docs/I18N.md); EN and ES catalogs ship at enforced parity (`make i18n`), and the Spanish catalog ships labelled as an unreviewed machine draft; qualified CEQA terminology review is required before 1.0 ([#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49), [ADR 0004](docs/adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)) |
 | AI Evaluation | Applies | [ADR 0002](docs/adr/0002-ai-at-the-edges.md); the committed [`evals/`](evals/README.md) harnesses (legal-sufficiency refusal, real-filing extraction vs. CEQAnet metadata, citation grounding) with provenance-stamped results; a test rejects any result file without provenance |
 | Documentation | Applies | README, [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), and the [definition of done](DEFINITION_OF_DONE.md) |
 | Quality & Metrics | Applies | [Metrics ledger](docs/ROADMAP.md#metrics-ledger) in the roadmap; `make verify` is the merge gate |

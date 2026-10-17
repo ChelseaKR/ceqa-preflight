@@ -9,5 +9,5 @@ evidence are clear to a future maintainer.
 - Security, privacy, accessibility, data, and operational implications are assessed.
 - User-facing changes update the README, changelog, and applicable guides.
 - No real filing package, personal data, secret, or unlicensed material is committed.
-- Before a release: review the release checklist, create SBOM/provenance,
+- Before a release: review the [release checklist](docs/RELEASE-CHECKLIST.md), create SBOM/provenance,
   publish release notes, and record required accessibility and responsible-tech evidence.

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from ceqa_preflight import __version__
 from ceqa_preflight.i18n import gettext as _
+from ceqa_preflight.i18n import with_translation_status
 from ceqa_preflight.limits import DEFAULT_PACKAGE_LIMITS, PackageLimits
 from ceqa_preflight.models import (
     FilingType,
@@ -34,12 +35,16 @@ def disclaimer() -> str:
 
     `docs/I18N.md` puts one hard limit on any translation of this sentence: no wording may
     imply that a finding is a legal determination. It is a function rather than a constant
-    so the sentence follows the run's locale instead of the import order.
+    so the sentence follows the run's locale instead of the import order. Outside English
+    it also states that the translation is unreviewed (ADR 0004).
     """
 
-    return _(
-        "CEQA Preflight is an advisory technical checker, not legal advice or a determination "
-        "of CEQA compliance. Review all manual-review items before submission."
+    return with_translation_status(
+        _(
+            "CEQA Preflight is an advisory technical checker, not legal advice or a "
+            "determination of CEQA compliance. Review all manual-review items before "
+            "submission."
+        )
     )
 
 

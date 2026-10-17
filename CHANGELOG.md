@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and releases
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [Unreleased]
 
 ### Changed
 
@@ -12,18 +12,65 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   key empty overrides the account-wide Ko-fi default, which this repository had inherited
   without any document saying so (owner decision 2026-10-17).
 
-Everything below was prepared as `0.1.0` in #76 under the heading
-`## [0.1.0] - 2026-09-02`, opening "First tagged release". The tag was never
-cut. `git tag --list` is empty on this repository and on `origin`, the GitHub
-tags and releases endpoints both return zero, and `docs/ROADMAP.md` and
-`docs/RESPONSIBLE-TECH-AUDITS.md` said "no tagged release yet" in the same
-tree. Nothing has been released, so these notes sit here rather than under a
-dated heading that would date a release that did not happen.
+## [0.1.0] - Unreleased
 
+The first release, prepared and **not tagged**: no `v0.1.0` tag exists and
+nothing has been released. `Unreleased` stands where the date goes. The commit
+the signed `v0.1.0` tag points at replaces it with the UTC date of that tag and
+adds the same date to `CITATION.cff` as `date-released`; the
+[release checklist](docs/RELEASE-CHECKLIST.md) has the steps.
+`tests/test_release_claims.py` reads `git tag --list` and refuses a date on this
+heading until a tag names the version, and requires one from the moment it does.
+`release.yml` requires this heading to exist at the tagged commit.
+
+These notes were first written in #76 under `## [0.1.0] - 2026-09-02`,
+"First tagged release", and no tag followed: `git tag --list` was empty on this
+repository and on `origin`, and the GitHub tags and releases endpoints both
+returned zero. They were moved under `## Unreleased` until a release could be
+cut, and are back under a version heading now that one is being prepared.
 `0.1.0` has been the in-development baseline since the first commit and has
 never been published anywhere, so nothing here supersedes a released version.
-`tests/test_release_claims.py` reads `git tag --list` and asks for the dated
-`## [0.1.0]` heading back the moment a tag names that version.
+
+- **Changed: the Spanish terminology review gates 1.0, not the first tag
+  ([ADR 0004](docs/adr/0004-ship-spanish-as-labelled-unreviewed-draft.md)).**
+  Decided by the owner on 2026-10-17. `v0.1.0` may be tagged while
+  [#49](https://github.com/ChelseaKR/ceqa-preflight/issues/49) is open, so the
+  composite action and tagged installs can run, and the `es` catalog ships
+  labelled as an unreviewed machine draft. The review itself is still required,
+  before `1.0.0`. The `ai` prose stays outside the catalog until it is done.
+  - **Added: the label travels inside the report.** Until now the only
+    in-output signal was a stderr line, which a saved HTML report or a printed
+    checklist does not carry. Every non-English report and comparison now
+    appends one sentence to its disclaimer, in the report language, saying the
+    translation is an unreviewed machine draft and English is authoritative. It
+    reaches the console, HTML, checklist, JSON and SARIF formats, which already
+    carry the disclaimer. English output is unchanged. One new message; the
+    catalog is at 259.
+  - The stderr note, the catalog header, the README, I18N.md, the roadmap, the
+    release checklist, and the composite action's `locale` description now say
+    "unreviewed machine draft" and name the 1.0 gate.
+
+- **Added: the release checklist.** `DEFINITION_OF_DONE.md` and the roadmap
+  both required "the release checklist" and no such file existed.
+  [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md) collects what
+  `release.yml`, `tests/test_release_claims.py`, the roadmap, and the definition
+  of done already require, in the order a maintainer meets them: the human
+  gates, the release commit, the signed tag and dispatch, and the checks after
+  the Release exists. It adds no requirement of its own.
+
+- **Fixed: `release.yml` would have failed its own `make verify`.** The
+  `build-and-attest` job checked the tagged commit out at the default depth of
+  1, and `tests/test_release_claims.py` refuses to read the tag list of a
+  shallow clone, so the first dispatch would have stopped at the gate before
+  building anything. It now checks out with `fetch-depth: 0`, as the CI verify
+  job already did, and `tests/test_supply_chain.py` requires full history for
+  every workflow job that runs `make verify`.
+
+- **Fixed: the README said a pushed tag starts the release.** It does not.
+  `release.yml` has only a `workflow_dispatch` trigger with a required `tag`
+  input, so the README now describes the flow that exists: push an annotated,
+  SSH-signed `vX.Y.Z` tag on `main`, then
+  `gh workflow run release.yml --ref main -f tag=vX.Y.Z`.
 
 - **Changed: the vendored standards move to portfolio-standards v3.0.1.**
   `docs/standards/` is replaced as one set from the signed `v3.0.1` tag with

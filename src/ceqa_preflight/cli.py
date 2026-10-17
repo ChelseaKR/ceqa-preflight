@@ -112,9 +112,10 @@ def main(
 
 
 SPANISH_REVIEW_PENDING = (
-    "Note: the Spanish catalog is a maintainer draft. A qualified Spanish-language CEQA "
-    "reviewer has not yet approved its terminology or its advisory, non-legal framing "
-    "(docs/I18N.md release gate, item 3). The English wording is authoritative."
+    "Note: the Spanish catalog is an unreviewed machine draft. A qualified Spanish-language "
+    "CEQA reviewer has not yet approved its terminology or its advisory, non-legal framing; "
+    "that review is required before 1.0 (ADR 0004, docs/I18N.md). The English wording is "
+    "authoritative."
 )
 
 
